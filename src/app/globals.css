@@ -60,7 +60,7 @@
   --popover-foreground: #1A1625;
 
   /* Primario — violeta, botones y elementos activos */
-  --primary: #7C5CFC;
+  --primary: #7463b8;
   --primary-foreground: #FFFFFF;
 
   --secondary: #EDE9FB;
@@ -86,11 +86,11 @@
 
   --radius: 0.75rem;
 
-  --sidebar: #F4F2FB;
-  --sidebar-foreground: #1A1625;
-  --sidebar-primary: #7C5CFC;
+  --sidebar: #422c6f;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #7f6fbe;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EDE9FB;
+  --sidebar-accent: #d4c2e0;
   --sidebar-accent-foreground: #1A1625;
   --sidebar-border: #E4E0F2;
   --sidebar-ring: #7C5CFC;

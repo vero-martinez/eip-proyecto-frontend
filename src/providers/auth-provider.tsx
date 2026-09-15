@@ -7,6 +7,7 @@
  */
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Usuario } from "@/types/auth";
 
 interface AuthContextType {
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_KEY = "eip-auth-usuario";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
     const [usuario, setUsuario] = useState<Usuario | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -41,10 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(usuarioAutenticado));
     };
 
-    // Cierra la sesión y elimina el usuario guardado.
+    // Cierra la sesión, elimina el usuario guardado y redirige al login.
     const logout = () => {
         setUsuario(null);
         localStorage.removeItem(STORAGE_KEY);
+        router.push("/login");
     };
 
     return (

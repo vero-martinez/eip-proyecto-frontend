@@ -54,9 +54,9 @@ El login todavía no está conectado a un backend real — valida contra una lis
 
 | Rol | Email | Contraseña |
 |---|---|---|
-| Admin | admin@demo.com | admin123 |
-| Vendedor | vendedor@demo.com | vendedor123 |
-| Taller | taller@demo.com | taller123 |
+| Admin | admin@eip.com | admin123 |
+| Vendedor | vendedor@eip.com | vendedor123 |
+| Taller | taller@eip.com | taller123 |
 
 ## 📁 Estructura del proyecto
 

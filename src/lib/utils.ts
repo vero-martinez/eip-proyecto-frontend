@@ -27,3 +27,8 @@ export function toTitleCase(text: string): string {
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ")
 }
+
+// Formatea una fecha ISO en formato corto (ej. "14/03/2026")
+export function formatDate(date: string): string {
+    return new Intl.DateTimeFormat("es-AR").format(new Date(date))
+}

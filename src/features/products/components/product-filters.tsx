@@ -15,8 +15,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/common/searchable-select"
-import { toTitleCase } from "@/lib/utils"
-import { getRootCategories, getSubcategories } from "../utils"
+import { getCategoryOptions, getRootCategories, getSubcategories } from "../utils"
 import type { Category } from "@/types/products"
 import type { StatusFilter, SortBy } from "../types"
 
@@ -59,10 +58,7 @@ export function ProductFilters({
                 }}
                 options={[
                     { value: "all", label: "Todas las categorías" },
-                    ...rootCategories.map((category) => ({
-                        value: String(category.id),
-                        label: toTitleCase(category.name),
-                    })),
+                    ...getCategoryOptions(rootCategories),
                 ]}
                 placeholder="Todas las categorías"
                 searchPlaceholder="Buscar categoría..."
@@ -76,10 +72,7 @@ export function ProductFilters({
                     onValueChange={onSubcategoryChange}
                     options={[
                         { value: "all", label: "Todas" },
-                        ...subcategories.map((subcategory) => ({
-                            value: String(subcategory.id),
-                            label: toTitleCase(subcategory.name),
-                        })),
+                        ...getCategoryOptions(subcategories),
                     ]}
                     placeholder="Todas"
                     searchPlaceholder="Buscar subcategoría..."

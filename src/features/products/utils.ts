@@ -45,6 +45,34 @@ export function getSubcategories(categories: Category[], rootId: number): Catego
 }
 
 /**
+ * Obtiene el id de la categoría raíz de una categoría dada
+ * (ella misma si es raíz, o su padre).
+ */
+export function getRootCategoryId(
+    categories: Category[],
+    categoryId: number | undefined
+): number | undefined {
+    if (categoryId === undefined) return undefined
+    const category = categories.find((c) => c.id === categoryId)
+    if (!category) return undefined
+    return category.parentId ?? category.id
+}
+
+/**
+ * Opciones {value,label} para los selects de categorías, con el
+ * nombre normalizado (fuente única de labels para filtros y form).
+ */
+export function getCategoryOptions(categories: Category[]): {
+    value: string
+    label: string
+}[] {
+    return categories.map((category) => ({
+        value: String(category.id),
+        label: toTitleCase(category.name),
+    }))
+}
+
+/**
  * Verifica si un producto pertenece a una categoría raíz, ya sea
  * directa o vía una de sus subcategorías.
  */
@@ -65,16 +93,25 @@ export function hasLowStock(product: Product): boolean {
     return product.isActive && product.currentStock <= product.minStockAlert
 }
 
-const UNIT_SYMBOLS: Record<UnitType, string> = {
-    UNIDAD: "u",
-    KILOGRAMO: "kg",
-}
+/**
+ * Catálogo de unidades de medida: fuente única para los labels (UI)
+ * y los símbolos usados al formatear el stock.
+ */
+export const UNIT_OPTIONS: {
+    value: UnitType
+    label: string
+    symbol: string
+}[] = [
+    { value: "UNIDAD", label: "Unidad", symbol: "u" },
+    { value: "KILOGRAMO", label: "Kilogramo", symbol: "kg" },
+]
 
 /**
  * Formatea el stock actual de un producto con su unidad (ej. "3 u").
  */
 export function formatStock(product: Product): string {
-    return `${product.currentStock} ${UNIT_SYMBOLS[product.unitType]}`
+    const unit = UNIT_OPTIONS.find((option) => option.value === product.unitType)
+    return `${product.currentStock} ${unit?.symbol ?? product.unitType}`
 }
 
 /**

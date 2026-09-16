@@ -42,6 +42,10 @@ interface SearchableSelectProps {
     triggerClassName?: string
     contentClassName?: string
     ariaLabel?: string
+    /** Marca el trigger como inválido (aria-invalid), para form errors. */
+    ariaInvalid?: boolean
+    /** Id del mensaje de error asociado al trigger (aria-describedby). */
+    ariaDescribedby?: string
     disabled?: boolean
 }
 
@@ -55,6 +59,8 @@ export function SearchableSelect({
     triggerClassName,
     contentClassName,
     ariaLabel,
+    ariaInvalid,
+    ariaDescribedby,
     disabled,
 }: SearchableSelectProps) {
     const [open, setOpen] = useState(false)
@@ -71,6 +77,8 @@ export function SearchableSelect({
                         role="combobox"
                         aria-expanded={open}
                         aria-label={ariaLabel}
+                        aria-invalid={ariaInvalid || undefined}
+                        aria-describedby={ariaDescribedby}
                         disabled={disabled}
                         className={cn(
                             "justify-between font-normal",

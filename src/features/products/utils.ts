@@ -4,7 +4,7 @@
  * para las cards del dashboard.
  */
 
-import { Category, Product } from "@/types/products"
+import { Category, Product, UnitType } from "@/types/products"
 import { toTitleCase } from "@/lib/utils"
 
 /**
@@ -63,6 +63,25 @@ export function isProductInCategoryTree(
  */
 export function hasLowStock(product: Product): boolean {
     return product.isActive && product.currentStock <= product.minStockAlert
+}
+
+const UNIT_SYMBOLS: Record<UnitType, string> = {
+    UNIDAD: "u",
+    KILOGRAMO: "kg",
+}
+
+/**
+ * Formatea el stock actual de un producto con su unidad (ej. "3 u").
+ */
+export function formatStock(product: Product): string {
+    return `${product.currentStock} ${UNIT_SYMBOLS[product.unitType]}`
+}
+
+/**
+ * Formatea el conteo de productos con pluralización (ej. "5 productos").
+ */
+export function formatProductCount(count: number): string {
+    return `${count} producto${count !== 1 ? "s" : ""}`
 }
 
 /**

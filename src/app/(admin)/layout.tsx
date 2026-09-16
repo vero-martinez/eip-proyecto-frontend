@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AppSidebar sections={NAV_ADMIN} />
       <SidebarInset>
         <Navbar />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6 lg:p-14">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

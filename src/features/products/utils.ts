@@ -31,6 +31,34 @@ export function getSubcategoryName(categoryId: number, categories: Category[]): 
 }
 
 /**
+ * Obtiene las categorías raíz (sin categoría padre).
+ */
+export function getRootCategories(categories: Category[]): Category[] {
+    return categories.filter((c) => c.parentId === null)
+}
+
+/**
+ * Obtiene las subcategorías de una categoría raíz.
+ */
+export function getSubcategories(categories: Category[], rootId: number): Category[] {
+    return categories.filter((c) => c.parentId === rootId)
+}
+
+/**
+ * Verifica si un producto pertenece a una categoría raíz, ya sea
+ * directa o vía una de sus subcategorías.
+ */
+export function isProductInCategoryTree(
+    product: Product,
+    rootId: number,
+    categories: Category[]
+): boolean {
+    if (product.categoryId === rootId) return true
+    const category = categories.find((c) => c.id === product.categoryId)
+    return category?.parentId === rootId
+}
+
+/**
  * Verifica si un producto tiene stock bajo.
  */
 export function hasLowStock(product: Product): boolean {

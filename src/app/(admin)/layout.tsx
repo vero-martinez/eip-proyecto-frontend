@@ -15,7 +15,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { NAV_ADMIN } from "@/lib/constants"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { usuario, isLoading } = useAuth()
+  const { usuario, isLoading, logout } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -43,9 +43,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <AppSidebar sections={NAV_ADMIN} />
+      <AppSidebar sections={NAV_ADMIN} onLogout={logout} />
       <SidebarInset>
-        <Navbar />
+        <Navbar usuario={usuario} sections={NAV_ADMIN} />
         <main className="flex-1 p-6 lg:p-14">{children}</main>
       </SidebarInset>
     </SidebarProvider>

@@ -18,7 +18,7 @@ import { useCategories } from "@/features/products/hooks/use-categories"
 import { useDeleteProduct } from "@/features/products/hooks/use-delete-product"
 import { ProductsStats } from "@/features/products/components/products-stats"
 import { ProductsTable } from "@/features/products/components/products-table"
-import { ProductFormDialog } from "@/features/products/components/product-form-dialog"
+import { ProductForm } from "@/features/products/components/product-form"
 import type { Product } from "@/types/products"
 
 export default function ProductsPage() {
@@ -122,7 +122,7 @@ export default function ProductsPage() {
                 />
             </div>
 
-            <ProductFormDialog
+            <ProductForm
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
                 product={productToEdit}

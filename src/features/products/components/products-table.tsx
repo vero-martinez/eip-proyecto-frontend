@@ -9,13 +9,7 @@
  */
 
 import { Plus, ChevronLeft, ChevronRight, Inbox, Search, X } from "lucide-react"
-import {
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    useReactTable,
-    flexRender,
-} from "@tanstack/react-table"
+import { flexRender } from "@tanstack/react-table"
 
 import {
     Table,
@@ -36,7 +30,7 @@ import { Badge } from "@/components/ui/badge"
 import { ClearFiltersButton } from "@/components/common/clear-filters-button"
 import { ProductFilters } from "./product-filters"
 import { getProductColumns } from "./columns"
-import { useProductFilters } from "../hooks/use-product-filters"
+import { useProductsTable } from "../hooks/use-products-table"
 import { formatProductCount } from "../utils"
 import type { Product, Category } from "@/types/products"
 
@@ -55,43 +49,27 @@ export function ProductsTable({
     onDelete,
     onCreate,
 }: ProductsTableProps) {
-    const {
-        columnFilters,
-        setColumnFilters,
-        rootCategoryId,
-        setRootCategoryId,
-        subcategoryId,
-        setSubcategoryId,
-        statusFilter,
-        setStatusFilter,
-        sortBy,
-        setSortBy,
-        filteredProducts,
-        hasActiveFilters,
-        clearFilters,
-    } = useProductFilters(products, categories)
-
     const columns = getProductColumns(categories, onEdit, onDelete)
 
-    const table = useReactTable({
-        data: filteredProducts,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        onColumnFiltersChange: setColumnFilters,
-        state: {
-            columnFilters,
-        },
-    })
-
-    const totalCount = table.getFilteredRowModel().rows.length
-    const pageIndex = table.getState().pagination.pageIndex
-    const pageCount = table.getPageCount()
-    const pageSize = table.getState().pagination.pageSize
-    const rangeStart = totalCount === 0 ? 0 : pageIndex * pageSize + 1
-    const rangeEnd = Math.min(totalCount, (pageIndex + 1) * pageSize)
-    const searchValue = (table.getColumn("name")?.getFilterValue() as string) ?? ""
+    const {
+        table,
+        totalCount,
+        pageIndex,
+        pageCount,
+        rangeStart,
+        rangeEnd,
+        searchValue,
+        rootCategoryId,
+        subcategoryId,
+        statusFilter,
+        sortBy,
+        setRootCategoryId,
+        setSubcategoryId,
+        setStatusFilter,
+        setSortBy,
+        hasActiveFilters,
+        clearFilters,
+    } = useProductsTable({ products, categories, columns })
 
     return (
         <div className="space-y-5 sm:space-y-4">

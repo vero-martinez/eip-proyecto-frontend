@@ -3,26 +3,30 @@
 /**
  * Barra superior de cada layout protegido.
  *
- * Muestra el trigger del sidebar, el título/descripción del módulo
- * activo (según la ruta actual) y el usuario logueado con avatar.
+ * Componente presentacional: recibe el usuario y las secciones de
+ * navegación por props. Deriva el título/descripción del módulo activo
+ * a partir de la ruta actual y muestra el usuario con avatar.
  * El logout vive en el footer del sidebar, no acá.
  */
 
 import { usePathname } from "next/navigation"
 
-import { useAuth } from "@/providers/auth-provider"
-import { NAV_ADMIN, NAV_VENDEDOR, NAV_TALLER } from "@/lib/constants"
 import { getInitials } from "@/lib/utils"
+import type { NavSection } from "@/lib/constants"
+import type { Usuario } from "@/types/auth"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
-export function Navbar() {
-  const { usuario } = useAuth()
+interface NavbarProps {
+  usuario: Usuario | null
+  sections: NavSection[]
+}
+
+export function Navbar({ usuario, sections }: NavbarProps) {
   const pathname = usePathname()
 
-  const todasLasSecciones = [...NAV_ADMIN, ...NAV_VENDEDOR, ...NAV_TALLER]
-  const currentItem = todasLasSecciones
+  const currentItem = sections
     .flatMap((section) => section.items)
     .find(
       (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)

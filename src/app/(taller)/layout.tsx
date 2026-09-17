@@ -14,7 +14,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { NAV_TALLER } from "@/lib/constants"
 
 export default function TallerLayout({ children }: { children: React.ReactNode }) {
-  const { usuario, isLoading } = useAuth()
+  const { usuario, isLoading, logout } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -40,9 +40,9 @@ export default function TallerLayout({ children }: { children: React.ReactNode }
 
   return (
     <SidebarProvider>
-      <AppSidebar sections={NAV_TALLER} />
+      <AppSidebar sections={NAV_TALLER} onLogout={logout} />
       <SidebarInset>
-        <Navbar />
+        <Navbar usuario={usuario} sections={NAV_TALLER} />
         <main className="flex-1 p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

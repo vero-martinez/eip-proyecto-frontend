@@ -21,6 +21,8 @@ import {
     type LucideIcon,
 } from "lucide-react"
 
+import type { Rol } from "@/types/auth"
+
 export interface NavItem {
     label: string
     href: string
@@ -90,3 +92,14 @@ export const NAV_TALLER: NavSection[] = [
         ],
     },
 ]
+
+/**
+ * Secciones de navegación por rol. Permite que un layout compartido
+ * (ej. el de Catálogo) renderice el sidebar correcto según el usuario
+ * sin duplicar la selección en cada layout.
+ */
+export const NAV_BY_ROL: Record<Rol, NavSection[]> = {
+    admin: NAV_ADMIN,
+    vendedor: NAV_VENDEDOR,
+    taller: NAV_TALLER,
+}

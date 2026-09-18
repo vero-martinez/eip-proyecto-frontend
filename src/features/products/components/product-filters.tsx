@@ -99,14 +99,19 @@ export function ProductFilters({
             <Select
                 value={sortBy}
                 onValueChange={(value) => onSortChange((value ?? "newest") as SortBy)}
-                items={{ newest: "Más recientes", oldest: "Más antiguos" }}
+                items={{
+                    newest: "Más recientes",
+                    oldest: "Más antiguos",
+                    "low-stock": "Stock bajo primero",
+                }}
             >
-                <SelectTrigger className="w-36 border-border bg-primary/30 shadow-sm" aria-label="Ordenar productos">
+                <SelectTrigger className="w-44 border-border bg-primary/30 shadow-sm" aria-label="Ordenar productos">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="newest">Más recientes</SelectItem>
                     <SelectItem value="oldest">Más antiguos</SelectItem>
+                    <SelectItem value="low-stock">Stock bajo primero</SelectItem>
                 </SelectContent>
             </Select>
         </div>

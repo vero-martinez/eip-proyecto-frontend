@@ -1,15 +1,15 @@
 "use client"
 
 /**
- * Tabla de productos, usando @tanstack/react-table (v8) + los
- * componentes Table de shadcn/ui para el renderizado visual.
+ * Tabla de productos, usando los componentes Table de shadcn/ui para
+ * el renderizado visual y el hook useProductFilters para búsqueda,
+ * filtros, orden y paginación client-side.
  *
  * Recibe los productos y categorías ya cargados (vía hooks), y los
  * callbacks de editar/eliminar que le pasa el componente padre.
  */
 
-import { Plus, ChevronLeft, ChevronRight, Inbox, Search, X } from "lucide-react"
-import { flexRender } from "@tanstack/react-table"
+import { Plus, Inbox, Search, X } from "lucide-react"
 
 import {
     Table,
@@ -28,9 +28,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ClearFiltersButton } from "@/components/common/clear-filters-button"
+import { PaginationBar } from "@/components/common/pagination-bar"
 import { ProductFilters } from "./product-filters"
 import { getProductColumns } from "./columns"
-import { useProductsTable } from "../hooks/use-products-table"
+import { useProductFilters } from "../hooks/use-product-filters"
 import { formatProductCount } from "../utils"
 import type { Product, Category } from "@/types/products"
 
@@ -52,24 +53,26 @@ export function ProductsTable({
     const columns = getProductColumns(categories, onEdit, onDelete)
 
     const {
-        table,
+        search,
+        setSearch,
+        rootCategoryId,
+        setRootCategoryId,
+        subcategoryId,
+        setSubcategoryId,
+        statusFilter,
+        setStatusFilter,
+        sortBy,
+        setSortBy,
+        pageItems,
         totalCount,
-        pageIndex,
+        page,
         pageCount,
         rangeStart,
         rangeEnd,
-        searchValue,
-        rootCategoryId,
-        subcategoryId,
-        statusFilter,
-        sortBy,
-        setRootCategoryId,
-        setSubcategoryId,
-        setStatusFilter,
-        setSortBy,
         hasActiveFilters,
         clearFilters,
-    } = useProductsTable({ products, categories, columns })
+        goToPage,
+    } = useProductFilters(products, categories)
 
     return (
         <div className="space-y-5 sm:space-y-4">
@@ -107,17 +110,15 @@ export function ProductsTable({
                     <InputGroupInput
                         placeholder="Buscar por nombre o código..."
                         aria-label="Buscar productos"
-                        value={searchValue}
-                        onChange={(e) =>
-                            table.getColumn("name")?.setFilterValue(e.target.value)
-                        }
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
-                    {searchValue && (
+                    {search && (
                         <InputGroupAddon align="inline-end">
                             <InputGroupButton
                                 size="icon-xs"
                                 aria-label="Limpiar búsqueda"
-                                onClick={() => table.getColumn("name")?.setFilterValue("")}
+                                onClick={() => setSearch("")}
                             >
                                 <X className="size-3.5" />
                             </InputGroupButton>
@@ -135,51 +136,34 @@ export function ProductsTable({
             <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
                 <Table className="table-fixed min-w-[880px]">
                     <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow
-                                key={headerGroup.id}
-                                className="bg-primary hover:bg-primary"
-                            >
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        className={`h-11 px-4 text-xs font-semibold tracking-wide text-primary-foreground uppercase ${
-                                            (header.column.columnDef.meta as
-                                                | { width?: string }
-                                                | undefined)?.width ?? ""
-                                        }`}
-                                    >
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef.header,
-                                                  header.getContext()
-                                              )}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
+                        <TableRow className="bg-primary hover:bg-primary">
+                            {columns.map((column) => (
+                                <TableHead
+                                    key={column.key}
+                                    className={`h-11 px-4 text-xs font-semibold tracking-wide text-primary-foreground uppercase ${
+                                        column.width ?? ""
+                                    }`}
+                                >
+                                    {column.header}
+                                </TableHead>
+                            ))}
+                        </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows.length ? (
-                            table.getRowModel().rows.map((row) => (
+                        {pageItems.length ? (
+                            pageItems.map((product) => (
                                 <TableRow
-                                    key={row.id}
+                                    key={product.id}
                                     className="hover:bg-accent/50"
                                 >
-                                    {row.getVisibleCells().map((cell) => (
+                                    {columns.map((column) => (
                                         <TableCell
-                                            key={cell.id}
-                                            className={`px-4 py-3 ${(
-                                                cell.column.columnDef.meta as
-                                                    | { width?: string }
-                                                    | undefined
-                                            )?.width ?? ""}`}
+                                            key={column.key}
+                                            className={`px-4 py-3 ${
+                                                column.width ?? ""
+                                            }`}
                                         >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
+                                            {column.render(product)}
                                         </TableCell>
                                     ))}
                                 </TableRow>
@@ -194,7 +178,9 @@ export function ProductsTable({
                                         <div className="flex size-12 items-center justify-center rounded-full bg-muted">
                                             <Inbox className="size-6" aria-hidden="true" />
                                         </div>
-                                        <p className="text-sm">No se encontraron productos.</p>
+                                        <p className="text-sm">
+                                            No se encontraron productos.
+                                        </p>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -203,47 +189,17 @@ export function ProductsTable({
                 </Table>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-between">
-                {totalCount > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                        Mostrando{" "}
-                        <span className="font-medium text-foreground">
-                            {rangeStart}–{rangeEnd}
-                        </span>{" "}
-                        de {formatProductCount(totalCount)}
-                    </p>
-                )}
-                <nav
-                    aria-label="Paginación"
-                    className="flex items-center rounded-lg border border-border bg-card shadow-sm"
-                >
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-none rounded-l-lg"
-                        aria-label="Página anterior"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <ChevronLeft className="size-4" aria-hidden="true" />
-                    </Button>
-                    <span className="flex h-8 items-center border-x border-border px-3 text-xs font-medium text-muted-foreground tabular-nums">
-                        {pageIndex + 1}
-                        <span className="px-1.5 text-foreground/40">/</span>
-                        {pageCount}
-                    </span>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-none rounded-r-lg"
-                        aria-label="Página siguiente"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <ChevronRight className="size-4" aria-hidden="true" />
-                    </Button>
-                </nav>
-            </div>
+            <PaginationBar
+                page={page}
+                pageCount={pageCount}
+                onPageChange={goToPage}
+                summary={{
+                    from: rangeStart,
+                    to: rangeEnd,
+                    total: totalCount,
+                    formatCount: formatProductCount,
+                }}
+            />
         </div>
     )
 }

@@ -6,6 +6,7 @@
 
 import { Category, Product, UnitType } from "@/types/products"
 import { toTitleCase } from "@/lib/utils"
+import type { CatalogSort } from "./types"
 
 /**
  * Obtiene el nombre de la categoría padre.
@@ -120,6 +121,47 @@ export function formatStock(product: Product): string {
 export function formatProductCount(count: number): string {
     return `${count} producto${count !== 1 ? "s" : ""}`
 }
+
+/**
+ * Paleta de tonos para la cabecera visual de las cards del catálogo.
+ * El color se deriva de la categoría raíz del producto.
+ */
+export type CategoryTone =
+    | "violet"
+    | "pink"
+    | "zinc"
+    | "fuchsia"
+    | "yellow"
+    | "indigo"
+
+const CATEGORY_TONES: CategoryTone[] = [
+    "violet",
+    "pink",
+    "zinc",
+    "fuchsia",
+    "yellow",
+    "indigo",
+]
+
+/**
+ * Devuelve un tono estable a partir del id de la categoría raíz, para
+ * que productos de la misma categoría compartan color en el catálogo.
+ */
+export function getCategoryTone(rootId: number | undefined): CategoryTone {
+    if (rootId === undefined) return "zinc"
+    return CATEGORY_TONES[Math.abs(rootId) % CATEGORY_TONES.length]
+}
+
+/**
+ * Opciones de orden del catálogo: fuente única para el select (label)
+ * y el ordenamiento (value).
+ */
+export const CATALOG_SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
+    { value: "recent", label: "Más recientes" },
+    { value: "oldest", label: "Más antiguos" },
+    { value: "price-asc", label: "Precio: menor a mayor" },
+    { value: "price-desc", label: "Precio: mayor a menor" },
+]
 
 /**
  * Resumen de métricas del catálogo de productos, para las cards

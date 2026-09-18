@@ -205,3 +205,25 @@ export async function getCategoriesService(): Promise<Category[]> {
     await delay()
     return [...MOCK_CATEGORIES]
 }
+
+/**
+ * Ajusta el stock actual de un producto por un delta (positivo o
+ * negativo), sin dejarlo por debajo de 0. En el backend real lo
+ * resolverá el endpoint de entradas de forma atómica; acá se mantiene
+ * desacoplado para que los módulos compartan el mismo stock en memoria.
+ */
+export async function adjustProductStockService(
+    id: number,
+    delta: number
+): Promise<Product> {
+    await delay(200)
+    const index = MOCK_PRODUCTS.findIndex((p) => p.id === id)
+    if (index === -1) throw new Error("Producto no encontrado")
+
+    const current = MOCK_PRODUCTS[index]
+    MOCK_PRODUCTS[index] = {
+        ...current,
+        currentStock: Math.max(0, current.currentStock + delta),
+    }
+    return MOCK_PRODUCTS[index]
+}

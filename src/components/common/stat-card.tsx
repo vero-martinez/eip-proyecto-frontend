@@ -6,7 +6,7 @@
  */
 
 import { Card, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { cn } from "cn"
+import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
 
 export type StatTone = "violet" | "rose" | "slate" | "amber"
@@ -25,7 +25,7 @@ interface StatCardProps {
 const toneClasses: Record<StatTone, { card: string; panel: string; value?: string }> = {
     violet: {
         card: "border-violet-300 bg-violet-100/70 dark:border-violet-700 dark:bg-violet-950/50",
-        panel: "bg-violet-500 dark:bg-violet-600",
+        panel: "bg-violet-400 dark:bg-violet-600",
     },
     rose: {
         card: "border-rose-300 bg-rose-100/70 dark:border-rose-700 dark:bg-rose-950/50",
@@ -34,11 +34,11 @@ const toneClasses: Record<StatTone, { card: string; panel: string; value?: strin
     },
     slate: {
         card: "border-slate-300 bg-slate-100/70 dark:border-slate-700 dark:bg-slate-950/50",
-        panel: "bg-slate-500 dark:bg-slate-600",
+        panel: "bg-slate-300 dark:bg-slate-600",
     },
     amber: {
         card: "border-amber-300 bg-amber-100/70 dark:border-amber-700 dark:bg-amber-950/50",
-        panel: "bg-amber-500 dark:bg-amber-600",
+        panel: "bg-amber-200 dark:bg-amber-600",
     },
 }
 
@@ -67,11 +67,13 @@ export function StatCard({
                 >
                     <Icon className="size-7 text-white" />
                 </div>
-                <CardContent className="flex flex-1 flex-col justify-center p-5">
-                    <CardTitle className="font-medium">{label}</CardTitle>
+                {/* Agregado min-w-0 para permitir que los hijos con truncate funcionen correctamente en flex */}
+                <CardContent className="flex flex-1 min-w-0 flex-col justify-center p-5">
+                    <CardTitle className="font-medium truncate">{label}</CardTitle>
                     <p
+                        title={String(value)}
                         className={cn(
-                            "mt-1 text-2xl font-bold tracking-tight",
+                            "mt-1 text-xl font-bold tracking-tight truncate",
                             toneValue,
                             valueClassName
                         )}
@@ -79,7 +81,7 @@ export function StatCard({
                         {value}
                     </p>
                     {sublabel && (
-                        <CardDescription className="mt-1 text-foreground">
+                        <CardDescription className="mt-1 text-foreground truncate">
                             {sublabel}
                         </CardDescription>
                     )}

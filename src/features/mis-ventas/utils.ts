@@ -4,9 +4,13 @@
  * venta y método de pago.
  */
 
-import { toTitleCase, formatDate } from "@/lib/utils"
-import { METODOS_PAGO, TIPOS_VENTA } from "@/features/ventas/constants"
 import type { Venta, VentaItem } from "@/features/ventas/types"
+
+export {
+    getTipoVentaLabel,
+    getMetodoPagoLabel,
+    formatVentaDateTime,
+} from "@/features/ventas/utils"
 
 // --- Types ---
 
@@ -101,30 +105,6 @@ export function summarizeMisVentas(ventas: Venta[]): MisVentasResumen {
 }
 
 // --- Labels y Formato ---
-
-const getLabel = (
-  options: { value: string; label: string }[],
-  value: string
-) => options.find((opt) => opt.value === value)?.label ?? toTitleCase(value)
-
-/** Label legible del tipo de venta ("tienda" -> "Tienda"). */
-export const getTipoVentaLabel = (value: string) =>
-  getLabel(TIPOS_VENTA, value)
-
-/** Label legible del método de pago. */
-export const getMetodoPagoLabel = (value: string) =>
-  getLabel(METODOS_PAGO, value)
-
-/** Fecha y hora legibles de una venta (ej. "14/09/2026 · 16:00"). */
-export function formatVentaDateTime(isoDate: string): string {
-  const date = new Date(isoDate)
-  const hora = date.toLocaleTimeString("es-AR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  })
-  return `${formatDate(isoDate)} · ${hora}`
-}
 
 /** Resumen de las líneas de una venta (ej. "2 productos"). */
 export function formatVentaItems(items: VentaItem[]): string {

@@ -60,6 +60,11 @@ export function useVentaCart(products: Product[]) {
 
     // --- Acciones de Items ---
     const addItem = (product: Product) => {
+        if (step !== 0) {
+            toast.error("Regresar al paso 1 para agregar productos")
+            return
+        }
+
         if (!product.isActive) return
 
         const stock = getStock(product.id)

@@ -13,7 +13,6 @@ import {
     Store,
     Users,
     FileBarChart,
-    ScanBarcode,
     PackagePlus,
     PackageMinus,
     QrCode,
@@ -72,8 +71,7 @@ export const NAV_VENDEDOR: NavSection[] = [
     {
         title: "",
         items: [
-            { label: "Escanear", href: "/escanear", icon: ScanBarcode, description: "Escanear códigos QR para registrar ventas" },
-            { label: "Registrar Ventas", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas realizadas en el punto de venta" },
+            { label: "Punto de venta", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas: ferias, tienda y canales digitales" },
             { label: "Mis ventas", href: "/mis-ventas", icon: ClipboardList, description: "Visualizar el historial de mis ventas" },
             { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
         ],

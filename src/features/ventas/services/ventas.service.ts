@@ -10,120 +10,119 @@ import type { Venta, VentaItem } from "../types"
 import { computeTotals } from "../utils"
 import { adjustProductStockService } from "@/features/products/services/products.service"
 
-// ===== Mock data =====
+// --- Helpers & Mock Data ---
 
-/**
- * Genera una fecha ISO relativa a los días transcurridos desde hoy.
- */
-function daysAgo(days: number, hour = 16): string {
-    const date = new Date()
-    date.setDate(date.getDate() - days)
-    date.setHours(hour, 0, 0, 0)
-    return date.toISOString()
-}
+const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let mockId = 0
-function venta(
-    items: VentaItem[],
-    tipoVenta: string,
-    metodoPago: string,
-    responsable: string,
-    days: number
+
+function daysAgo(days: number, hour = 16): string {
+  const date = new Date()
+  date.setDate(date.getDate() - days)
+  date.setHours(hour, 0, 0, 0)
+  return date.toISOString()
+}
+
+function createVenta(
+  items: VentaItem[],
+  tipoVenta: string,
+  metodoPago: string,
+  responsable: string,
+  days: number,
+  opts: { pagoCon?: number; vuelto?: number; hour?: number } = {}
 ): Venta {
-    mockId += 1
-    const { subtotal, total } = computeTotals(items)
-    return {
-        id: mockId,
-        items,
-        tipoVenta,
-        metodoPago,
-        subtotal,
-        total,
-        responsable,
-        createdAt: daysAgo(days),
-    }
+  mockId += 1
+  const { subtotal, total } = computeTotals(items)
+  return {
+    id: mockId,
+    folio: `BLT-${String(mockId).padStart(4, "0")}`,
+    items,
+    tipoVenta,
+    metodoPago,
+    subtotal,
+    total,
+    pagoCon: opts.pagoCon,
+    vuelto: opts.vuelto,
+    responsable,
+    createdAt: daysAgo(days, opts.hour ?? 16),
+  }
 }
 
 const MOCK_VENTAS: Venta[] = [
-    venta(
-        [
-            { productId: 4, name: "Amatista pulida S", sku: "EIP-0001", unitType: "UNIDAD", unitPrice: 60, quantity: 2 },
-            { productId: 6, name: "Anillo citrino plata", sku: "EIP-0007", unitType: "UNIDAD", unitPrice: 70, quantity: 1 },
-        ],
-        "tienda",
-        "billetera-digital",
-        "Vendedor Mock",
-        1
-    ),
-    venta(
-        [
-            { productId: 1, name: "Pulsera Amatista 8mm", sku: "PUL-AMAT-8MM", unitType: "UNIDAD", unitPrice: 25, quantity: 4 },
-        ],
-        "feria",
-        "efectivo",
-        "Vendedor Mock",
-        3
-    ),
-    venta(
-        [
-            { productId: 2, name: "Pirita Metálica en Bruto", sku: "PIR-BRUTO-KG", unitType: "KILOGRAMO", unitPrice: 45, quantity: 1.5 },
-        ],
-        "digital",
-        "efectivo",
-        "Admin Mock",
-        6
-    ),
+  createVenta(
+    [
+      { productId: 4, name: "Amatista pulida S", sku: "EIP-0001", unitType: "UNIDAD", unitPrice: 60, quantity: 2 },
+      { productId: 6, name: "Anillo citrino plata", sku: "EIP-0007", unitType: "UNIDAD", unitPrice: 70, quantity: 1 },
+    ],
+    "tienda",
+    "billetera-digital",
+    "Vendedor Mock",
+    1
+  ),
+  createVenta(
+    [{ productId: 1, name: "Pulsera Amatista 8mm", sku: "PUL-AMAT-8MM", unitType: "UNIDAD", unitPrice: 25, quantity: 4 }],
+    "feria",
+    "efectivo",
+    "Vendedor Mock",
+    3
+  ),
+  createVenta(
+    [{ productId: 2, name: "Pirita Metálica en Bruto", sku: "PIR-BRUTO-KG", unitType: "KILOGRAMO", unitPrice: 45, quantity: 1.5 }],
+    "digital",
+    "efectivo",
+    "Admin Mock",
+    6
+  ),
+  createVenta(
+    [
+      { productId: 1, name: "Pulsera Amatista 8mm", sku: "PUL-AMAT-8MM", unitType: "UNIDAD", unitPrice: 25, quantity: 3 },
+      { productId: 6, name: "Anillo citrino plata", sku: "EIP-0007", unitType: "UNIDAD", unitPrice: 70, quantity: 1 },
+    ],
+    "tienda",
+    "efectivo",
+    "Vendedor Mock",
+    0,
+    { hour: 11, pagoCon: 150, vuelto: 5 }
+  ),
 ]
 
-// Simula la latencia de red.
-const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
+// --- Service Methods ---
 
-// ===== Service =====
-
-/**
- * Obtiene las ventas ordenadas de la más reciente a la más antigua.
- */
 export async function getVentasService(): Promise<Venta[]> {
-    await delay()
-    return [...MOCK_VENTAS].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
+  await delay()
+  return [...MOCK_VENTAS].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
 }
 
-/**
- * Registra una venta completa: guarda el snapshot de la venta y descuenta
- * del stock la cantidad vendida de cada producto.
- */
 export async function registerVentaService(data: {
-    items: VentaItem[]
-    tipoVenta: string
-    metodoPago: string
-    responsable: string
-    pagoCon?: number
-    vuelto?: number
+  items: VentaItem[]
+  tipoVenta: string
+  metodoPago: string
+  responsable: string
+  pagoCon?: number
+  vuelto?: number
 }): Promise<Venta> {
-    await delay()
+  await delay()
 
-    const { subtotal, total } = computeTotals(data.items)
-    const newVenta: Venta = {
-        id: mockId + 1,
-        items: data.items,
-        tipoVenta: data.tipoVenta,
-        metodoPago: data.metodoPago,
-        subtotal,
-        total,
-        pagoCon: data.pagoCon,
-        vuelto: data.vuelto,
-        responsable: data.responsable,
-        createdAt: new Date().toISOString(),
-    }
-    mockId += 1
-    MOCK_VENTAS.push(newVenta)
+  const { subtotal, total } = computeTotals(data.items)
+  mockId += 1
 
-    // Descuenta stock de cada linea vendida.
-    for (const item of data.items) {
-        await adjustProductStockService(item.productId, -item.quantity)
-    }
+  const newVenta: Venta = {
+    id: mockId,
+    folio: `BLT-${String(mockId).padStart(4, "0")}`,
+    subtotal,
+    total,
+    createdAt: new Date().toISOString(),
+    ...data,
+  }
 
-    return newVenta
+  MOCK_VENTAS.push(newVenta)
+
+  // Descuenta stock de cada producto vendido
+  for (const item of data.items) {
+    await adjustProductStockService(item.productId, -item.quantity)
+  }
+
+  return newVenta
 }

@@ -14,8 +14,10 @@
 import jsPDF from "jspdf"
 import { toDataURL } from "qrcode"
 
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, downloadBlob } from "@/lib/utils"
 import type { Product } from "@/types/products"
+
+export { downloadBlob }
 
 // ==========================================
 // CONSTANTES DE EXPORTACIÓN Y CONFIGURACIÓN
@@ -236,21 +238,6 @@ export async function buildAllLabelsPdf(products: Product[]): Promise<Blob> {
 // ==========================================
 // UTILIDADES DE ARCHIVOS Y DESCARGA
 // ==========================================
-
-/**
- * Dispara la descarga de un Blob en el navegador (se revoca la URL
- * temporal al terminar).
- */
-export function downloadBlob(blob: Blob, name: string): void {
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = name
-    document.body.appendChild(anchor)
-    anchor.click()
-    anchor.remove()
-    URL.revokeObjectURL(url)
-}
 
 /**
  * Nombre de archivo para el PDF descargado. Sanitiza el SKU para

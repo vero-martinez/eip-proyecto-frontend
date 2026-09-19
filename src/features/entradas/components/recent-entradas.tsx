@@ -7,7 +7,7 @@
  * getLastDistinctProducts().
  */
 
-import { AlertTriangle, Calendar, History, Inbox, Package, Truck } from "lucide-react"
+import { AlertTriangle, Calendar, History, Inbox, Package, Truck, User } from "lucide-react"
 
 import {
     Card,
@@ -64,7 +64,7 @@ export function RecentEntradas({
                 {recent.length ? (
                     <ul className="flex flex-col gap-2">
                         {recent.map(
-                            ({ product, totalQuantity, lastDate, proveedorId }) => {
+                            ({ product, totalQuantity, lastDate, proveedorId, responsable }) => {
                                 const proveedorName = getProveedorName(
                                     proveedorId,
                                     proveedores
@@ -112,6 +112,15 @@ export function RecentEntradas({
                                                             <Truck className="size-3" aria-hidden="true" />
                                                             <span className="truncate max-w-[120px] sm:max-w-[160px]">
                                                                 {proveedorName}
+                                                            </span>
+                                                        </span>
+                                                    )}
+
+                                                    {responsable && (
+                                                        <span className="inline-flex items-center gap-1 border-l border-border pl-2">
+                                                            <User className="size-3" aria-hidden="true" />
+                                                            <span className="truncate max-w-[120px] sm:max-w-[160px]">
+                                                                {responsable}
                                                             </span>
                                                         </span>
                                                     )}

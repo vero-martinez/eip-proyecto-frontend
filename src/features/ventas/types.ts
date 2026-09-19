@@ -27,6 +27,8 @@ export interface Venta {
     metodoPago: string
     subtotal: number
     total: number
+    /** Folio correlativo de la boleta (ej. "BLT-0001"). */
+    folio: string
     /** Solo aplica cuando metodoPago es "efectivo": dinero recibido. */
     pagoCon?: number
     /** Diferencia pagoCon - total, cuando es >= 0. */

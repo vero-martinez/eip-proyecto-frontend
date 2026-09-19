@@ -121,11 +121,9 @@ export function useVentaCart(products: Product[]) {
         const current = items.find((i) => i.productId === productId)
         if (!current) return
 
-        const next = round2(current.quantity - getStep(current.unitType))
-        if (next <= 0) {
-            removeItem(productId)
-            return
-        }
+        const next = round2(
+            Math.max(current.quantity - getStep(current.unitType), 0)
+        )
 
         setItems((prev) =>
             prev.map((i) => (i.productId === productId ? { ...i, quantity: next } : i))
@@ -137,11 +135,6 @@ export function useVentaCart(products: Product[]) {
 
         const stock = getStock(productId)
         const next = round2(Math.min(Math.max(quantity, 0), stock))
-
-        if (next === 0) {
-            removeItem(productId)
-            return
-        }
 
         setItems((prev) =>
             prev.map((i) => (i.productId === productId ? { ...i, quantity: next } : i))
@@ -158,7 +151,10 @@ export function useVentaCart(products: Product[]) {
     }
 
     // --- Flujo y Navegación ---
-    const goNext = () => setStep((v) => Math.min(v + 1, 2))
+    const goNext = () => {
+        if (items.length === 0 || items.some((i) => i.quantity <= 0)) return
+        setStep((v) => Math.min(v + 1, 2))
+    }
     const goBack = () => setStep((v) => Math.max(v - 1, 0))
 
     const confirmPago = pagoMethods.handleSubmit((data) => {

@@ -30,7 +30,8 @@ function entry(
     quantity: number,
     days: number,
     notes?: string,
-    proveedorId?: number
+    proveedorId?: number,
+    responsable?: string
 ): StockEntry {
     mockId += 1
     return {
@@ -38,22 +39,23 @@ function entry(
         productId,
         quantity,
         proveedorId,
+        responsable,
         createdAt: daysAgo(days),
     }
 }
 
 let MOCK_ENTRIES: StockEntry[] = [
-    entry(5, 6, 1, "Reposición de amatistas pulidas", 2),
-    entry(4, 12, 2, "Reposición de amatistas pulidas", 2),
-    entry(6, 15, 3),
-    entry(1, 40, 5),
-    entry(7, 5, 7, undefined, 3),
-    entry(7, 10, 9, undefined, 3),
-    entry(2, 20, 12, "Compra a proveedor", 1),
-    entry(3, 50, 20, "Lote de exportación"),
-    entry(4, 8, 25),
-    entry(8, 10, 45, undefined, 1),
-    entry(6, 5, 60),
+    entry(5, 6, 1, "Reposición de amatistas pulidas", 2, "Taller Mock"),
+    entry(4, 12, 2, "Reposición de amatistas pulidas", 2, "Carlos Ríos"),
+    entry(6, 15, 3, undefined, undefined, "María Gómez"),
+    entry(1, 40, 5, undefined, undefined, "Taller Mock"),
+    entry(7, 5, 7, undefined, 3, "Carlos Ríos"),
+    entry(7, 10, 9, undefined, 3, "María Gómez"),
+    entry(2, 20, 12, "Compra a proveedor", 1, "Taller Mock"),
+    entry(3, 50, 20, "Lote de exportación", undefined, "Carlos Ríos"),
+    entry(4, 8, 25, undefined, undefined, "María Gómez"),
+    entry(8, 10, 45, undefined, 1, "Taller Mock"),
+    entry(6, 5, 60, undefined, undefined, "Carlos Ríos"),
 ]
 
 // Simula la latencia de red.
@@ -87,6 +89,7 @@ export async function registerStockEntryService(data: {
     quantity: number
     notes?: string
     proveedorId?: number
+    responsable?: string
 }): Promise<StockEntry> {
     await delay()
     const newEntry: StockEntry = {
@@ -94,6 +97,7 @@ export async function registerStockEntryService(data: {
         productId: data.productId,
         quantity: data.quantity,
         proveedorId: data.proveedorId,
+        responsable: data.responsable,
         createdAt: new Date().toISOString(),
     }
     mockId += 1

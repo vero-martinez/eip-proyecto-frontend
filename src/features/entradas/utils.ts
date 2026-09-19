@@ -49,10 +49,11 @@ export function getLastDistinctProducts(
     totalQuantity: number
     lastDate: string
     proveedorId: number | undefined
+    responsable: string | undefined
 }[] {
     const byProduct = new Map<
         number,
-        { total: number; last: number; proveedorId?: number }
+        { total: number; last: number; proveedorId?: number; responsable?: string }
     >()
 
     for (const item of entries) {
@@ -63,23 +64,26 @@ export function getLastDistinctProducts(
         if (time > current.last) {
             current.last = time
             current.proveedorId = item.proveedorId
+            current.responsable = item.responsable
         }
         current.total += item.quantity
         byProduct.set(item.productId, current)
     }
 
     return [...byProduct.entries()]
-        .map(([productId, { total, last, proveedorId }]) => ({
+        .map(([productId, { total, last, proveedorId, responsable }]) => ({
             product: products.find((p) => p.id === productId),
             totalQuantity: total,
             lastDate: new Date(last).toISOString(),
             proveedorId,
+            responsable,
         }))
         .filter((item): item is {
             product: Product
             totalQuantity: number
             lastDate: string
             proveedorId: number | undefined
+            responsable: string | undefined
         } => item.product !== undefined)
         .sort(
             (a, b) =>

@@ -19,4 +19,6 @@ export interface StockEntry {
     quantity: number
     createdAt: string
     proveedorId?: number
+    /** Nombre de la persona que registró la entrada. */
+    responsable?: string
 }

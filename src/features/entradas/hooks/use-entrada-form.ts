@@ -22,11 +22,14 @@ import { useRegisterStockEntry } from "./use-register-entrada"
 interface UseStockEntryFormParams {
     products: Product[]
     proveedores: Proveedor[]
+    /** Nombre de la persona que registra la entrada (usuario logueado). */
+    responsable: string
 }
 
 export function useStockEntryForm({
     products,
     proveedores,
+    responsable,
 }: UseStockEntryFormParams) {
     const registerStockEntry = useRegisterStockEntry()
 
@@ -68,15 +71,18 @@ export function useStockEntryForm({
 
     const onSubmit = methods.handleSubmit((data) => {
         const product = products.find((p) => p.id === data.productId)
-        registerStockEntry.mutate(data, {
-            onSuccess: () => {
-                toast.success(`Entrada registrada: ${product?.name ?? "producto"}`)
-                reset()
-            },
-            onError: (error) => {
-                toast.error(error.message)
-            },
-        })
+        registerStockEntry.mutate(
+            { ...data, responsable },
+            {
+                onSuccess: () => {
+                    toast.success(`Entrada registrada: ${product?.name ?? "producto"}`)
+                    reset()
+                },
+                onError: (error) => {
+                    toast.error(error.message)
+                },
+            }
+        )
     })
 
     return {

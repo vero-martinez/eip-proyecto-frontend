@@ -11,6 +11,7 @@
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/providers/auth-provider"
 import { useProducts } from "@/features/products/hooks/use-products"
 import { useStockEntries } from "@/features/entradas/hooks/use-entradas"
 import { useProveedores } from "@/features/entradas/hooks/use-proveedores"
@@ -19,6 +20,7 @@ import { EntradaForm } from "@/features/entradas/components/entrada-form"
 import { RecentEntradas } from "@/features/entradas/components/recent-entradas"
 
 export default function EntradasPage() {
+    const { usuario } = useAuth()
     const {
         data: products,
         isLoading: isLoadingProducts,
@@ -107,6 +109,7 @@ export default function EntradasPage() {
                 <EntradaForm
                     products={productList}
                     proveedores={proveedorList}
+                    responsable={usuario?.nombre ?? "Sin asignar"}
                 />
                 <RecentEntradas
                     products={productList}

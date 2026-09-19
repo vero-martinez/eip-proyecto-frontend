@@ -34,9 +34,16 @@ interface EntradaFormProps {
     proveedores: Proveedor[]
     /** Nombre de la persona que registra la entrada (usuario logueado). */
     responsable: string
+    /** Id de un producto preseleccionado (ej. desde Alertas). */
+    initialProductId?: number
 }
 
-export function EntradaForm({ products, proveedores, responsable }: EntradaFormProps) {
+export function EntradaForm({
+    products,
+    proveedores,
+    responsable,
+    initialProductId,
+}: EntradaFormProps) {
     const {
         methods,
         isSubmitting,
@@ -46,7 +53,7 @@ export function EntradaForm({ products, proveedores, responsable }: EntradaFormP
         handleProductChange,
         handleProveedorChange,
         onSubmit,
-    } = useStockEntryForm({ products, proveedores, responsable })
+    } = useStockEntryForm({ products, proveedores, responsable, initialProductId })
 
     const {
         register,

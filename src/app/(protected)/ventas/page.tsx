@@ -33,6 +33,8 @@ import { VentaCart } from "@/features/ventas/components/venta-cart"
 import { ScanDialog } from "@/features/ventas/components/scan-dialog"
 import { useVentaCart } from "@/features/ventas/hooks/use-venta-cart"
 import { useRegisterVenta } from "@/features/ventas/hooks/use-register-venta"
+import { VentaBoletaDialog } from "@/features/ventas/components/boleta-dialog"
+import type { Venta } from "@/features/ventas/types"
 
 export default function VentasPage() {
     const { usuario } = useAuth()
@@ -60,6 +62,7 @@ export default function VentasPage() {
     const filters = useCatalogFilters(productList, categoryList)
     const [scanOpen, setScanOpen] = useState(false)
     const [cartSheetOpen, setCartSheetOpen] = useState(false)
+    const [boletaVenta, setBoletaVenta] = useState<Venta | null>(null)
 
     const handleConfirmSale = () => {
         const pagoData = cart.getPagoData()
@@ -91,8 +94,9 @@ export default function VentasPage() {
                 vuelto,
             },
             {
-                onSuccess: () => {
+                onSuccess: (data) => {
                     toast.success("Venta registrada correctamente")
+                    setBoletaVenta(data)
                     cart.resetCart()
                     setCartSheetOpen(false)
                 },
@@ -248,6 +252,13 @@ export default function VentasPage() {
                 onOpenChange={setScanOpen}
                 products={productList}
                 onProductScanned={handleScannedProduct}
+            />
+
+            <VentaBoletaDialog
+                venta={boletaVenta}
+                onOpenChange={(open) => {
+                    if (!open) setBoletaVenta(null)
+                }}
             />
         </main>
     )

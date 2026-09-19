@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select"
 import { PaginationBar } from "@/components/common/pagination-bar"
 import { ClearFiltersButton } from "@/components/common/clear-filters-button"
+import { VentaBoletaDialog } from "@/features/ventas/components/boleta-dialog"
 import { cn, formatCurrency } from "@/lib/utils"
 import type { Venta } from "@/features/ventas/types"
 import { TIPOS_VENTA } from "@/features/ventas/constants"
@@ -124,6 +125,7 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
     const [desde, setDesde] = useState("")
     const [hasta, setHasta] = useState("")
     const [page, setPage] = useState(0)
+    const [boletaSeleccionada, setBoletaSeleccionada] = useState<Venta | null>(null)
 
     const hasRange = Boolean(desde || hasta)
     const hasFilters = Boolean(tipo !== "all" || hasRange)
@@ -156,7 +158,8 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
     }
 
     return (
-        <Card className="overflow-hidden border-violet-200/60 shadow-md dark:border-violet-900/40">
+        <>
+            <Card className="overflow-hidden border-violet-200/60 shadow-md dark:border-violet-900/40">
             <CardHeader className="gap-4 pb-4">
                 {/* Controles de filtro y ordenamiento */}
                 <div 
@@ -387,6 +390,7 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                                             type="button"
                                             variant="outline"
                                             size="sm"
+                                            onClick={() => setBoletaSeleccionada(venta)}
                                             aria-label={`Ver boleta número ${venta.folio}`}
                                             className="h-8 gap-1.5 rounded-xl bg-violet-600 text-xs font-bold text-white hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-700"
                                         >
@@ -419,6 +423,14 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                     />
                 </div>
             )}
-        </Card>
+            </Card>
+
+            <VentaBoletaDialog
+                venta={boletaSeleccionada}
+                onOpenChange={(open) => {
+                    if (!open) setBoletaSeleccionada(null)
+                }}
+            />
+        </>
     )
 }

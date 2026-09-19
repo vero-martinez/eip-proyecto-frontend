@@ -24,19 +24,30 @@ interface UseStockEntryFormParams {
     proveedores: Proveedor[]
     /** Nombre de la persona que registra la entrada (usuario logueado). */
     responsable: string
+    /** Id de un producto preseleccionado (ej. desde Alertas). */
+    initialProductId?: number
 }
 
 export function useStockEntryForm({
     products,
     proveedores,
     responsable,
+    initialProductId,
 }: UseStockEntryFormParams) {
     const registerStockEntry = useRegisterStockEntry()
+
+    const initialProduct =
+        initialProductId !== undefined
+            ? products.find(
+                  (product) =>
+                      product.id === initialProductId && product.isActive
+              )
+            : undefined
 
     const methods = useForm<StockEntryFormData>({
         resolver: zodResolver(stockEntrySchema),
         defaultValues: {
-            productId: undefined,
+            productId: initialProduct?.id ?? undefined,
             quantity: undefined,
             proveedorId: undefined,
         },

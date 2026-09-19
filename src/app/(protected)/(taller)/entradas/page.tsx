@@ -6,8 +6,13 @@
  * Container: junta los hooks de datos (useProducts, useStockEntries)
  * con los componentes armados en features/entradas: stats, la card de
  * registro y la lista de últimas entradas.
+ *
+ * Lee el query param "producto" (ej. desde Alertas) para pre-seleccionar
+ * un producto en el formulario de registro.
  */
 
+import { Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -19,7 +24,14 @@ import { EntradasStats } from "@/features/entradas/components/entradas-stats"
 import { EntradaForm } from "@/features/entradas/components/entrada-form"
 import { RecentEntradas } from "@/features/entradas/components/recent-entradas"
 
-export default function EntradasPage() {
+function EntradasPageContent() {
+    const searchParams = useSearchParams()
+    const rawProductId = searchParams.get("producto")
+    const initialProductId =
+        rawProductId && /^\d+$/.test(rawProductId)
+            ? Number(rawProductId)
+            : undefined
+
     const { usuario } = useAuth()
     const {
         data: products,
@@ -110,6 +122,7 @@ export default function EntradasPage() {
                     products={productList}
                     proveedores={proveedorList}
                     responsable={usuario?.nombre ?? "Sin asignar"}
+                    initialProductId={initialProductId}
                 />
                 <RecentEntradas
                     products={productList}
@@ -118,5 +131,14 @@ export default function EntradasPage() {
                 />
             </div>
         </main>
+    )
+}
+
+export default function EntradasPage() {
+    // useSearchParams requiere un boundary de Suspense para el prerender.
+    return (
+        <Suspense fallback={null}>
+            <EntradasPageContent />
+        </Suspense>
     )
 }

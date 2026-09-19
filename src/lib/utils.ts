@@ -32,3 +32,15 @@ export function toTitleCase(text: string): string {
 export function formatDate(date: string): string {
     return new Intl.DateTimeFormat("es-AR").format(new Date(date))
 }
+
+// Dispara la descarga de un Blob en el navegador (se revoca la URL temporal al terminar)
+export function downloadBlob(blob: Blob, name: string): void {
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = name
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+}

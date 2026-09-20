@@ -16,7 +16,6 @@ export interface MovementRecord {
     reason?: string
     unitSoldPrice?: number
     unitCostPrice?: number
-    batchCode?: string | null
     wasteType?: string
     saleGroupId?: number
     proveedor?: string

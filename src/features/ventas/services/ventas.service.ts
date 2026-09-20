@@ -9,6 +9,7 @@
 import type { Venta, VentaItem } from "../types"
 import { computeTotals } from "../utils"
 import { adjustProductStockService } from "@/features/products/services/products.service"
+import { getProductsService } from "@/features/products/services/products.service"
 
 // --- Helpers & Mock Data ---
 
@@ -122,6 +123,25 @@ export async function registerVentaService(data: {
   // Descuenta stock de cada producto vendido
   for (const item of data.items) {
     await adjustProductStockService(item.productId, -item.quantity)
+  }
+
+  // Escribe una fila por item en el ledger de movimientos, agrupadas
+  // por el id de la venta (sale_group_id), como hará el backend.
+  const products = await getProductsService()
+  const costById = new Map(products.map((product) => [product.id, product.costPrice]))
+  const { appendMovimiento } = await import(
+    "@/features/movimientos/services/movimientos.service"
+  )
+  for (const item of data.items) {
+    await appendMovimiento({
+      productId: item.productId,
+      responsable: data.responsable,
+      movementType: "venta",
+      quantity: -item.quantity,
+      unitSoldPrice: item.unitPrice,
+      unitCostPrice: costById.get(item.productId),
+      saleGroupId: newVenta.id,
+    })
   }
 
   return newVenta

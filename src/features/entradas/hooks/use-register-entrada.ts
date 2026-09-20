@@ -17,6 +17,7 @@ export function useRegisterStockEntry() {
             // El registro suma stock al producto: refrescar ambos dominios.
             queryClient.invalidateQueries({ queryKey: ["stock-entries"] })
             queryClient.invalidateQueries({ queryKey: ["products"] })
+            queryClient.invalidateQueries({ queryKey: ["movimientos"] })
         },
     })
 }

@@ -17,6 +17,7 @@ export function useRegisterMerma() {
             // El registro descuenta stock del producto: refrescar ambos dominios.
             queryClient.invalidateQueries({ queryKey: ["mermas"] })
             queryClient.invalidateQueries({ queryKey: ["products"] })
+            queryClient.invalidateQueries({ queryKey: ["movimientos"] })
         },
     })
 }

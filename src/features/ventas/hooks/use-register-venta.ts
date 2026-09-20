@@ -15,6 +15,7 @@ export function useRegisterVenta() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["ventas"] })
             queryClient.invalidateQueries({ queryKey: ["products"] })
+            queryClient.invalidateQueries({ queryKey: ["movimientos"] })
         },
     })
 }

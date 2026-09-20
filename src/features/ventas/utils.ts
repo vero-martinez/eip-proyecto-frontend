@@ -1,6 +1,8 @@
 import { UNIT_OPTIONS } from "@/features/products/utils"
+import { toTitleCase, formatDate } from "@/lib/utils"
 import type { Product, UnitType } from "@/types/products"
 
+import { METODOS_PAGO, TIPOS_VENTA } from "./constants"
 import type { VentaItem, VentasTotals } from "./types"
 
 /**
@@ -48,4 +50,32 @@ export function formatSaleQuantity(
         unitType
 
     return `${quantity} ${symbol}`
+}
+
+// --- Labels y Formato de venta (compartidos con boleta y Mis ventas) ---
+
+const getLabel = (
+    options: { value: string; label: string }[],
+    value: string
+) => options.find((opt) => opt.value === value)?.label ?? toTitleCase(value)
+
+/** Label legible del tipo de venta ("tienda" -> "Tienda"). */
+export function getTipoVentaLabel(value: string): string {
+    return getLabel(TIPOS_VENTA, value)
+}
+
+/** Label legible del método de pago. */
+export function getMetodoPagoLabel(value: string): string {
+    return getLabel(METODOS_PAGO, value)
+}
+
+/** Fecha y hora legibles de una venta (ej. "14/09/2026 · 16:00"). */
+export function formatVentaDateTime(isoDate: string): string {
+    const date = new Date(isoDate)
+    const hora = date.toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    })
+    return `${formatDate(isoDate)} · ${hora}`
 }

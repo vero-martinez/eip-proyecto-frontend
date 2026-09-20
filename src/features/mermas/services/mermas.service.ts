@@ -4,6 +4,7 @@
 
 import type { Merma } from "../types"
 import { adjustProductStockService } from "@/features/products/services/products.service"
+import { getProductByIdService } from "@/features/products/services/products.service"
 
 // ===== Mock data =====
 
@@ -102,6 +103,24 @@ export async function registerMermaService(data: {
 
     MOCK_MERMAS = [newMerma, ...MOCK_MERMAS]
     await adjustProductStockService(data.productId, -data.quantity)
+
+    // Escribe la fila en el ledger de movimientos (como hará el backend).
+    const product = await getProductByIdService(data.productId).catch(
+        () => null
+    )
+    const { appendMovimiento } = await import(
+        "@/features/movimientos/services/movimientos.service"
+    )
+    await appendMovimiento({
+        productId: data.productId,
+        responsable: data.responsable,
+        movementType: "merma",
+        quantity: -data.quantity,
+        reason: data.detalle,
+        wasteType: data.motivo,
+        unitSoldPrice: product?.salePrice,
+        unitCostPrice: product?.costPrice,
+    })
 
     return newMerma
 }

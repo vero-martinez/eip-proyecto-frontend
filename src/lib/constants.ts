@@ -47,7 +47,7 @@ export const NAV_ADMIN: NavSection[] = [
         items: [
             { label: "Productos", href: "/productos", icon: Boxes, description: "Crear, editar y eliminar productos del catálogo" },
             { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
-            { label: "Movimientos", href: "/movimientos", icon: ClipboardList, description: "Historial demovimientos de inventario" },
+            { label: "Movimientos", href: "/movimientos", icon: ClipboardList, description: "Historial de movimientos de inventario" },
 
         ],
     },

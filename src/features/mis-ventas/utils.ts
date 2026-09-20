@@ -1,0 +1,112 @@
+/**
+ * Utilidades del módulo "Mis ventas": ayudantes de fecha (hoy/semana,
+ * rango), métricas para las cards y resolución de labels de tipo de
+ * venta y método de pago.
+ */
+
+import type { Venta, VentaItem } from "@/features/ventas/types"
+
+export {
+    getTipoVentaLabel,
+    getMetodoPagoLabel,
+    formatVentaDateTime,
+} from "@/features/ventas/utils"
+
+// --- Types ---
+
+export interface PeriodSummary {
+  count: number
+  total: number
+}
+
+export interface MisVentasResumen {
+  hoy: PeriodSummary
+  semana: PeriodSummary
+}
+
+// --- Fechas (Hora local) ---
+
+/** Inicio del día en hora local (00:00:00). */
+const startOfDayLocal = (date: Date): Date =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+/** Compara si dos fechas caen el mismo día calendario (hora local). */
+export function isSameLocalDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
+/** Lunes 00:00 de la semana de la fecha dada (hora local). */
+export function startOfWeekMonday(date: Date): Date {
+  const monday = startOfDayLocal(date)
+  monday.setDate(monday.getDate() - ((date.getDay() + 6) % 7))
+  return monday
+}
+
+/** Parsea "YYYY-MM-DD" como fecha local al inicio del día. */
+export function parseDateInput(value: string): Date {
+  const [year, month, day] = value.split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
+/** Indica si una fecha ISO cae dentro de un rango [desde, hasta] inclusivo. */
+export function isInDateRange(
+  isoDate: string,
+  desde?: string,
+  hasta?: string
+): boolean {
+  const date = new Date(isoDate)
+  if (Number.isNaN(date.getTime())) return false
+
+  if (desde && date < startOfDayLocal(parseDateInput(desde))) return false
+
+  if (hasta) {
+    const hastaEnd = startOfDayLocal(parseDateInput(hasta))
+    hastaEnd.setDate(hastaEnd.getDate() + 1)
+    if (date >= hastaEnd) return false
+  }
+
+  return true
+}
+
+// --- Métricas ---
+
+/**
+ * Calcula las métricas de "hoy" y "esta semana" (lunes a hoy) en un
+ * solo recorrido sobre las ventas.
+ */
+export function summarizeMisVentas(ventas: Venta[]): MisVentasResumen {
+  const now = new Date()
+  const weekStart = startOfWeekMonday(now)
+
+  const resumen: MisVentasResumen = {
+    hoy: { count: 0, total: 0 },
+    semana: { count: 0, total: 0 },
+  }
+
+  for (const venta of ventas) {
+    const fecha = new Date(venta.createdAt)
+
+    if (fecha >= weekStart) {
+      resumen.semana.count += 1
+      resumen.semana.total += venta.total
+    }
+
+    if (isSameLocalDay(fecha, now)) {
+      resumen.hoy.count += 1
+      resumen.hoy.total += venta.total
+    }
+  }
+
+  return resumen
+}
+
+// --- Labels y Formato ---
+
+/** Resumen de las líneas de una venta (ej. "2 productos"). */
+export function formatVentaItems(items: VentaItem[]): string {
+  return `${items.length} producto${items.length !== 1 ? "s" : ""}`
+}

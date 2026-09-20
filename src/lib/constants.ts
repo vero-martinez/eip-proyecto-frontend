@@ -13,13 +13,14 @@ import {
     Store,
     Users,
     FileBarChart,
-    ScanBarcode,
     PackagePlus,
     PackageMinus,
     QrCode,
     Bell,
     type LucideIcon,
 } from "lucide-react"
+
+import type { Rol } from "@/types/auth"
 
 export interface NavItem {
     label: string
@@ -70,8 +71,7 @@ export const NAV_VENDEDOR: NavSection[] = [
     {
         title: "",
         items: [
-            { label: "Escanear", href: "/escanear", icon: ScanBarcode, description: "Escanear códigos QR para registrar ventas" },
-            { label: "Registrar Ventas", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas realizadas en el punto de venta" },
+            { label: "Punto de venta", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas: ferias, tienda y canales digitales" },
             { label: "Mis ventas", href: "/mis-ventas", icon: ClipboardList, description: "Visualizar el historial de mis ventas" },
             { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
         ],
@@ -90,3 +90,14 @@ export const NAV_TALLER: NavSection[] = [
         ],
     },
 ]
+
+/**
+ * Secciones de navegación por rol. Permite que un layout compartido
+ * (ej. el de Catálogo) renderice el sidebar correcto según el usuario
+ * sin duplicar la selección en cada layout.
+ */
+export const NAV_BY_ROL: Record<Rol, NavSection[]> = {
+    admin: NAV_ADMIN,
+    vendedor: NAV_VENDEDOR,
+    taller: NAV_TALLER,
+}

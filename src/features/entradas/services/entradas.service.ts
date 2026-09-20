@@ -4,6 +4,7 @@
 
 import type { Proveedor, StockEntry } from "../types"
 import { adjustProductStockService } from "@/features/products/services/products.service"
+import { getProductByIdService } from "@/features/products/services/products.service"
 
 // ===== Mock data =====
 
@@ -104,6 +105,28 @@ export async function registerStockEntryService(data: {
 
     MOCK_ENTRIES = [newEntry, ...MOCK_ENTRIES]
     await adjustProductStockService(data.productId, data.quantity)
+
+    // Escribe la fila en el ledger de movimientos (como hará el backend).
+    const product = await getProductByIdService(data.productId).catch(
+        () => null
+    )
+    const proveedores = await getProveedoresService()
+    const proveedor = data.proveedorId
+        ? proveedores.find((p) => p.id === data.proveedorId)?.name
+        : undefined
+    const { appendMovimiento } = await import(
+        "@/features/movimientos/services/movimientos.service"
+    )
+    await appendMovimiento({
+        productId: data.productId,
+        responsable: data.responsable ?? "Sin asignar",
+        movementType: "entrada",
+        quantity: data.quantity,
+        reason: data.notes,
+        unitSoldPrice: product?.salePrice,
+        unitCostPrice: product?.costPrice,
+        proveedor,
+    })
 
     return newEntry
 }

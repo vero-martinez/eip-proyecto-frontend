@@ -28,13 +28,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Recupera la sesión guardada al cargar la aplicación.
     useEffect(() => {
-        const guardado = localStorage.getItem(STORAGE_KEY);
+        const recuperarSesion = () => {
+            const guardado = localStorage.getItem(STORAGE_KEY);
 
-        if (guardado) {
-            setUsuario(JSON.parse(guardado));
-        }
+            if (guardado) {
+                setUsuario(JSON.parse(guardado));
+            }
 
-        setIsLoading(false);
+            setIsLoading(false);
+        };
+
+        const timer = window.setTimeout(recuperarSesion, 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     // Guarda el usuario autenticado en memoria y localStorage.

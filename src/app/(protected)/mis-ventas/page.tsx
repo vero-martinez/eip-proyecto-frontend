@@ -5,7 +5,7 @@
  *
  * Container: junta el usuario logueado (para filtrar las ventas del
  * vendedor) y el hook de ventas con las cards de métricas y el
- * historial armados en features/mis-ventas.
+ * historial armados en features/ventas.
  */
 
 import { useMemo } from "react"
@@ -13,9 +13,9 @@ import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/providers/auth-provider"
-import { useMisVentas } from "@/features/mis-ventas/hooks/use-mis-ventas"
-import { MisVentasStats } from "@/features/mis-ventas/components/mis-ventas-stats"
-import { MisVentasLista } from "@/features/mis-ventas/components/mis-ventas-lista"
+import { useMisVentas } from "@/features/ventas/hooks/use-mis-ventas"
+import { MisVentasStats } from "@/features/ventas/components/mis-ventas-stats"
+import { MisVentasLista } from "@/features/ventas/components/mis-ventas-lista"
 
 export default function MisVentasPage() {
     const { usuario } = useAuth()

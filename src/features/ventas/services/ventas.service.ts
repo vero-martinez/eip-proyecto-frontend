@@ -2,14 +2,16 @@
  * Servicio de Ventas con datos mock.
  * Simula el registro de ventas del punto de venta hasta tener el
  * backend real (FastAPI). Al registrar, descuenta el stock de cada
- * producto vendido para compartir el inventario con el catálogo y los
+ * producto vendido a través del motor de lotes (FIFO) y deja el COGS
+ * real en el ledger, compartiendo el inventario con el catálogo y los
  * módulos del taller.
  */
 
 import type { Venta, VentaItem } from "../types"
 import { computeTotals } from "../utils"
-import { adjustProductStockService } from "@/features/products/services/products.service"
-import { getProductsService } from "@/features/products/services/products.service"
+import { consumirLotesService } from "@/features/inventario/services/lotes.service"
+import { costoConsumoTotal, round2 } from "@/features/inventario/utils"
+import { appendMovimiento } from "@/features/inventario/services/ledger.service"
 
 // --- Helpers & Mock Data ---
 
@@ -106,6 +108,15 @@ export async function registerVentaService(data: {
 }): Promise<Venta> {
   await delay()
 
+  // Consume el stock del motor de lotes (FIFO) antes de registrar la
+  // venta: si algún item no alcanza, se lanza "Stock insuficiente" y
+  // la venta no se registra parcialmente.
+  const costosUnitarios: number[] = []
+  for (const item of data.items) {
+    const detalle = await consumirLotesService(item.productId, item.quantity)
+    costosUnitarios.push(round2(costoConsumoTotal(detalle) / item.quantity))
+  }
+
   const { subtotal, total } = computeTotals(data.items)
   mockId += 1
 
@@ -120,26 +131,17 @@ export async function registerVentaService(data: {
 
   MOCK_VENTAS.push(newVenta)
 
-  // Descuenta stock de cada producto vendido
-  for (const item of data.items) {
-    await adjustProductStockService(item.productId, -item.quantity)
-  }
-
-  // Escribe una fila por item en el ledger de movimientos, agrupadas
-  // por el id de la venta (sale_group_id), como hará el backend.
-  const products = await getProductsService()
-  const costById = new Map(products.map((product) => [product.id, product.costPrice]))
-  const { appendMovimiento } = await import(
-    "@/features/movimientos/services/movimientos.service"
-  )
-  for (const item of data.items) {
+  // Escribe una fila por item en el ledger (inventario), agrupadas por
+  // el id de la venta (sale_group_id), como hará el backend.
+  for (let index = 0; index < data.items.length; index++) {
+    const item = data.items[index]
     await appendMovimiento({
       productId: item.productId,
       responsable: data.responsable,
       movementType: "venta",
       quantity: -item.quantity,
       unitSoldPrice: item.unitPrice,
-      unitCostPrice: costById.get(item.productId),
+      unitCostPrice: costosUnitarios[index],
       saleGroupId: newVenta.id,
     })
   }

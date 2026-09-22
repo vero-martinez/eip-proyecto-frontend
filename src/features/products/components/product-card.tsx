@@ -13,7 +13,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
-import { formatStock, hasLowStock } from "@/lib/units"
+import { formatStock, hasLowStock, isOutOfStock } from "@/lib/units"
 import { CATEGORY_TONE_CLASSES, type CategoryTone } from "@/lib/categories"
 import type { Product } from "@/types/products"
 
@@ -31,6 +31,7 @@ export function ProductCard({
     onSelect,
 }: ProductCardProps) {
     const lowStock = hasLowStock(product)
+    const outOfStock = isOutOfStock(product)
     const { surface, icon, badge } = CATEGORY_TONE_CLASSES[tone]
 
     return (
@@ -78,12 +79,12 @@ export function ProductCard({
                         <span
                             className={cn(
                                 "text-sm tabular-nums",
-                                lowStock
+                                outOfStock || lowStock
                                     ? "font-medium text-destructive"
                                     : "text-muted-foreground"
                             )}
                         >
-                            {formatStock(product)}
+                            {outOfStock ? "Sin stock" : formatStock(product)}
                         </span>
                     </div>
                 </div>

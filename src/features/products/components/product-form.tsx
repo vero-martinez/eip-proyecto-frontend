@@ -3,8 +3,10 @@
 /**
  * Formulario de producto (crear/editar), mostrado dentro de un Dialog.
  *
- * Toda la lógica de estado y mutations vive en useProductForm; este
- * componente solo arma el shell (FormDialog) y renderiza los campos.
+ * Alta mínima: al crear solo se cargan datos de catálogo (nombre, SKU,
+ * categorías, unidad y stock mínimo). El producto nace inactivo, sin
+ * precio ni stock; el stock/costo entran por Compras y el precio de
+ * venta se fija al editar. Toda la lógica vive en useProductForm.
  */
 
 import { FormProvider } from "react-hook-form"
@@ -28,7 +30,6 @@ import type { Category, Product } from "@/types/products"
 import { getCategoryOptions } from "@/lib/categories"
 import { UNIT_OPTIONS } from "@/lib/units"
 import { useProductForm } from "../hooks/use-product-form"
-import { useProveedores } from "@/features/proveedores/hooks/use-proveedores"
 
 const FORM_ID = "product-form"
 
@@ -53,8 +54,6 @@ export function ProductForm({
         categoryId,
         unitType,
         isActive,
-        proveedorId,
-        hasLotes,
         rootCategoryId,
         rootCategories,
         subcategories,
@@ -62,27 +61,12 @@ export function ProductForm({
         handleSubcategoryChange,
         handleUnitTypeChange,
         handleActiveChange,
-        handleProveedorChange,
         onSubmit,
     } = useProductForm({
         product,
         categories,
         onClose: () => onOpenChange(false),
     })
-
-    const { data: proveedores } = useProveedores()
-
-    const proveedorOptions = [
-        { value: "", label: "Sin proveedor" },
-        ...(proveedores ?? []).map((proveedor) => ({
-            value: String(proveedor.id),
-            label: proveedor.name,
-        })),
-    ]
-
-    // Con stock registrado el costo y el stock derivan de los lotes del
-    // producto (promedio ponderado) y no se editan a mano.
-    const stockBloqueado = isEditing && hasLotes
 
     const {
         register,
@@ -96,8 +80,8 @@ export function ProductForm({
             title={isEditing ? "Editar producto" : "Nuevo producto"}
             description={
                 isEditing
-                    ? "Modificá los datos del producto."
-                    : "Completá los datos para agregar el producto al catálogo."
+                    ? "Modificá los datos del producto y su precio de venta."
+                    : "Alta mínima: el producto nace inactivo, sin stock ni precio. El stock se carga desde Compras."
             }
             formId={FORM_ID}
             submitLabel={isEditing ? "Guardar cambios" : "Crear producto"}
@@ -265,215 +249,114 @@ export function ProductForm({
                             </div>
                         )}
 
-                        {/* Precios */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="costPrice">
-                                    Precio de costo (S/)
-                                </Label>
-                                <Input
-                                    id="costPrice"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    disabled={stockBloqueado}
-                                    aria-invalid={
-                                        errors.costPrice ? true : undefined
-                                    }
-                                    aria-describedby={
-                                        errors.costPrice
-                                            ? "costPrice-error"
-                                            : stockBloqueado
-                                              ? "costPrice-hint"
-                                              : undefined
-                                    }
-                                    {...register("costPrice", {
-                                        valueAsNumber: true,
-                                    })}
-                                />
-                                {errors.costPrice && (
-                                    <p
-                                        id="costPrice-error"
-                                        role="alert"
-                                        className="text-sm text-destructive"
-                                    >
-                                        {errors.costPrice.message}
-                                    </p>
-                                )}
-                                {stockBloqueado && (
-                                    <p
-                                        id="costPrice-hint"
-                                        className="text-xs text-muted-foreground"
-                                    >
-                                        Con stock registrado, el costo deriva de
-                                        los lotes (promedio ponderado) y no se edita.
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="salePrice">
-                                    Precio de venta (S/)
-                                </Label>
-                                <Input
-                                    id="salePrice"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    aria-invalid={
-                                        errors.salePrice ? true : undefined
-                                    }
-                                    aria-describedby={
-                                        errors.salePrice
-                                            ? "salePrice-error"
-                                            : undefined
-                                    }
-                                    {...register("salePrice", {
-                                        valueAsNumber: true,
-                                    })}
-                                />
-                                {errors.salePrice && (
-                                    <p
-                                        id="salePrice-error"
-                                        role="alert"
-                                        className="text-sm text-destructive"
-                                    >
-                                        {errors.salePrice.message}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Stock */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="currentStock">
-                                    Stock actual
-                                </Label>
-                                <Input
-                                    id="currentStock"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0"
-                                    disabled={stockBloqueado}
-                                    aria-invalid={
-                                        errors.currentStock ? true : undefined
-                                    }
-                                    aria-describedby={
-                                        errors.currentStock
-                                            ? "currentStock-error"
-                                            : stockBloqueado
-                                              ? "currentStock-hint"
-                                              : undefined
-                                    }
-                                    {...register("currentStock", {
-                                        valueAsNumber: true,
-                                    })}
-                                />
-                                {errors.currentStock && (
-                                    <p
-                                        id="currentStock-error"
-                                        role="alert"
-                                        className="text-sm text-destructive"
-                                    >
-                                        {errors.currentStock.message}
-                                    </p>
-                                )}
-                                {stockBloqueado && (
-                                    <p
-                                        id="currentStock-hint"
-                                        className="text-xs text-muted-foreground"
-                                    >
-                                        El stock se gestiona con entradas,
-                                        compras y ventas; acá se muestra el
-                                        saldo actual.
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="minStockAlert">
-                                    Stock mínimo (alerta)
-                                </Label>
-                                <Input
-                                    id="minStockAlert"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0"
-                                    aria-invalid={
-                                        errors.minStockAlert ? true : undefined
-                                    }
-                                    aria-describedby={
-                                        errors.minStockAlert
-                                            ? "minStockAlert-error"
-                                            : undefined
-                                    }
-                                    {...register("minStockAlert", {
-                                        valueAsNumber: true,
-                                    })}
-                                />
-                                {errors.minStockAlert && (
-                                    <p
-                                        id="minStockAlert-error"
-                                        role="alert"
-                                        className="text-sm text-destructive"
-                                    >
-                                        {errors.minStockAlert.message}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Proveedor (por defecto) */}
+                        {/* Stock mínimo (alerta) */}
                         <div className="space-y-2">
-                            <Label
-                                htmlFor="proveedorId"
-                                className="flex items-center gap-1.5"
-                            >
-                                Proveedor
-                                <span className="text-xs font-normal text-muted-foreground">
-                                    (Opcional)
-                                </span>
+                            <Label htmlFor="minStockAlert">
+                                Stock mínimo (alerta)
                             </Label>
-                            <SearchableSelect
-                                value={
-                                    proveedorId !== undefined
-                                        ? String(proveedorId)
-                                        : ""
+                            <Input
+                                id="minStockAlert"
+                                type="number"
+                                step="0.01"
+                                placeholder="0"
+                                aria-invalid={
+                                    errors.minStockAlert ? true : undefined
                                 }
-                                onValueChange={handleProveedorChange}
-                                options={proveedorOptions}
-                                placeholder="Seleccionar proveedor..."
-                                searchPlaceholder="Buscar proveedor..."
-                                ariaLabel="Proveedor"
-                                triggerClassName="w-full"
+                                aria-describedby={
+                                    errors.minStockAlert
+                                        ? "minStockAlert-error"
+                                        : undefined
+                                }
+                                {...register("minStockAlert", {
+                                    valueAsNumber: true,
+                                })}
                             />
-                            <p className="text-xs text-muted-foreground">
-                                Proveedor nacional asociado al producto (y a su
-                                apertura de stock).
-                            </p>
+                            {errors.minStockAlert && (
+                                <p
+                                    id="minStockAlert-error"
+                                    role="alert"
+                                    className="text-sm text-destructive"
+                                >
+                                    {errors.minStockAlert.message}
+                                </p>
+                            )}
                         </div>
 
-                        {/* Activo/Inactivo */}
-                        <div className="flex items-center justify-between rounded-lg border border-border p-3">
-                            <div>
-                                <Label htmlFor="isActive">Producto activo</Label>
-                                <p
-                                    id="isActive-description"
-                                    className="text-xs text-muted-foreground"
-                                >
-                                    Los productos inactivos no aparecen en el
-                                    catálogo de ventas
-                                </p>
-                            </div>
-                            <Switch
-                                id="isActive"
-                                checked={isActive}
-                                onCheckedChange={handleActiveChange}
-                                aria-describedby="isActive-description"
-                                className="data-checked:bg-emerald-500"
-                            />
-                        </div>
+                        {isEditing ? (
+                            <>
+                                {/* Precio de venta (solo edición) */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="salePrice">
+                                        Precio de venta (S/)
+                                    </Label>
+                                    <Input
+                                        id="salePrice"
+                                        type="number"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        aria-invalid={
+                                            errors.salePrice ? true : undefined
+                                        }
+                                        aria-describedby={
+                                            errors.salePrice
+                                                ? "salePrice-error"
+                                                : "salePrice-hint"
+                                        }
+                                        {...register("salePrice", {
+                                            valueAsNumber: true,
+                                        })}
+                                    />
+                                    {errors.salePrice && (
+                                        <p
+                                            id="salePrice-error"
+                                            role="alert"
+                                            className="text-sm text-destructive"
+                                        >
+                                            {errors.salePrice.message}
+                                        </p>
+                                    )}
+                                    <p
+                                        id="salePrice-hint"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        Requerido para activar el producto. El
+                                        costo y el stock vienen de los lotes
+                                        (Compras), no se editan acá.
+                                    </p>
+                                </div>
+
+                                {/* Activo/Inactivo */}
+                                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                                    <div>
+                                        <Label htmlFor="isActive">
+                                            Producto activo
+                                        </Label>
+                                        <p
+                                            id="isActive-description"
+                                            className="text-xs text-muted-foreground"
+                                        >
+                                            Los productos inactivos no aparecen
+                                            en el catálogo de ventas.
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        id="isActive"
+                                        checked={isActive}
+                                        onCheckedChange={handleActiveChange}
+                                        aria-describedby="isActive-description"
+                                        className="data-checked:bg-emerald-500"
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <p className="rounded-lg border border-muted bg-muted/40 p-3 text-xs text-muted-foreground">
+                                El producto se crea{" "}
+                                <span className="font-medium">inactivo</span>,
+                                sin stock ni precio. El stock y el costo se
+                                registran desde Compras, y el precio de venta se
+                                fija al editar el producto.
+                            </p>
+                        )}
                     </div>
                 </form>
             </FormProvider>

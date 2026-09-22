@@ -36,7 +36,6 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 40,
         minStockAlert: 10,
         isActive: true,
-        proveedorId: 3,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -76,7 +75,6 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 12,
         minStockAlert: 5,
         isActive: true,
-        proveedorId: 2,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -90,7 +88,6 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 3,
         minStockAlert: 5,
         isActive: true,
-        proveedorId: 2,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -104,7 +101,6 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 9,
         minStockAlert: 3,
         isActive: true,
-        proveedorId: 1,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {

@@ -92,12 +92,12 @@ export function OperacionForm({
 
     const productOptions = useMemo(
         () =>
-            products
-                .filter((product) => product.isActive)
-                .map((product) => ({
-                    value: String(product.id),
-                    label: `${product.name} · ${product.sku}`,
-                })),
+            products.map((product) => ({
+                value: String(product.id),
+                label: product.isActive
+                    ? `${product.name} · ${product.sku}`
+                    : `${product.name} · ${product.sku} (inactivo)`,
+            })),
         [products]
     )
 

@@ -24,6 +24,11 @@ export function hasLowStock(product: Product): boolean {
     return product.isActive && product.currentStock <= product.minStockAlert
 }
 
+/** Verifica si el producto está agotado (sin stock disponible). */
+export function isOutOfStock(product: Product): boolean {
+    return product.currentStock <= 0
+}
+
 /** Formatea el stock junto a su símbolo (ej. "3 u"). */
 export function formatStock(product: Product): string {
     return `${product.currentStock} ${getUnitSymbol(product.unitType)}`

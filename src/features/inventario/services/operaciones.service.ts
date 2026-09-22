@@ -3,11 +3,7 @@
  * Comandos de alto nivel para gestionar ingresos de stock, compras y aperturas iniciales.
  */
 
-import type { Product } from "@/types/products"
-import {
-    crearProductoService,
-    obtenerProductoService,
-} from "./adapters"
+import { obtenerProductoService } from "./adapters"
 import { getProveedoresService } from "@/features/proveedores/services/proveedores.service"
 import {
     getLotesPorProductoService,
@@ -159,55 +155,4 @@ export async function registrarCompraService(data: {
         proveedor,
         notas: data.notas ?? "Compra a proveedor",
     })
-}
-
-/** Registra el stock inicial por primera vez para un producto existente. */
-export async function registrarAperturaService(data: {
-    productId: number
-    cantidad: number
-    costoUnitarioSoles: number
-    proveedorId?: number
-    responsable?: string
-}): Promise<Lote> {
-    const cantidad = validarCantidadPositiva(data.cantidad)
-    if (await tieneLotes(data.productId)) {
-        throw new Error(
-            "El producto ya tiene stock registrado; usá Compra para sumar inventario"
-        )
-    }
-    const proveedor = await resolverProveedor(data.proveedorId)
-
-    await registrarIngreso({
-        productId: data.productId,
-        quantity: cantidad,
-        origen: "apertura",
-        responsable: data.responsable ?? "Administrador",
-        costoUnitarioSoles: validarCostoNoNegativo(data.costoUnitarioSoles),
-        proveedor,
-        notas: "Apertura inicial",
-    })
-
-    const [lote] = await getLotesPorProductoService(data.productId)
-    return lote
-}
-
-/** Crea un producto nuevo y genera su lote de apertura inicial si incluye stock. */
-export async function registrarProductoConAperturaService(data: {
-    producto: Omit<Product, "id" | "createdAt">
-    responsable?: string
-}): Promise<{ product: Product; lote: Lote | null }> {
-    const product = await crearProductoService(data.producto)
-
-    if (product.currentStock > 0) {
-        const lote = await registrarAperturaService({
-            productId: product.id,
-            cantidad: product.currentStock,
-            costoUnitarioSoles: product.costPrice,
-            proveedorId: data.producto.proveedorId,
-            responsable: data.responsable,
-        })
-        return { product, lote }
-    }
-
-    return { product, lote: null }
 }

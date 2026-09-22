@@ -38,7 +38,7 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 
 import { useLotesPorProducto } from "@/features/inventario/hooks/use-lotes"
 import { ProductLotesView } from "@/features/inventario/components/product-lotes-view"
-import { formatStock, hasLowStock, UNIT_OPTIONS } from "@/lib/units"
+import { formatStock, hasLowStock, isOutOfStock, UNIT_OPTIONS } from "@/lib/units"
 import {
     getCategoryTone,
     getParentCategoryName,
@@ -101,6 +101,7 @@ export function ProductDetailDialog({
     const categoryName = getParentCategoryName(product.categoryId, categories)
     const subcategoryName = getSubcategoryName(product.categoryId, categories)
     const lowStock = hasLowStock(product)
+    const outOfStock = isOutOfStock(product)
     const unitLabel =
         UNIT_OPTIONS.find((option) => option.value === product.unitType)?.label ??
         product.unitType
@@ -135,9 +136,11 @@ export function ProductDetailDialog({
                             <DialogTitle className="text-lg font-semibold">
                                 {product.name}
                             </DialogTitle>
-                            {lowStock && (
+                            {outOfStock ? (
+                                <Badge variant="destructive">Sin stock</Badge>
+                            ) : lowStock ? (
                                 <Badge variant="destructive">Stock bajo</Badge>
-                            )}
+                            ) : null}
                         </div>
                         <DialogDescription className="sr-only">
                             Detalle del producto {product.name}

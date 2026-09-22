@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { StatusBadge } from "@/components/common/status-badge"
 import { formatCurrency } from "@/lib/utils"
-import { formatStock, hasLowStock } from "@/lib/units"
+import { formatStock, hasLowStock, isOutOfStock } from "@/lib/units"
 import { getParentCategoryName, getSubcategoryName } from "@/lib/categories"
 import type { Product, Category } from "@/types/products"
 
@@ -79,14 +79,16 @@ export function getProductColumns(
             width: "w-[13%]",
             render: (product) => {
                 const label = formatStock(product)
+                const outOfStock = isOutOfStock(product)
+                const lowStock = !outOfStock && hasLowStock(product)
 
-                if (hasLowStock(product)) {
+                if (outOfStock || lowStock) {
                     return (
                         <Badge
                             variant="destructive"
                             className="bg-destructive/15 px-2.5 text-destructive hover:bg-destructive/15"
                         >
-                            {label}
+                            {outOfStock ? "Sin stock" : label}
                         </Badge>
                     )
                 }

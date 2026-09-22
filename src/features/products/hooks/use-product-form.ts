@@ -1,6 +1,10 @@
 /**
  * Hook personalizado para manejar la lógica y el estado del formulario
  * de productos (creación y edición).
+ *
+ * El alta es mínima: solo cataloga el producto (nombre, SKU, categorías,
+ * unidad y stock mínimo) y nace INACTIVO, sin precio ni stock. El stock
+ * y el costo se cargan desde Compras y el precio de venta se fija al editar.
  */
 
 import { useEffect, useRef, useState } from "react"
@@ -8,8 +12,6 @@ import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
-import { useLotesPorProducto } from "@/features/inventario/hooks/use-lotes"
-import { useRegistrarApertura } from "@/features/inventario/hooks/use-operaciones"
 import {
     getRootCategories,
     getRootCategoryId,
@@ -27,11 +29,8 @@ const DEFAULT_VALUES = {
     categoryId: undefined as number | undefined,
     unitType: "UNIDAD",
     salePrice: 0,
-    costPrice: 0,
-    currentStock: 0,
     minStockAlert: 0,
-    proveedorId: undefined as number | undefined,
-    isActive: true,
+    isActive: false,
 } as const
 
 interface UseProductFormParams {
@@ -47,18 +46,9 @@ export function useProductForm({
 }: UseProductFormParams) {
     const createProduct = useCreateProduct()
     const updateProduct = useUpdateProduct()
-    const registrarApertura = useRegistrarApertura()
 
     const isEditing = !!product
-    const isSubmitting =
-        createProduct.isPending ||
-        updateProduct.isPending ||
-        registrarApertura.isPending
-
-    const lotesQuery = useLotesPorProducto(isEditing ? product.id : null)
-    const hasLotes = !!lotesQuery.data?.some(
-        (lote) => lote.cantidadDisponible > 0
-    )
+    const isSubmitting = createProduct.isPending || updateProduct.isPending
 
     const [rootCategoryId, setRootCategoryId] = useState<number | undefined>(
         () => getRootCategoryId(categories, product?.categoryId)
@@ -83,10 +73,7 @@ export function useProductForm({
                 categoryId: product.categoryId,
                 unitType: product.unitType,
                 salePrice: product.salePrice,
-                costPrice: product.costPrice,
-                currentStock: product.currentStock,
                 minStockAlert: product.minStockAlert,
-                proveedorId: product.proveedorId,
                 isActive: product.isActive,
             })
             setRootCategoryId(
@@ -101,7 +88,6 @@ export function useProductForm({
     const categoryId = useWatch({ control, name: "categoryId" })
     const unitType = useWatch({ control, name: "unitType" })
     const isActive = useWatch({ control, name: "isActive" })
-    const proveedorId = useWatch({ control, name: "proveedorId" })
 
     const rootCategories = getRootCategories(categories)
     const subcategories =
@@ -128,10 +114,6 @@ export function useProductForm({
         setValue("isActive", checked)
     }
 
-    const handleProveedorChange = (value: string) => {
-        setValue("proveedorId", value === "" ? undefined : Number(value))
-    }
-
     const onSubmit = handleSubmit((data) => {
         const onSuccess = (message: string) => {
             toast.success(message)
@@ -139,51 +121,31 @@ export function useProductForm({
         }
         const onError = (error: Error) => toast.error(error.message)
 
-        const payload: Partial<Omit<Product, "id" | "createdAt">> = { ...data }
-        if (hasLotes) {
-            delete payload.currentStock
-            delete payload.costPrice
+        if (isEditing) {
+            updateProduct.mutate(
+                { id: product.id, data },
+                { onSuccess: () => onSuccess("Producto actualizado correctamente"), onError }
+            )
+            return
         }
 
-        if (isEditing) {
-            const finalizar = () => onSuccess("Producto actualizado correctamente")
-
-            const abrirApertura =
-                !hasLotes &&
-                !lotesQuery.isLoading &&
-                (data.currentStock ?? 0) > 0
-
-            if (abrirApertura) {
-                updateProduct.mutate(
-                    { id: product.id, data: payload },
-                    {
-                        onSuccess: () =>
-                            registrarApertura.mutate(
-                                {
-                                    productId: product.id,
-                                    cantidad: data.currentStock,
-                                    costoUnitarioSoles: data.costPrice,
-                                    proveedorId: payload.proveedorId,
-                                    responsable: "Administrador",
-                                },
-                                { onSuccess: finalizar, onError }
-                            ),
-                        onError,
-                    }
-                )
-                return
-            }
-
-            updateProduct.mutate(
-                { id: product.id, data: payload },
-                { onSuccess: finalizar, onError }
-            )
-        } else {
-            createProduct.mutate(data, {
+        createProduct.mutate(
+            {
+                sku: data.sku,
+                name: data.name,
+                categoryId: data.categoryId,
+                unitType: data.unitType,
+                salePrice: 0,
+                costPrice: 0,
+                currentStock: 0,
+                minStockAlert: data.minStockAlert,
+                isActive: false,
+            },
+            {
                 onSuccess: () => onSuccess("Producto creado correctamente"),
                 onError,
-            })
-        }
+            }
+        )
     })
 
     return {
@@ -192,8 +154,6 @@ export function useProductForm({
         categoryId,
         unitType,
         isActive,
-        proveedorId,
-        hasLotes,
         rootCategoryId,
         rootCategories,
         subcategories,
@@ -201,7 +161,6 @@ export function useProductForm({
         handleSubcategoryChange,
         handleUnitTypeChange,
         handleActiveChange,
-        handleProveedorChange,
         onSubmit,
     }
 }

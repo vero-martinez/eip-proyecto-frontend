@@ -68,9 +68,9 @@ export function EntradasStats({ products, entries }: EntradasStatsProps) {
             title: lastEntry?.product.name, // Tooltip nativo si el texto se trunca
             sublabel: lastEntry
                 ? `${formatEntryQuantity(
-                      lastEntry.totalQuantity,
-                      lastEntry.product.unitType
-                  )} · ${formatLastEntryDate(lastEntry.lastDate)}`
+                    lastEntry.totalQuantity,
+                    lastEntry.product.unitType
+                )} · ${formatLastEntryDate(lastEntry.lastDate)}`
                 : undefined,
             icon: Clock,
             tone: "slate",

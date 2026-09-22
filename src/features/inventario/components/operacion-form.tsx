@@ -1,8 +1,14 @@
 "use client"
 
 /**
- * Card de registro de entrada: selector de producto con búsqueda,
- * cantidad y botón para registrar.
+ * Formulario de operación de inventario, adaptativo
+ * por rol:
+ * - "produccion": entrada interna del taller — solo producto y cantidad.
+ * - "compra": compra a proveedor nacional — proveedor + cantidad +
+ *   costo de compra (opcional; obligatorio sin stock previo).
+ *
+ * Presentacional: la lógica de estado y mutations vive en
+ * useOperacionForm.
  */
 
 import { useMemo } from "react"
@@ -14,46 +20,70 @@ import {
     Package,
     PackagePlus,
     Truck,
+    Wallet,
 } from "lucide-react"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+} from "@/components/ui/card"
 import { SearchableSelect } from "@/components/common/searchable-select"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupText } from "@/components/ui/input-group"
-import { formatStock, hasLowStock, UNIT_OPTIONS } from "@/features/products/utils"
+import {
+    InputGroup,
+    InputGroupInput,
+    InputGroupAddon,
+    InputGroupText,
+} from "@/components/ui/input-group"
+import { formatStock, hasLowStock, UNIT_OPTIONS } from "@/lib/units"
 import type { Product } from "@/types/products"
 
-import type { Proveedor } from "../types"
-import { useStockEntryForm } from "../hooks/use-entrada-form"
+import type { Proveedor } from "@/features/proveedores/types"
+import type { OperacionModo } from "../hooks/use-operacion-form"
+import { useOperacionForm } from "../hooks/use-operacion-form"
 
-const FORM_ID = "stock-entry-form"
+const FORM_ID = "operacion-form"
 
-interface EntradaFormProps {
+interface OperacionFormProps {
+    modo: OperacionModo
     products: Product[]
-    proveedores: Proveedor[]
-    /** Nombre de la persona que registra la entrada (usuario logueado). */
+    proveedores?: Proveedor[]
+    /** Nombre de la persona que registra (usuario logueado). */
     responsable: string
     /** Id de un producto preseleccionado (ej. desde Alertas). */
     initialProductId?: number
 }
 
-export function EntradaForm({
+export function OperacionForm({
+    modo,
     products,
-    proveedores,
+    proveedores = [],
     responsable,
     initialProductId,
-}: EntradaFormProps) {
+}: OperacionFormProps) {
+    const esCompra = modo === "compra"
+
     const {
         methods,
         isSubmitting,
         selectedProduct,
         selectedProveedor,
         quantityStep,
+        hasLotes,
         handleProductChange,
         handleProveedorChange,
         onSubmit,
-    } = useStockEntryForm({ products, proveedores, responsable, initialProductId })
+    } = useOperacionForm({
+        modo,
+        products,
+        proveedores,
+        responsable,
+        initialProductId,
+    })
 
     const {
         register,
@@ -98,10 +128,12 @@ export function EntradaForm({
 
                     <div className="flex flex-col gap-0.5">
                         <CardTitle className="text-base font-semibold leading-tight">
-                            Registrar entrada
+                            {esCompra ? "Registrar compra" : "Registrar entrada"}
                         </CardTitle>
                         <CardDescription className="text-sm">
-                            Sumá stock de un producto al inventario del taller.
+                            {esCompra
+                                ? "Comprá stock a un proveedor nacional; actualiza el costo promedio del producto."
+                                : "Entrada interna del taller; no altera el costo del producto."}
                         </CardDescription>
                     </div>
                 </div>
@@ -117,7 +149,7 @@ export function EntradaForm({
                     {/* Selector de Producto */}
                     <div className="space-y-2">
                         <Label
-                            htmlFor="stock-entry-product"
+                            htmlFor="operacion-product"
                             className="flex items-center gap-2 text-base font-medium"
                         >
                             <Package className="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -133,13 +165,15 @@ export function EntradaForm({
                             ariaLabel="Producto"
                             ariaInvalid={!!errors.productId}
                             ariaDescribedby={
-                                errors.productId ? "stock-entry-product-error" : undefined
+                                errors.productId
+                                    ? "operacion-product-error"
+                                    : undefined
                             }
                             triggerClassName="w-full h-10"
                         />
                         {errors.productId && (
                             <p
-                                id="stock-entry-product-error"
+                                id="operacion-product-error"
                                 role="alert"
                                 className="text-xs font-medium text-destructive"
                             >
@@ -177,7 +211,7 @@ export function EntradaForm({
                                     {productIsLow ? (
                                         <>
                                             <AlertTriangle className="size-3.5 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden="true" />
-                                            <span>Stock bajo — se sugiere reponer inmediatamente.</span>
+                                            <span>Stock bajo — se sugiere reponer.</span>
                                         </>
                                     ) : (
                                         <>
@@ -190,9 +224,8 @@ export function EntradaForm({
                         )}
                     </div>
 
-                    {/* Grid para Proveedor y Cantidad */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {/* Selector de Proveedor */}
+                    {/* Proveedor (compra) */}
+                    {esCompra && (
                         <div className="space-y-2">
                             <Label className="flex items-center gap-2 text-base font-medium">
                                 <Truck className="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -209,50 +242,105 @@ export function EntradaForm({
                                 triggerClassName="w-full h-10"
                             />
                         </div>
+                    )}
 
-                        {/* Input de Cantidad */}
+                    {/* Cantidad */}
+                    <div className="space-y-2">
+                        <Label
+                            htmlFor="operacion-quantity"
+                            className="flex items-center gap-2 text-base font-medium"
+                        >
+                            <Hash className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                            <span>Cantidad</span>
+                            <span className="text-destructive">*</span>
+                        </Label>
+                        <InputGroup className="h-10">
+                            <InputGroupInput
+                                id="operacion-quantity"
+                                type="number"
+                                min="0.01"
+                                step={quantityStep}
+                                placeholder="0.00"
+                                className="h-full"
+                                aria-invalid={errors.quantity ? true : undefined}
+                                aria-describedby={
+                                    errors.quantity
+                                        ? "operacion-quantity-error"
+                                        : undefined
+                                }
+                                {...register("quantity", { valueAsNumber: true })}
+                            />
+                            <InputGroupAddon align="inline-end" className="h-full">
+                                <InputGroupText className="text-xs font-medium text-muted-foreground">
+                                    {unitSymbol}
+                                </InputGroupText>
+                            </InputGroupAddon>
+                        </InputGroup>
+                        {errors.quantity && (
+                            <p
+                                id="operacion-quantity-error"
+                                role="alert"
+                                className="text-xs font-medium text-destructive"
+                            >
+                                {errors.quantity.message}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Costo de compra (solo compra) */}
+                    {esCompra && (
                         <div className="space-y-2">
                             <Label
-                                htmlFor="stock-entry-quantity"
+                                htmlFor="operacion-costo"
                                 className="flex items-center gap-2 text-base font-medium"
                             >
-                                <Hash className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                                <span>Cantidad</span>
-                                <span className="text-destructive">*</span>
+                                <Wallet className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                                <span>Costo de compra (S/)</span>
+                                <span className="text-[10px] text-muted-foreground/70">(Opcional)</span>
                             </Label>
                             <InputGroup className="h-10">
-                                <InputGroupInput
-                                    id="stock-entry-quantity"
-                                    type="number"
-                                    min="0.01"
-                                    step={quantityStep}
-                                    placeholder="0.00"
-                                    className="h-full"
-                                    aria-invalid={errors.quantity ? true : undefined}
-                                    aria-describedby={
-                                        errors.quantity
-                                            ? "stock-entry-quantity-error"
-                                            : undefined
-                                    }
-                                    {...register("quantity", { valueAsNumber: true })}
-                                />
-                                <InputGroupAddon align="inline-end" className="h-full">
+                                <InputGroupAddon align="inline-start" className="h-full">
                                     <InputGroupText className="text-xs font-medium text-muted-foreground">
-                                        {unitSymbol}
+                                        S/
                                     </InputGroupText>
                                 </InputGroupAddon>
+                                <InputGroupInput
+                                    id="operacion-costo"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    className="h-full"
+                                    aria-invalid={errors.costoUnitarioSoles ? true : undefined}
+                                    aria-describedby={
+                                        errors.costoUnitarioSoles
+                                            ? "operacion-costo-error"
+                                            : "operacion-costo-hint"
+                                    }
+                                    {...register("costoUnitarioSoles", {
+                                        valueAsNumber: true,
+                                    })}
+                                />
                             </InputGroup>
-                            {errors.quantity && (
+                            {errors.costoUnitarioSoles && (
                                 <p
-                                    id="stock-entry-quantity-error"
+                                    id="operacion-costo-error"
                                     role="alert"
                                     className="text-xs font-medium text-destructive"
                                 >
-                                    {errors.quantity.message}
+                                    {errors.costoUnitarioSoles.message}
                                 </p>
                             )}
+                            <p
+                                id="operacion-costo-hint"
+                                className="text-xs text-muted-foreground"
+                            >
+                                {hasLotes
+                                    ? "Sin indicar costo, se usa el promedio ponderado actual."
+                                    : "Obligatorio: el producto aún no tiene stock registrado."}
+                            </p>
                         </div>
-                    </div>
+                    )}
 
                     {/* Botón Acción Principal */}
                     <Button
@@ -263,12 +351,20 @@ export function EntradaForm({
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                                <span>Registrando ingreso...</span>
+                                <span>
+                                    {esCompra
+                                        ? "Registrando compra..."
+                                        : "Registrando ingreso..."}
+                                </span>
                             </>
                         ) : (
                             <>
                                 <PackagePlus className="size-4" aria-hidden="true" />
-                                <span>Registrar entrada</span>
+                                <span>
+                                    {esCompra
+                                        ? "Registrar compra"
+                                        : "Registrar entrada"}
+                                </span>
                             </>
                         )}
                     </Button>

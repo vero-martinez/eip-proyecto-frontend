@@ -1,25 +1,12 @@
 /**
- * Tipos e interfaces de datos para el módulo de Movimientos de Inventario.
+ * Tipos de la vista "Movimientos" (feature hoja del ledger).
+ * Los tipos crudos del ledger viven en el core de inventario.
  */
 
 import type { UnitType } from "@/types/products"
+import type { MovementRecord } from "@/features/inventario/types"
 
-export type MovementType = "entrada" | "venta" | "merma"
-
-export interface MovementRecord {
-    id: number
-    productId: number
-    responsable: string
-    movementType: MovementType
-    quantity: number
-    createdAt: string
-    reason?: string
-    unitSoldPrice?: number
-    unitCostPrice?: number
-    wasteType?: string
-    saleGroupId?: number
-    proveedor?: string
-}
+export type { MovementRecord, MovementType } from "@/features/inventario/types"
 
 export interface InventoryMovement extends MovementRecord {
     productName: string

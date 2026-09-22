@@ -14,12 +14,12 @@ import { Inbox } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PaginationBar } from "@/components/common/pagination-bar"
 
+import { formatProductCount } from "@/lib/units"
 import {
-    formatProductCount,
     getCategoryTone,
     getParentCategoryName,
     getRootCategoryId,
-} from "../utils"
+} from "@/lib/categories"
 import { useCatalogFilters } from "../hooks/use-catalog-filters"
 import { CatalogFilters } from "./catalog-filters"
 import { ProductCard } from "./product-card"

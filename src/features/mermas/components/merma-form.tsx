@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupText } from "@/components/ui/input-group"
-import { formatStock, hasLowStock, UNIT_OPTIONS } from "@/features/products/utils"
+import { formatStock, hasLowStock, UNIT_OPTIONS } from "@/lib/units"
 import type { Product } from "@/types/products"
 
 import { MOTIVOS_MERMA } from "../constants"

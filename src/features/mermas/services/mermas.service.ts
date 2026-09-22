@@ -3,8 +3,10 @@
  */
 
 import type { Merma } from "../types"
-import { adjustProductStockService } from "@/features/products/services/products.service"
 import { getProductByIdService } from "@/features/products/services/products.service"
+import { consumirLotesService } from "@/features/inventario/services/lotes.service"
+import { costoConsumoTotal, round2 } from "@/features/inventario/utils"
+import { appendMovimiento } from "@/features/inventario/services/ledger.service"
 
 // ===== Mock data =====
 
@@ -80,7 +82,8 @@ export async function getMermasService(): Promise<Merma[]> {
 }
 
 /**
- * Registra una nueva merma y descuenta la cantidad del stock del producto.
+ * Registra una nueva merma: consume la cantidad del stock del producto
+ * a través del motor de lotes (FIFO) y deja el COGS real en el ledger.
  */
 export async function registerMermaService(data: {
     productId: number
@@ -90,6 +93,12 @@ export async function registerMermaService(data: {
     responsable: string
 }): Promise<Merma> {
     await delay()
+
+    // Consume el stock del motor de lotes (FIFO); si el producto no
+    // alcanza, se lanza "Stock insuficiente" y la merma no se registra.
+    const detalle = await consumirLotesService(data.productId, data.quantity)
+    const costoUnitarioFifo = round2(costoConsumoTotal(detalle) / data.quantity)
+
     const newMerma: Merma = {
         id: mockId + 1,
         productId: data.productId,
@@ -102,14 +111,10 @@ export async function registerMermaService(data: {
     mockId += 1
 
     MOCK_MERMAS = [newMerma, ...MOCK_MERMAS]
-    await adjustProductStockService(data.productId, -data.quantity)
 
-    // Escribe la fila en el ledger de movimientos (como hará el backend).
+    // Escribe la fila en el ledger de inventario (como hará el backend).
     const product = await getProductByIdService(data.productId).catch(
         () => null
-    )
-    const { appendMovimiento } = await import(
-        "@/features/movimientos/services/movimientos.service"
     )
     await appendMovimiento({
         productId: data.productId,
@@ -119,7 +124,7 @@ export async function registerMermaService(data: {
         reason: data.detalle,
         wasteType: data.motivo,
         unitSoldPrice: product?.salePrice,
-        unitCostPrice: product?.costPrice,
+        unitCostPrice: costoUnitarioFifo,
     })
 
     return newMerma

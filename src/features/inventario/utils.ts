@@ -1,0 +1,169 @@
+/**
+ * Utilidades del módulo de Inventario: cálculos de stock y costos de
+ * lotes, resolución de etiquetas visuales y métricas del historial de
+ * entradas.
+ */
+
+import type { Product, UnitType } from "@/types/products"
+import { getUnitSymbol, hasLowStock } from "@/lib/units"
+import { formatDate } from "@/lib/utils"
+
+import { ORIGEN_LOTE_ITEMS } from "./constants"
+import type {
+    ConsumoDetalle,
+    Lote,
+    OrigenLote,
+    Proveedor,
+    StockEntry,
+} from "./types"
+
+export const round2 = (n: number): number => Math.round(n * 100) / 100
+
+/** Suma la cantidad total disponible en los lotes. */
+export function sumDisponible(lotes: Lote[]): number {
+    return round2(
+        lotes.reduce((total, lote) => total + lote.cantidadDisponible, 0)
+    )
+}
+
+/** Calcula el costo promedio ponderado del stock disponible. */
+export function costoPromedioPonderado(lotes: Lote[]): number {
+    const total = sumDisponible(lotes)
+    if (total <= 0) return 0
+
+    const valor = lotes.reduce(
+        (acumulado, lote) => acumulado + lote.cantidadDisponible * lote.costoUnitarioSoles,
+        0
+    )
+    return round2(valor / total)
+}
+
+/** Calcula el costo total de las salidas de stock (COGS). */
+export function costoConsumoTotal(detalles: ConsumoDetalle[]): number {
+    return round2(
+        detalles.reduce(
+            (acumulado, detalle) => acumulado + detalle.cantidad * detalle.costoUnitarioSoles,
+            0
+        )
+    )
+}
+
+/** Etiqueta y tint del badge según el origen del lote. */
+export function getOrigenLoteInfo(origen: OrigenLote): (typeof ORIGEN_LOTE_ITEMS)[number] {
+    return (
+        ORIGEN_LOTE_ITEMS.find((item) => item.value === origen) ?? {
+            value: origen,
+            label: "Desconocido",
+            tint: "bg-slate-500/10 text-slate-600 ring-slate-500/25 dark:text-slate-300",
+        }
+    )
+}
+
+/* ===== Entradas ===== */
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
+
+/** Busca el nombre de un proveedor según su ID. */
+export function getProveedorName(
+    proveedorId: number | undefined,
+    proveedores: Proveedor[]
+): string | undefined {
+    if (proveedorId === undefined) return undefined
+    return proveedores.find((proveedor) => proveedor.id === proveedorId)?.name
+}
+
+/** Comprueba si la entrada se registró en los últimos 30 días. */
+function isWithinLast30Days(entry: StockEntry): boolean {
+    return Date.now() - new Date(entry.createdAt).getTime() <= THIRTY_DAYS_MS
+}
+
+/** Agrega el símbolo de la unidad a la cantidad ingresada (ej: "+6 u"). */
+export function formatEntryQuantity(quantity: number, unitType: UnitType): string {
+    return `+${quantity} ${getUnitSymbol(unitType)}`
+}
+
+/** Obtiene los últimos N productos con sus cantidades acumuladas. */
+export function getLastDistinctProducts(
+    entries: StockEntry[],
+    products: Product[],
+    limit = 5
+): {
+    product: Product
+    totalQuantity: number
+    lastDate: string
+    proveedorId: number | undefined
+    responsable: string | undefined
+}[] {
+    const byProduct = new Map<
+        number,
+        { total: number; last: number; proveedorId?: number; responsable?: string }
+    >()
+
+    for (const item of entries) {
+        const time = new Date(item.createdAt).getTime()
+        const current =
+            byProduct.get(item.productId) ?? { total: 0, last: 0 }
+
+        if (time > current.last) {
+            current.last = time
+            current.proveedorId = item.proveedorId
+            current.responsable = item.responsable
+        }
+        current.total += item.quantity
+        byProduct.set(item.productId, current)
+    }
+
+    return [...byProduct.entries()]
+        .map(([productId, { total, last, proveedorId, responsable }]) => ({
+            product: products.find((p) => p.id === productId),
+            totalQuantity: total,
+            lastDate: new Date(last).toISOString(),
+            proveedorId,
+            responsable,
+        }))
+        .filter((item): item is {
+            product: Product
+            totalQuantity: number
+            lastDate: string
+            proveedorId: number | undefined
+            responsable: string | undefined
+        } => item.product !== undefined)
+        .sort(
+            (a, b) =>
+                new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime()
+        )
+        .slice(0, limit)
+}
+
+/** Calcula el resumen de métricas para las tarjetas del panel. */
+export function summarizeEntradas(
+    entries: StockEntry[],
+    products: Product[]
+): {
+    totalInventory: number
+    entriesLast30: number
+    unitsLast30: number
+    lowStock: number
+    lastEntry: { product: Product; totalQuantity: number; lastDate: string } | undefined
+} {
+    const totalInventory = products.filter((p) => p.currentStock > 0).length
+    const lowStock = products.filter(hasLowStock).length
+
+    const entriesLast30 = entries.filter(isWithinLast30Days)
+    const unitsLast30 = entriesLast30.reduce((sum, item) => sum + item.quantity, 0)
+
+    const [lastEntry] = getLastDistinctProducts(entries, products, 1)
+
+    return {
+        totalInventory,
+        entriesLast30: entriesLast30.length,
+        unitsLast30,
+        lowStock,
+        lastEntry,
+    }
+}
+
+/** Formatea la fecha de la última entrada para mostrar en pantalla. */
+export function formatLastEntryDate(date: string): string {
+    return `el ${formatDate(date)}`
+}

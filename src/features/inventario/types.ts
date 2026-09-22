@@ -1,14 +1,11 @@
 /**
  * Tipos del módulo de Inventario.
- * Lotes, proveedores, entradas de stock y registro de movimientos.
+ * Lotes, entradas de stock y registro de movimientos.
  */
 
-export type OrigenLote = "apertura" | "entrada" | "compra"
+import type { Proveedor } from "@/features/proveedores/types"
 
-export interface Proveedor {
-    id: number
-    name: string
-}
+export type OrigenLote = "apertura" | "entrada" | "compra"
 
 /** Snapshot del proveedor guardado en el lote. */
 export type LoteProveedor = Pick<Proveedor, "id" | "name">

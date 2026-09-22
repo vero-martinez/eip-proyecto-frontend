@@ -9,15 +9,31 @@ import { getUnitSymbol, hasLowStock } from "@/lib/units"
 import { formatDate } from "@/lib/utils"
 
 import { ORIGEN_LOTE_ITEMS } from "./constants"
+import type { Proveedor } from "@/features/proveedores/types"
 import type {
     ConsumoDetalle,
     Lote,
     OrigenLote,
-    Proveedor,
     StockEntry,
 } from "./types"
 
 export const round2 = (n: number): number => Math.round(n * 100) / 100
+
+/** Valida que una cantidad sea un número finito positivo y la devuelve redondeada. */
+export function validarCantidadPositiva(cantidad: number): number {
+    if (!Number.isFinite(cantidad) || round2(cantidad) <= 0) {
+        throw new Error("La cantidad debe ser mayor a 0")
+    }
+    return round2(cantidad)
+}
+
+/** Valida que un costo no sea un número finito negativo y lo devuelve redondeado. */
+export function validarCostoNoNegativo(costo: number): number {
+    if (!Number.isFinite(costo) || costo < 0) {
+        throw new Error("El costo no puede ser negativo")
+    }
+    return round2(costo)
+}
 
 /** Suma la cantidad total disponible en los lotes. */
 export function sumDisponible(lotes: Lote[]): number {
@@ -46,6 +62,47 @@ export function costoConsumoTotal(detalles: ConsumoDetalle[]): number {
             0
         )
     )
+}
+
+/** Filtra los lotes con stock de un producto, del más antiguo al más reciente (FIFO). */
+export function filtrarLotesConStock(lotes: Lote[], productId: number): Lote[] {
+    return lotes
+        .filter(
+            (lote) => lote.productId === productId && lote.cantidadDisponible > 0
+        )
+        .sort(
+            (a, b) =>
+                new Date(a.fechaIngreso).getTime() -
+                    new Date(b.fechaIngreso).getTime() || a.id - b.id
+        )
+}
+
+/** Asigna el consumo FIFO contra los lotes disponibles. Lanza si no alcanza el stock. */
+export function asignarConsumoFIFO(
+    lotes: Lote[],
+    cantidad: number
+): ConsumoDetalle[] {
+    const detalle: ConsumoDetalle[] = []
+    let restante = round2(cantidad)
+
+    for (const lote of lotes) {
+        if (restante <= 0) break
+        const cargar = Math.min(lote.cantidadDisponible, restante)
+        if (cargar <= 0) continue
+
+        detalle.push({
+            loteId: lote.id,
+            cantidad: round2(cargar),
+            costoUnitarioSoles: lote.costoUnitarioSoles,
+        })
+        restante = round2(restante - cargar)
+    }
+
+    if (restante > 0) {
+        throw new Error("Stock insuficiente")
+    }
+
+    return detalle
 }
 
 /** Etiqueta y tint del badge según el origen del lote. */

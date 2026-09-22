@@ -34,14 +34,14 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { formatStock, getParentCategoryName } from "@/features/products/utils"
+import { formatStock, getUnitSymbol } from "@/lib/units"
+import { getParentCategoryName } from "@/lib/categories"
 import type { Category, Product } from "@/types/products"
 
 import {
     getStockBadges,
     getStockToMinPercent,
     getUnitsToMin,
-    getUnitSymbol,
     matchesAlertFilter,
     sortAlertasBySeverity,
     type AlertFilter,
@@ -173,7 +173,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                             Math.max(0, getStockToMinPercent(product))
                         )
                         const missing = getUnitsToMin(product)
-                        const unit = getUnitSymbol(product)
+                        const unit = getUnitSymbol(product.unitType)
                         const badges = getStockBadges(product)
                         const categoryName = getParentCategoryName(
                             product.categoryId,

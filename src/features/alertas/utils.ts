@@ -4,7 +4,7 @@
  */
 
 import type { Product } from "@/types/products"
-import { hasLowStock, UNIT_OPTIONS } from "@/features/products/utils"
+import { hasLowStock } from "@/lib/units"
 
 // ==========================================
 // TYPES & CONSTANTS
@@ -127,9 +127,4 @@ export function sortAlertasBySeverity(products: Product[]): Product[] {
 
         return a.name.localeCompare(b.name)
     })
-}
-
-/** Símbolo de la unidad de medida (u/kg/etc). */
-export function getUnitSymbol(product: Product): string {
-    return UNIT_OPTIONS.find((opt) => opt.value === product.unitType)?.symbol ?? product.unitType
 }

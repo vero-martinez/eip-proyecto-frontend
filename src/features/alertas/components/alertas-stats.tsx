@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 
 import { StatCard, type StatTone } from "@/components/common/stat-card"
-import { formatProductCount } from "@/features/products/utils"
+import { formatProductCount } from "@/lib/units"
 import type { Product } from "@/types/products"
 
 import { summarizeAlertas } from "../utils"

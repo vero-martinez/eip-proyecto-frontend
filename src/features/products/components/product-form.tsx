@@ -25,8 +25,10 @@ import {
 import { formatDate } from "@/lib/utils"
 import type { Category, Product } from "@/types/products"
 
-import { getCategoryOptions, UNIT_OPTIONS } from "../utils"
+import { getCategoryOptions } from "@/lib/categories"
+import { UNIT_OPTIONS } from "@/lib/units"
 import { useProductForm } from "../hooks/use-product-form"
+import { useProveedores } from "@/features/proveedores/hooks/use-proveedores"
 
 const FORM_ID = "product-form"
 
@@ -51,6 +53,8 @@ export function ProductForm({
         categoryId,
         unitType,
         isActive,
+        proveedorId,
+        hasLotes,
         rootCategoryId,
         rootCategories,
         subcategories,
@@ -58,12 +62,27 @@ export function ProductForm({
         handleSubcategoryChange,
         handleUnitTypeChange,
         handleActiveChange,
+        handleProveedorChange,
         onSubmit,
     } = useProductForm({
         product,
         categories,
         onClose: () => onOpenChange(false),
     })
+
+    const { data: proveedores } = useProveedores()
+
+    const proveedorOptions = [
+        { value: "", label: "Sin proveedor" },
+        ...(proveedores ?? []).map((proveedor) => ({
+            value: String(proveedor.id),
+            label: proveedor.name,
+        })),
+    ]
+
+    // Con stock registrado el costo y el stock derivan de los lotes del
+    // producto (promedio ponderado) y no se editan a mano.
+    const stockBloqueado = isEditing && hasLotes
 
     const {
         register,
@@ -257,13 +276,16 @@ export function ProductForm({
                                     type="number"
                                     step="0.01"
                                     placeholder="0.00"
+                                    disabled={stockBloqueado}
                                     aria-invalid={
                                         errors.costPrice ? true : undefined
                                     }
                                     aria-describedby={
                                         errors.costPrice
                                             ? "costPrice-error"
-                                            : undefined
+                                            : stockBloqueado
+                                              ? "costPrice-hint"
+                                              : undefined
                                     }
                                     {...register("costPrice", {
                                         valueAsNumber: true,
@@ -276,6 +298,15 @@ export function ProductForm({
                                         className="text-sm text-destructive"
                                     >
                                         {errors.costPrice.message}
+                                    </p>
+                                )}
+                                {stockBloqueado && (
+                                    <p
+                                        id="costPrice-hint"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        Con stock registrado, el costo deriva de
+                                        los lotes (promedio ponderado) y no se edita.
                                     </p>
                                 )}
                             </div>
@@ -324,13 +355,16 @@ export function ProductForm({
                                     type="number"
                                     step="0.01"
                                     placeholder="0"
+                                    disabled={stockBloqueado}
                                     aria-invalid={
                                         errors.currentStock ? true : undefined
                                     }
                                     aria-describedby={
                                         errors.currentStock
                                             ? "currentStock-error"
-                                            : undefined
+                                            : stockBloqueado
+                                              ? "currentStock-hint"
+                                              : undefined
                                     }
                                     {...register("currentStock", {
                                         valueAsNumber: true,
@@ -343,6 +377,16 @@ export function ProductForm({
                                         className="text-sm text-destructive"
                                     >
                                         {errors.currentStock.message}
+                                    </p>
+                                )}
+                                {stockBloqueado && (
+                                    <p
+                                        id="currentStock-hint"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        El stock se gestiona con entradas,
+                                        compras y ventas; acá se muestra el
+                                        saldo actual.
                                     </p>
                                 )}
                             </div>
@@ -378,6 +422,36 @@ export function ProductForm({
                                     </p>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Proveedor (por defecto) */}
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="proveedorId"
+                                className="flex items-center gap-1.5"
+                            >
+                                Proveedor
+                                <span className="text-xs font-normal text-muted-foreground">
+                                    (Opcional)
+                                </span>
+                            </Label>
+                            <SearchableSelect
+                                value={
+                                    proveedorId !== undefined
+                                        ? String(proveedorId)
+                                        : ""
+                                }
+                                onValueChange={handleProveedorChange}
+                                options={proveedorOptions}
+                                placeholder="Seleccionar proveedor..."
+                                searchPlaceholder="Buscar proveedor..."
+                                ariaLabel="Proveedor"
+                                triggerClassName="w-full"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Proveedor nacional asociado al producto (y a su
+                                apertura de stock).
+                            </p>
                         </div>
 
                         {/* Activo/Inactivo */}

@@ -46,6 +46,10 @@ export const productSchema = z.object({
         .number({ message: "El stock mínimo es obligatorio" })
         .min(0, "El stock mínimo no puede ser negativo"),
 
+    proveedorId: z
+        .number()
+        .positive("Seleccioná un proveedor válido")
+        .optional(),
 
     isActive: z.boolean(),
 }).refine((data) => data.salePrice > data.costPrice, {

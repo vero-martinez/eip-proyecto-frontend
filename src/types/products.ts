@@ -25,5 +25,7 @@ export interface Product {
     currentStock: number
     minStockAlert: number
     isActive: boolean
+    /** Proveedor nacional por defecto (compra/apertura). */
+    proveedorId?: number
     createdAt: string
 }

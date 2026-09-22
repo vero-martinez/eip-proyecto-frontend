@@ -1,20 +1,35 @@
 /**
- * Hook para crear un producto.
- * Al tener éxito, invalida la query "products" para que la lista
- * se vuelva a pedir automáticamente y refleje el nuevo producto,
- * sin tener que recargar la página a mano.
+ * Hook personalizado para la creación de un nuevo producto.
+ * Gestiona el alta del producto, la apertura de su lote inicial y
+ * la invalidación de la caché de las consultas afectadas.
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createProductService } from "../services/products.service"
+import { registrarProductoConAperturaService } from "@/features/inventario/services/operaciones.service"
 
 export function useCreateProduct() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: createProductService,
+        mutationFn: (
+            producto: Parameters<
+                typeof registrarProductoConAperturaService
+            >[0]["producto"]
+        ) =>
+            registrarProductoConAperturaService({
+                producto,
+                responsable: "Administrador",
+            }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["products"] })
+            for (const key of [
+                "products",
+                "stock-entries",
+                "movimientos",
+                "lotes",
+                "alertas",
+            ] as const) {
+                queryClient.invalidateQueries({ queryKey: [key] })
+            }
         },
     })
 }

@@ -5,6 +5,7 @@
  */
 
 import { Product, Category } from "@/types/products"
+import { configurarAdapters } from "@/features/inventario/services/adapters"
 
 // ===== Mock data =====
 
@@ -35,6 +36,7 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 40,
         minStockAlert: 10,
         isActive: true,
+        proveedorId: 3,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -74,6 +76,7 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 12,
         minStockAlert: 5,
         isActive: true,
+        proveedorId: 2,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -87,6 +90,7 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 3,
         minStockAlert: 5,
         isActive: true,
+        proveedorId: 2,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -100,6 +104,7 @@ let MOCK_PRODUCTS: Product[] = [
         currentStock: 9,
         minStockAlert: 3,
         isActive: true,
+        proveedorId: 1,
         createdAt: "2026-09-12T04:21:22.600Z",
     },
     {
@@ -206,24 +211,16 @@ export async function getCategoriesService(): Promise<Category[]> {
     return [...MOCK_CATEGORIES]
 }
 
-/**
- * Ajusta el stock actual de un producto por un delta (positivo o
- * negativo), sin dejarlo por debajo de 0. En el backend real lo
- * resolverá el endpoint de entradas de forma atómica; acá se mantiene
- * desacoplado para que los módulos compartan el mismo stock en memoria.
- */
-export async function adjustProductStockService(
-    id: number,
-    delta: number
-): Promise<Product> {
-    await delay(200)
-    const index = MOCK_PRODUCTS.findIndex((p) => p.id === id)
-    if (index === -1) throw new Error("Producto no encontrado")
+// ===== Adaptadores =====
 
-    const current = MOCK_PRODUCTS[index]
-    MOCK_PRODUCTS[index] = {
-        ...current,
-        currentStock: Math.max(0, current.currentStock + delta),
-    }
-    return MOCK_PRODUCTS[index]
-}
+// El core de inventario consume productos a través de sus adapters;
+// este módulo registra su implementación al cargarse (DAG: products es
+// hoja e inventario no importa estos servicios en forma estática).
+configurarAdapters({
+    obtenerProductos: getProductsService,
+    obtenerProducto: getProductByIdService,
+    actualizarStock: async (productId, patch) => {
+        await updateProductService(productId, patch)
+    },
+    crearProducto: createProductService,
+})

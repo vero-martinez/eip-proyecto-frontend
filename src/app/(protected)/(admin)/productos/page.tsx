@@ -19,6 +19,7 @@ import { useDeleteProduct } from "@/features/products/hooks/use-delete-product"
 import { ProductsStats } from "@/features/products/components/products-stats"
 import { ProductsTable } from "@/features/products/components/products-table"
 import { ProductForm } from "@/features/products/components/product-form"
+import { ProductDetailDialog } from "@/features/products/components/product-detail-dialog"
 import type { Product } from "@/types/products"
 
 export default function ProductsPage() {
@@ -36,12 +37,16 @@ export default function ProductsPage() {
 
     const [formOpen, setFormOpen] = useState(false)
     const [deleteOpen, setDeleteOpen] = useState(false)
+    const [lotesOpen, setLotesOpen] = useState(false)
     const [productToEdit, setProductToEdit] = useState<Product | undefined>(
         undefined
     )
     const [productToDelete, setProductToDelete] = useState<Product | undefined>(
         undefined
     )
+    const [productToViewLotes, setProductToViewLotes] = useState<
+        Product | undefined
+    >(undefined)
 
     const productList = products ?? []
     const categoryList = categories ?? []
@@ -59,6 +64,16 @@ export default function ProductsPage() {
     const handleDelete = (product: Product) => {
         setProductToDelete(product)
         setDeleteOpen(true)
+    }
+
+    const handleViewLotes = (product: Product) => {
+        setProductToViewLotes(product)
+        setLotesOpen(true)
+    }
+
+    const handleLotesOpenChange = (open: boolean) => {
+        setLotesOpen(open)
+        if (!open) setProductToViewLotes(undefined)
     }
 
     const handleFormOpenChange = (open: boolean) => {
@@ -118,6 +133,7 @@ export default function ProductsPage() {
                     categories={categoryList}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onViewLotes={handleViewLotes}
                     onCreate={handleCreate}
                 />
             </div>
@@ -147,6 +163,15 @@ export default function ProductsPage() {
                 }
                 isLoading={deleteProduct.isPending}
                 onConfirm={handleConfirmDelete}
+            />
+
+            <ProductDetailDialog
+                open={lotesOpen}
+                onOpenChange={handleLotesOpenChange}
+                product={productToViewLotes ?? null}
+                categories={categoryList}
+                showCost
+                showLotes
             />
         </div>
     )

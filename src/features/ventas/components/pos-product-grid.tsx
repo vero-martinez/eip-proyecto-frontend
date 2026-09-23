@@ -13,12 +13,12 @@ import { Inbox } from "lucide-react"
 
 import { PaginationBar } from "@/components/common/pagination-bar"
 import { ProductCard } from "@/features/products/components/product-card"
+import { formatProductCount } from "@/lib/units"
 import {
-    formatProductCount,
     getCategoryTone,
     getParentCategoryName,
     getRootCategoryId,
-} from "@/features/products/utils"
+} from "@/lib/categories"
 import type { Product, Category } from "@/types/products"
 
 interface PosProductGridProps {

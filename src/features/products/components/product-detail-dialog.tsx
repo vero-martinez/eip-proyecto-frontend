@@ -15,7 +15,9 @@ import {
     Calendar,
     Gem,
     Layers,
+    Loader2,
     Package,
+    RefreshCw,
     Ruler,
     Tag,
     type LucideIcon,
@@ -30,19 +32,20 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/common/status-badge"
 import { formatCurrency, formatDate } from "@/lib/utils"
 
+import { useLotesPorProducto } from "@/features/inventario/hooks/use-lotes"
+import { ProductLotesView } from "@/features/inventario/components/product-lotes-view"
+import { formatStock, hasLowStock, isOutOfStock, UNIT_OPTIONS } from "@/lib/units"
 import {
-    formatStock,
     getCategoryTone,
     getParentCategoryName,
     getRootCategoryId,
     getSubcategoryName,
-    hasLowStock,
-    UNIT_OPTIONS,
-} from "../utils"
-import { CATEGORY_TONE_CLASSES } from "./product-card"
+    CATEGORY_TONE_CLASSES,
+} from "@/lib/categories"
 import type { Product, Category } from "@/types/products"
 
 interface ProductDetailDialogProps {
@@ -51,7 +54,9 @@ interface ProductDetailDialogProps {
     product: Product | null
     categories: Category[]
     /** Muestra u oculta el precio de costo (sensible). */
-    showCost: boolean
+    showCost?: boolean
+    /** Muestra la sección "Lotes" debajo del detalle. */
+    showLotes?: boolean
 }
 
 function DetailField({
@@ -79,8 +84,15 @@ export function ProductDetailDialog({
     onOpenChange,
     product,
     categories,
-    showCost,
+    showCost = false,
+    showLotes = false,
 }: ProductDetailDialogProps) {
+    // Siempre se invoca (no condicional) para respetar las reglas de los
+    // hooks; se habilita solo cuando hay producto y se piden los lotes.
+    const lotesQuery = useLotesPorProducto(
+        product !== null && showLotes ? product.id : null
+    )
+
     if (!product) return null
 
     const rootId = getRootCategoryId(categories, product.categoryId)
@@ -89,6 +101,7 @@ export function ProductDetailDialog({
     const categoryName = getParentCategoryName(product.categoryId, categories)
     const subcategoryName = getSubcategoryName(product.categoryId, categories)
     const lowStock = hasLowStock(product)
+    const outOfStock = isOutOfStock(product)
     const unitLabel =
         UNIT_OPTIONS.find((option) => option.value === product.unitType)?.label ??
         product.unitType
@@ -123,9 +136,11 @@ export function ProductDetailDialog({
                             <DialogTitle className="text-lg font-semibold">
                                 {product.name}
                             </DialogTitle>
-                            {lowStock && (
+                            {outOfStock ? (
+                                <Badge variant="destructive">Sin stock</Badge>
+                            ) : lowStock ? (
                                 <Badge variant="destructive">Stock bajo</Badge>
-                            )}
+                            ) : null}
                         </div>
                         <DialogDescription className="sr-only">
                             Detalle del producto {product.name}
@@ -182,6 +197,57 @@ export function ProductDetailDialog({
                             {product.minStockAlert} {unitSymbol}
                         </DetailField>
                     </dl>
+
+                    {showLotes && (
+                        <section className="space-y-3 border-t border-border pt-5">
+                            {lotesQuery.isLoading ? (
+                                <div
+                                    role="status"
+                                    aria-busy="true"
+                                    className="flex h-28 flex-col items-center justify-center gap-2 text-muted-foreground"
+                                >
+                                    <Loader2
+                                        className="size-5 animate-spin text-primary"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="text-sm">
+                                        Cargando lotes...
+                                    </span>
+                                </div>
+                            ) : lotesQuery.isError ? (
+                                <div
+                                    role="alert"
+                                    className="flex flex-col items-center justify-center gap-3 py-6 text-center text-muted-foreground"
+                                >
+                                    <AlertTriangle
+                                        className="size-6 text-destructive"
+                                        aria-hidden="true"
+                                    />
+                                    <p className="text-sm">
+                                        No se pudieron cargar los lotes.
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => lotesQuery.refetch()}
+                                        className="gap-2"
+                                    >
+                                        <RefreshCw
+                                            className="size-3.5"
+                                            aria-hidden="true"
+                                        />
+                                        Reintentar
+                                    </Button>
+                                </div>
+                            ) : (
+                                <ProductLotesView
+                                    lotes={lotesQuery.data ?? []}
+                                    showCost={showCost}
+                                    unitSymbol={unitSymbol}
+                                />
+                            )}
+                        </section>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

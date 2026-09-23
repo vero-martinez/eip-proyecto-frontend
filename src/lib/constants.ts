@@ -17,6 +17,7 @@ import {
     PackageMinus,
     QrCode,
     Bell,
+    Truck,
     type LucideIcon,
 } from "lucide-react"
 
@@ -46,7 +47,7 @@ export const NAV_ADMIN: NavSection[] = [
         title: "Inventario",
         items: [
             { label: "Productos", href: "/productos", icon: Boxes, description: "Crear, editar y eliminar productos del catálogo" },
-            { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
+            { label: "Compras", href: "/compras", icon: Truck, description: "Comprar stock a proveedores nacionales" },
             { label: "Movimientos", href: "/movimientos", icon: ClipboardList, description: "Historial de movimientos de inventario" },
 
         ],
@@ -54,7 +55,6 @@ export const NAV_ADMIN: NavSection[] = [
     {
         title: "Negocio",
         items: [
-            { label: "Ferias", href: "/ferias", icon: Store, description: "Administrar ferias y puntos de venta" },
             { label: "Comercio Exterior", href: "/comercio-exterior", icon: Store, description: "Gestionar operaciones de comercio exterior" },
         ],
     },
@@ -73,7 +73,6 @@ export const NAV_VENDEDOR: NavSection[] = [
         items: [
             { label: "Punto de venta", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas: ferias, tienda y canales digitales" },
             { label: "Mis ventas", href: "/mis-ventas", icon: ClipboardList, description: "Visualizar el historial de mis ventas" },
-            { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
         ],
     },
 ]

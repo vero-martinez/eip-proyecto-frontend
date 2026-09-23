@@ -13,44 +13,9 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
-import { formatStock, hasLowStock, type CategoryTone } from "../utils"
+import { formatStock, hasLowStock, isOutOfStock } from "@/lib/units"
+import { CATEGORY_TONE_CLASSES, type CategoryTone } from "@/lib/categories"
 import type { Product } from "@/types/products"
-
-export const CATEGORY_TONE_CLASSES: Record<
-    CategoryTone,
-    { surface: string; icon: string; badge: string }
-> = {
-    violet: {
-        surface: "bg-violet-400 dark:bg-violet-950/50",
-        icon: "text-violet-600 dark:text-violet-400",
-        badge: "border-violet-300 bg-violet-100 text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
-    },
-    pink: {
-        surface: "bg-pink-300 dark:bg-pink-950/50",
-        icon: "text-pink-500 dark:text-pink-400",
-        badge: "border-pink-300 bg-pink-100 text-pink-700 dark:border-pink-700 dark:bg-pink-950/50 dark:text-pink-300",
-    },
-    zinc: {
-        surface: "bg-zinc-200 dark:bg-zinc-800/60",
-        icon: "text-zinc-500 dark:text-zinc-300",
-        badge: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300",
-    },
-    fuchsia: {
-        surface: "bg-fuchsia-300 dark:bg-fuchsia-950/50",
-        icon: "text-fuchsia-500 dark:text-fuchsia-400",
-        badge: "border-fuchsia-300 bg-fuchsia-100 text-fuchsia-700 dark:border-fuchsia-700 dark:bg-fuchsia-950/50 dark:text-fuchsia-300",
-    },
-    yellow: {
-        surface: "bg-yellow-200 dark:bg-yellow-950/50",
-        icon: "text-yellow-600 dark:text-yellow-300",
-        badge: "border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-300",
-    },
-    indigo: {
-        surface: "bg-indigo-400 dark:bg-indigo-950/50",
-        icon: "text-indigo-600 dark:text-indigo-400",
-        badge: "border-indigo-300 bg-indigo-100 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300",
-    },
-}
 
 interface ProductCardProps {
     product: Product
@@ -66,6 +31,7 @@ export function ProductCard({
     onSelect,
 }: ProductCardProps) {
     const lowStock = hasLowStock(product)
+    const outOfStock = isOutOfStock(product)
     const { surface, icon, badge } = CATEGORY_TONE_CLASSES[tone]
 
     return (
@@ -113,12 +79,12 @@ export function ProductCard({
                         <span
                             className={cn(
                                 "text-sm tabular-nums",
-                                lowStock
+                                outOfStock || lowStock
                                     ? "font-medium text-destructive"
                                     : "text-muted-foreground"
                             )}
                         >
-                            {formatStock(product)}
+                            {outOfStock ? "Sin stock" : formatStock(product)}
                         </span>
                     </div>
                 </div>

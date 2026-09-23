@@ -1,15 +1,6 @@
-"use client"
-
 /**
- * Lógica de filtros, orden y paginación del catálogo (solo consulta).
- *
- * Centraliza el estado local (búsqueda, categoría raíz, subcategoría,
- * orden y página) y deriva la lista de productos activos ya filtrada,
- * ordenada y paginada. El componente CatalogView solo consume lo que
- * devuelve este hook y lo renderiza.
- *
- * Los setters resetean la página a 0 dentro del handler (no en un
- * efecto) para evitar renders en cascada.
+ * Hook personalizado para manejar la lógica de filtrado, ordenamiento
+ * y paginación del catálogo de productos en modo consulta.
  */
 
 import { useMemo, useState } from "react"
@@ -20,7 +11,7 @@ import {
     getRootCategories,
     getSubcategories,
     isProductInCategoryTree,
-} from "../utils"
+} from "@/lib/categories"
 
 const PAGE_SIZE = 12
 

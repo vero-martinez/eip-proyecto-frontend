@@ -26,7 +26,7 @@ import {
     getParentCategoryName,
     getRootCategoryId,
     getSubcategoryName,
-} from "@/features/products/utils"
+} from "@/lib/categories"
 import type { Category, Product } from "@/types/products"
 
 import { EtiquetaCard } from "./etiqueta-card"

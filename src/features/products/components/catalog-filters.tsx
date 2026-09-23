@@ -28,10 +28,12 @@ import { ClearFiltersButton } from "@/components/common/clear-filters-button"
 
 import {
     CATALOG_SORT_OPTIONS,
+} from "../utils"
+import {
     getCategoryOptions,
     getRootCategories,
     getSubcategories,
-} from "../utils"
+} from "@/lib/categories"
 import type { CatalogSort } from "../types"
 import type { Category } from "@/types/products"
 

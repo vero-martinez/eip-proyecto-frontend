@@ -1,12 +1,10 @@
-"use client"
-
 /**
- * Lógica del formulario de producto (crear/editar).
+ * Hook personalizado para manejar la lógica y el estado del formulario
+ * de productos (creación y edición).
  *
- * Centraliza el estado de React Hook Form, la precarga según el
- * modo, la categoría raíz/subcategoría y las mutations de
- * crear/actualizar con sus toasts. El componente ProductForm solo
- * consume lo que devuelve este hook y lo renderiza.
+ * El alta es mínima: solo cataloga el producto (nombre, SKU, categorías,
+ * unidad y stock mínimo) y nace INACTIVO, sin precio ni stock. El stock
+ * y el costo se cargan desde Compras y el precio de venta se fija al editar.
  */
 
 import { useEffect, useRef, useState } from "react"
@@ -14,33 +12,30 @@ import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
-import type { Category, Product, UnitType } from "@/types/products"
-
-import { productSchema, type ProductFormData } from "../schemas"
 import {
     getRootCategories,
     getRootCategoryId,
     getSubcategories,
-} from "../utils"
+} from "@/lib/categories"
+import type { Category, Product, UnitType } from "@/types/products"
+
+import { productSchema, type ProductFormData } from "../schemas"
 import { useCreateProduct } from "./use-create-product"
 import { useUpdateProduct } from "./use-update-product"
 
 const DEFAULT_VALUES = {
     sku: "",
     name: "",
-    categoryId: undefined,
+    categoryId: undefined as number | undefined,
     unitType: "UNIDAD",
     salePrice: 0,
-    costPrice: 0,
-    currentStock: 0,
     minStockAlert: 0,
-    isActive: true,
+    isActive: false,
 } as const
 
 interface UseProductFormParams {
     product?: Product
     categories: Category[]
-    /** Se llama al guardar con éxito; el padre cierra el dialog. */
     onClose: () => void
 }
 
@@ -55,8 +50,6 @@ export function useProductForm({
     const isEditing = !!product
     const isSubmitting = createProduct.isPending || updateProduct.isPending
 
-    // Categoría raíz elegida para mostrar sus subcategorías; el valor final
-    // del form (categoryId) es la subcategoría elegida, o la raíz misma.
     const [rootCategoryId, setRootCategoryId] = useState<number | undefined>(
         () => getRootCategoryId(categories, product?.categoryId)
     )
@@ -67,15 +60,11 @@ export function useProductForm({
     })
     const { reset, control, setValue, handleSubmit } = methods
 
-    // Las categorías se leen vía ref: evita que un refetch (nueva
-    // identidad del array) re-dispare el reset y borre el form.
     const categoriesRef = useRef(categories)
     useEffect(() => {
         categoriesRef.current = categories
     }, [categories])
 
-    // Precarga los valores según el modo: edición → datos del producto;
-    // creación → valores por defecto (limpia el form de otros modos).
     useEffect(() => {
         if (product) {
             reset({
@@ -84,8 +73,6 @@ export function useProductForm({
                 categoryId: product.categoryId,
                 unitType: product.unitType,
                 salePrice: product.salePrice,
-                costPrice: product.costPrice,
-                currentStock: product.currentStock,
                 minStockAlert: product.minStockAlert,
                 isActive: product.isActive,
             })
@@ -137,18 +124,28 @@ export function useProductForm({
         if (isEditing) {
             updateProduct.mutate(
                 { id: product.id, data },
-                {
-                    onSuccess: () =>
-                        onSuccess("Producto actualizado correctamente"),
-                    onError,
-                }
+                { onSuccess: () => onSuccess("Producto actualizado correctamente"), onError }
             )
-        } else {
-            createProduct.mutate(data, {
+            return
+        }
+
+        createProduct.mutate(
+            {
+                sku: data.sku,
+                name: data.name,
+                categoryId: data.categoryId,
+                unitType: data.unitType,
+                salePrice: 0,
+                costPrice: 0,
+                currentStock: 0,
+                minStockAlert: data.minStockAlert,
+                isActive: false,
+            },
+            {
                 onSuccess: () => onSuccess("Producto creado correctamente"),
                 onError,
-            })
-        }
+            }
+        )
     })
 
     return {

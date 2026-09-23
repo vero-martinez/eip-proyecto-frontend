@@ -14,7 +14,7 @@
 import jsPDF from "jspdf"
 import { toDataURL } from "qrcode"
 
-import { formatCurrency, downloadBlob } from "@/lib/utils"
+import { downloadBlob } from "@/lib/utils"
 import type { Product } from "@/types/products"
 
 export { downloadBlob }
@@ -49,7 +49,6 @@ const QR_OPTIONS = {
 // Altura (mm) por línea de texto según el tamaño de fuente.
 const NAME_LINE_HEIGHT = 4
 const SKU_LINE_HEIGHT = 3.8
-const PRICE_LINE_HEIGHT = 4.2
 
 // ==========================================
 // FUNCIONES AUXILIARES INTERNAS
@@ -88,8 +87,6 @@ function estimateLabelHeight(
         nameLines * NAME_LINE_HEIGHT +
         1 +
         SKU_LINE_HEIGHT +
-        1 +
-        PRICE_LINE_HEIGHT +
         CELL_PAD
     )
 }
@@ -140,12 +137,6 @@ function drawLabelCell(
     doc.setFontSize(7)
     doc.setTextColor(120)
     doc.text(product.sku, textX, textY)
-    textY += SKU_LINE_HEIGHT
-
-    // Precio de venta.
-    doc.setFontSize(8)
-    doc.setTextColor(0)
-    doc.text(formatCurrency(product.salePrice), textX, textY + 1)
 }
 
 // ==========================================

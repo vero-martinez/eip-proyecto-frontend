@@ -1,14 +1,16 @@
 /**
- * Servicio de Productos con datos mock.
+ * Servicio de Productos con datos mock en localStorage.
  * Simula las operaciones CRUD y categorías hasta tener el backend real.
  * Luego las funciones se reemplazarán por llamadas a la API con Axios.
  */
 
 import { Product, Category } from "@/types/products"
+import { configurarAdapters } from "@/features/inventario/services/adapters"
+import { createLocalStore } from "@/lib/persistence"
 
-// ===== Mock data =====
+// ===== Seeds / Datos Iniciales =====
 
-const MOCK_CATEGORIES: Category[] = [
+const INITIAL_CATEGORIES: Category[] = [
     { id: 1, parentId: null, name: "MINERALES NATURALES", description: null },
     { id: 2, parentId: null, name: "CUARZOS Y CRISTALES", description: null },
     { id: 3, parentId: null, name: "PIEDRAS SEMIPRECIOSAS", description: null },
@@ -23,7 +25,7 @@ const MOCK_CATEGORIES: Category[] = [
     { id: 27, parentId: 4, name: "Pulseras", description: null },
 ]
 
-let MOCK_PRODUCTS: Product[] = [
+const INITIAL_PRODUCTS: Product[] = [
     {
         id: 1,
         categoryId: 27,
@@ -130,100 +132,103 @@ let MOCK_PRODUCTS: Product[] = [
     },
 ]
 
+// ===== Declaración de Stores de Persistencia =====
+
+const productsStore = createLocalStore<Product[]>("products", () => INITIAL_PRODUCTS)
+const categoriesStore = createLocalStore<Category[]>("categories", () => INITIAL_CATEGORIES)
+
 // Simula la latencia (demora) de una llamada real a la API.
 const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // ===== Service =====
 
 /**
- * Lista todos los productos.
+ * Lista todos los productos desde el store de localStorage.
  */
 export async function getProductsService(): Promise<Product[]> {
     await delay()
-    return [...MOCK_PRODUCTS]
+    return productsStore.get()
 }
 
 /**
- * Obtiene un producto por id. Lanza error si no existe
- * (simulando un 404 del backend).
+ * Obtiene un producto por id. Lanza error si no existe.
  */
 export async function getProductByIdService(id: number): Promise<Product> {
     await delay()
-    const product = MOCK_PRODUCTS.find((p) => p.id === id)
+    const products = productsStore.get()
+    const product = products.find((p) => p.id === id)
     if (!product) throw new Error("Producto no encontrado")
     return product
 }
 
 /**
- * Crea un producto nuevo. Genera un id incremental y una fecha
- * de creación, simulando lo que haría la base de datos.
+ * Crea un producto nuevo y actualiza localStorage.
  */
 export async function createProductService(
     data: Omit<Product, "id" | "createdAt">
 ): Promise<Product> {
     await delay()
+    const products = productsStore.get()
+    
+    const maxId = products.length > 0 ? Math.max(...products.map((p) => p.id)) : 0
     const newProduct: Product = {
         ...data,
-        id: Math.max(...MOCK_PRODUCTS.map((p) => p.id)) + 1,
+        id: maxId + 1,
         createdAt: new Date().toISOString(),
     }
-    MOCK_PRODUCTS = [...MOCK_PRODUCTS, newProduct]
+
+    productsStore.set([...products, newProduct])
     return newProduct
 }
 
 /**
- * Actualiza un producto existente.
+ * Actualiza un producto existente en localStorage.
  */
 export async function updateProductService(
     id: number,
     data: Partial<Omit<Product, "id" | "createdAt">>
 ): Promise<Product> {
     await delay()
-    const index = MOCK_PRODUCTS.findIndex((p) => p.id === id)
+    const products = productsStore.get()
+    const index = products.findIndex((p) => p.id === id)
     if (index === -1) throw new Error("Producto no encontrado")
 
-    MOCK_PRODUCTS[index] = { ...MOCK_PRODUCTS[index], ...data }
-    return MOCK_PRODUCTS[index]
+    const updatedProduct = { ...products[index], ...data }
+    const updatedProducts = [...products]
+    updatedProducts[index] = updatedProduct
+
+    productsStore.set(updatedProducts)
+    return updatedProduct
 }
 
 /**
- * Elimina un producto por id.
+ * Elimina un producto por id en localStorage.
  */
 export async function deleteProductService(id: number): Promise<void> {
     await delay()
-    const exists = MOCK_PRODUCTS.some((p) => p.id === id)
+    const products = productsStore.get()
+    const exists = products.some((p) => p.id === id)
     if (!exists) throw new Error("Producto no encontrado")
 
-    MOCK_PRODUCTS = MOCK_PRODUCTS.filter((p) => p.id !== id)
+    const filteredProducts = products.filter((p) => p.id !== id)
+    productsStore.set(filteredProducts)
 }
 
 /**
- * Lista todas las categorías (para el selector del formulario
- * y para resolver nombres en la tabla).
+ * Lista todas las categorías desde el store de localStorage.
  */
 export async function getCategoriesService(): Promise<Category[]> {
     await delay()
-    return [...MOCK_CATEGORIES]
+    return categoriesStore.get()
 }
 
-/**
- * Ajusta el stock actual de un producto por un delta (positivo o
- * negativo), sin dejarlo por debajo de 0. En el backend real lo
- * resolverá el endpoint de entradas de forma atómica; acá se mantiene
- * desacoplado para que los módulos compartan el mismo stock en memoria.
- */
-export async function adjustProductStockService(
-    id: number,
-    delta: number
-): Promise<Product> {
-    await delay(200)
-    const index = MOCK_PRODUCTS.findIndex((p) => p.id === id)
-    if (index === -1) throw new Error("Producto no encontrado")
+// ===== Adaptadores =====
 
-    const current = MOCK_PRODUCTS[index]
-    MOCK_PRODUCTS[index] = {
-        ...current,
-        currentStock: Math.max(0, current.currentStock + delta),
-    }
-    return MOCK_PRODUCTS[index]
-}
+configurarAdapters({
+    obtenerProductos: getProductsService,
+    obtenerProducto: getProductByIdService,
+    actualizarStock: async (productId, patch) => {
+        await updateProductService(productId, patch)
+    },
+    crearProducto: createProductService,
+})

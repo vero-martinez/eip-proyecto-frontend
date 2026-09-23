@@ -18,6 +18,7 @@ export function useRegisterMerma() {
             queryClient.invalidateQueries({ queryKey: ["mermas"] })
             queryClient.invalidateQueries({ queryKey: ["products"] })
             queryClient.invalidateQueries({ queryKey: ["movimientos"] })
+            queryClient.invalidateQueries({ queryKey: ["lotes"] })
         },
     })
 }

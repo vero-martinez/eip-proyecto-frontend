@@ -2,7 +2,7 @@
  * Funciones de utilidad y formato para el módulo de Movimientos de Inventario.
  */
 
-import { UNIT_OPTIONS } from "@/features/products/utils"
+import { getUnitSymbol } from "@/lib/units"
 import { formatVentaDateTime } from "@/features/ventas/utils"
 import { toTitleCase } from "@/lib/utils"
 
@@ -26,11 +26,8 @@ export function getMovementTypeLabel(type: MovementType): string {
 
 /** Formatea la cantidad con su signo y símbolo de unidad. */
 export function formatMovementQuantity(movement: InventoryMovement): string {
-    const symbol =
-        UNIT_OPTIONS.find((option) => option.value === movement.unitType)
-            ?.symbol ?? movement.unitType
     const sign = movement.movementType === "entrada" ? "+" : "−"
-    return `${sign}${Math.abs(movement.quantity)} ${symbol}`
+    return `${sign}${Math.abs(movement.quantity)} ${getUnitSymbol(movement.unitType)}`
 }
 
 /** Devuelve el origen o detalle principal del movimiento. */

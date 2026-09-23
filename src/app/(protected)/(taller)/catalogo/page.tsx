@@ -9,13 +9,11 @@
 
 import { AlertTriangle } from "lucide-react"
 
-import { useAuth } from "@/providers/auth-provider"
 import { useProducts } from "@/features/products/hooks/use-products"
 import { useCategories } from "@/features/products/hooks/use-categories"
 import { CatalogView } from "@/features/products/components/catalog-view"
 
 export default function CatalogoPage() {
-    const { usuario } = useAuth()
     const {
         data: products,
         isLoading: isLoadingProducts,
@@ -54,7 +52,6 @@ export default function CatalogoPage() {
         <CatalogView
             products={products ?? []}
             categories={categories ?? []}
-            showCost={usuario?.rol === "admin"}
         />
     )
 }

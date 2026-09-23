@@ -30,14 +30,11 @@ import type { Product, Category } from "@/types/products"
 interface CatalogViewProps {
     products: Product[]
     categories: Category[]
-    /** Muestra u oculta el precio de costo en el detalle. */
-    showCost: boolean
 }
 
 export function CatalogView({
     products,
     categories,
-    showCost,
 }: CatalogViewProps) {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
@@ -139,7 +136,6 @@ export function CatalogView({
                 }}
                 product={selectedProduct}
                 categories={categories}
-                showCost={showCost}
             />
         </div>
     )

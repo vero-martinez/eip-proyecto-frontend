@@ -54,7 +54,7 @@ interface ProductDetailDialogProps {
     product: Product | null
     categories: Category[]
     /** Muestra u oculta el precio de costo (sensible). */
-    showCost: boolean
+    showCost?: boolean
     /** Muestra la sección "Lotes" debajo del detalle. */
     showLotes?: boolean
 }
@@ -84,7 +84,7 @@ export function ProductDetailDialog({
     onOpenChange,
     product,
     categories,
-    showCost,
+    showCost = false,
     showLotes = false,
 }: ProductDetailDialogProps) {
     // Siempre se invoca (no condicional) para respetar las reglas de los

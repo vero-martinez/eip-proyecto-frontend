@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select"
 import { PaginationBar } from "@/components/common/pagination-bar"
 import { ClearFiltersButton } from "@/components/common/clear-filters-button"
+import { ListItemCard } from "@/components/common/list-item-card"
 import { VentaBoletaDialog } from "@/features/ventas/components/boleta-dialog"
 import { cn, formatCurrency } from "@/lib/utils"
 import type { Venta } from "@/features/ventas/types"
@@ -315,91 +316,85 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                             const formattedTotal = formatCurrency(venta.total)
 
                             return (
-                                <li
+                                <ListItemCard
                                     key={venta.id}
-                                    className={cn(
-                                        "group relative grid gap-3 rounded-2xl border border-violet-100 border-l-[5px] bg-background p-4 shadow-2xs transition-all hover:border-violet-300 hover:shadow-md dark:border-violet-900/30 md:grid-cols-[minmax(0,1fr)_auto] md:items-center",
-                                        tipoConfig.borderAccent
-                                    )}
-                                >
-                                    <div className="flex min-w-0 items-start gap-3.5">
-                                        <div
-                                            aria-hidden="true"
-                                            className={cn(
-                                                "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl shadow-2xs",
-                                                tipoConfig.avatarBg
-                                            )}
-                                        >
-                                            <Receipt className="size-5" />
-                                        </div>
-
-                                        <div className="min-w-0 space-y-1.5">
-                                            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                                                <span className="font-mono text-sm font-extrabold tracking-tight text-foreground">
-                                                    Boleta #{venta.folio}
-                                                </span>
-                                                <time 
-                                                    dateTime={venta.createdAt} 
-                                                    className="text-xs font-medium text-muted-foreground"
-                                                >
-                                                    {formatVentaDateTime(venta.createdAt)}
-                                                </time>
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-1.5" aria-label="Detalles de la venta">
-                                                <Badge
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
-                                                        tipoConfig.badge
-                                                    )}
-                                                >
-                                                    {TipoIcon && (
-                                                        <TipoIcon className="size-3" aria-hidden="true" />
-                                                    )}
-                                                    <span>{tipoLabel}</span>
-                                                </Badge>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
-                                                        metodoConfig.badge
-                                                    )}
-                                                >
-                                                    <MetodoIcon className="size-3" aria-hidden="true" />
-                                                    <span>{metodoLabel}</span>
-                                                </Badge>
-                                            </div>
-
-                                            <p className="line-clamp-2 text-xs font-medium text-slate-600 dark:text-slate-400">
-                                                {formatVentaItems(venta.items)}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-4 border-t border-violet-100 pt-3 dark:border-violet-900/40 md:flex-col md:items-end md:gap-2 md:border-t-0 md:pt-0">
-                                        <div className="text-right">
-                                            <span 
+                                    className="border-violet-100 hover:border-violet-300 dark:border-violet-900/30"
+                                    accentClassName={tipoConfig.borderAccent}
+                                    avatarClassName={tipoConfig.avatarBg}
+                                    icon={Receipt}
+                                    title={`Boleta #${venta.folio}`}
+                                    titleClassName="font-mono text-sm font-extrabold tracking-tight"
+                                    titleMeta={
+                                        <time dateTime={venta.createdAt}>
+                                            {formatVentaDateTime(venta.createdAt)}
+                                        </time>
+                                    }
+                                    badges={
+                                        <>
+                                            <Badge
+                                                variant="outline"
+                                                className={cn(
+                                                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+                                                    tipoConfig.badge
+                                                )}
+                                            >
+                                                {TipoIcon && (
+                                                    <TipoIcon
+                                                        className="size-3"
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                                <span>{tipoLabel}</span>
+                                            </Badge>
+                                            <Badge
+                                                variant="outline"
+                                                className={cn(
+                                                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+                                                    metodoConfig.badge
+                                                )}
+                                            >
+                                                {MetodoIcon && (
+                                                    <MetodoIcon
+                                                        className="size-3"
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                                <span>{metodoLabel}</span>
+                                            </Badge>
+                                        </>
+                                    }
+                                    description={formatVentaItems(venta.items)}
+                                    trailing={
+                                        <>
+                                            <span
                                                 className="text-2xl font-black tracking-tight text-slate-900 tabular-nums dark:text-slate-50"
                                                 aria-label={`Total: ${formattedTotal}`}
                                             >
                                                 {formattedTotal}
                                             </span>
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setBoletaSeleccionada(venta)}
-                                            aria-label={`Ver boleta número ${venta.folio}`}
-                                            className="h-8 gap-1.5 rounded-xl bg-violet-600 text-xs font-bold text-white hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-700"
-                                        >
-                                            <Receipt className="size-3.5" aria-hidden="true" />
-                                            <span>Ver boleta</span>
-                                            <ChevronRight className="size-3 opacity-60" aria-hidden="true" />
-                                        </Button>
-                                    </div>
-                                </li>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    setBoletaSeleccionada(venta)
+                                                }
+                                                aria-label={`Ver boleta número ${venta.folio}`}
+                                                className="h-8 gap-1.5 rounded-xl bg-violet-600 text-xs font-bold text-white hover:bg-violet-700 hover:text-white dark:bg-violet-600 dark:hover:bg-violet-700 dark:hover:text-white"
+                                            >
+                                                <Receipt
+                                                    className="size-3.5"
+                                                    aria-hidden="true"
+                                                />
+                                                <span>Ver boleta</span>
+                                                <ChevronRight
+                                                    className="size-3 opacity-60"
+                                                    aria-hidden="true"
+                                                />
+                                            </Button>
+                                        </>
+                                    }
+                                />
                             )
                         })}
                     </ul>

@@ -146,10 +146,14 @@ export function MovimientoDetailDialog({
                         <dl className="space-y-2">
                             <DetailItem label="Precio Unit. Venta" valueClassName="text-blue-600 dark:text-blue-400 font-semibold">
                                 <span className="tabular-nums">
-                                    {movement.unitSoldPrice !== undefined
-                                        ? formatCurrency(movement.unitSoldPrice)
-                                        : "—"}
-                                </span>
+                                        {movement.unitSoldPrice !==
+                                            undefined &&
+                                        movement.unitSoldPrice > 0
+                                            ? formatCurrency(
+                                                  movement.unitSoldPrice
+                                              )
+                                            : "—"}
+                                    </span>
                             </DetailItem>
                             <DetailItem label="Costo Unitario">
                                 <span className="tabular-nums">

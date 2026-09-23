@@ -139,55 +139,24 @@ export function formatEntryQuantity(quantity: number, unitType: UnitType): strin
     return `+${quantity} ${getUnitSymbol(unitType)}`
 }
 
-/** Obtiene los últimos N productos con sus cantidades acumuladas. */
-export function getLastDistinctProducts(
+/** Obtiene los últimos N registros de entrada con su producto resuelto, del más reciente al más antiguo. */
+export function getRecentEntradas(
     entries: StockEntry[],
     products: Product[],
     limit = 5
-): {
-    product: Product
-    totalQuantity: number
-    lastDate: string
-    proveedorId: number | undefined
-    responsable: string | undefined
-}[] {
-    const byProduct = new Map<
-        number,
-        { total: number; last: number; proveedorId?: number; responsable?: string }
-    >()
-
-    for (const item of entries) {
-        const time = new Date(item.createdAt).getTime()
-        const current =
-            byProduct.get(item.productId) ?? { total: 0, last: 0 }
-
-        if (time > current.last) {
-            current.last = time
-            current.proveedorId = item.proveedorId
-            current.responsable = item.responsable
-        }
-        current.total += item.quantity
-        byProduct.set(item.productId, current)
-    }
-
-    return [...byProduct.entries()]
-        .map(([productId, { total, last, proveedorId, responsable }]) => ({
-            product: products.find((p) => p.id === productId),
-            totalQuantity: total,
-            lastDate: new Date(last).toISOString(),
-            proveedorId,
-            responsable,
+): (StockEntry & { product: Product })[] {
+    return [...entries]
+        .map((entry) => ({
+            ...entry,
+            product: products.find((p) => p.id === entry.productId),
         }))
-        .filter((item): item is {
-            product: Product
-            totalQuantity: number
-            lastDate: string
-            proveedorId: number | undefined
-            responsable: string | undefined
-        } => item.product !== undefined)
+        .filter(
+            (item): item is StockEntry & { product: Product } =>
+                item.product !== undefined
+        )
         .sort(
             (a, b) =>
-                new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime()
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )
         .slice(0, limit)
 }
@@ -201,7 +170,7 @@ export function summarizeEntradas(
     entriesLast30: number
     unitsLast30: number
     lowStock: number
-    lastEntry: { product: Product; totalQuantity: number; lastDate: string } | undefined
+    lastEntry: (StockEntry & { product: Product }) | undefined
 } {
     const totalInventory = products.filter((p) => p.currentStock > 0).length
     const lowStock = products.filter(hasLowStock).length
@@ -209,7 +178,7 @@ export function summarizeEntradas(
     const entriesLast30 = entries.filter(isWithinLast30Days)
     const unitsLast30 = entriesLast30.reduce((sum, item) => sum + item.quantity, 0)
 
-    const [lastEntry] = getLastDistinctProducts(entries, products, 1)
+    const [lastEntry] = getRecentEntradas(entries, products, 1)
 
     return {
         totalInventory,

@@ -1,10 +1,10 @@
 "use client"
 
 /**
- * Card con los últimos productos que entraron al inventario (distintos,
- * con la cantidad agregada de sus entradas y la fecha de la más reciente).
- * Presenta solo la lista; el agrupado y orden lo resuelve
- * getLastDistinctProducts().
+ * Card con los últimos registros de entrada al inventario: muestra el
+ * producto, la cantidad ingresada, la fecha, el proveedor y el
+ * responsable de cada entrada. Presenta solo la lista; el orden y
+ * filtrado lo resuelve getRecentEntradas().
  */
 
 import { AlertTriangle, Calendar, History, Package, Truck, User } from "lucide-react"
@@ -17,7 +17,7 @@ import type { Product } from "@/types/products"
 
 import type { Proveedor } from "@/features/proveedores/types"
 import type { StockEntry } from "../types"
-import { formatEntryQuantity, getLastDistinctProducts, getProveedorName } from "../utils"
+import { formatEntryQuantity, getProveedorName, getRecentEntradas } from "../utils"
 
 interface RecentEntradasProps {
     products: Product[]
@@ -32,24 +32,24 @@ export function RecentEntradas({
     proveedores,
     limit = 5,
 }: RecentEntradasProps) {
-    const recent = getLastDistinctProducts(entries, products, limit)
+    const recent = getRecentEntradas(entries, products, limit)
 
     return (
         <ActivityList
             icon={History}
             title="Últimas entradas"
-            description={`Los últimos ${limit} productos que ingresaron al inventario.`}
+            description={`Los últimos ${limit} registros de entrada al inventario.`}
             tone="positive"
             items={recent}
             emptyTitle="Sin entradas recientes"
             emptyHint="Registrá un movimiento para verlo reflejado aquí."
-            renderItem={({ product, totalQuantity, lastDate, proveedorId, responsable }) => {
+            renderItem={({ id, product, quantity, proveedorId, responsable, createdAt }) => {
                 const proveedorName = getProveedorName(proveedorId, proveedores)
                 const isLow = hasLowStock(product)
 
                 return (
                     <li
-                        key={product.id}
+                        key={id}
                         className="flex items-center justify-between gap-3 rounded-lg border border-primary/40 bg-accent/40 p-3"
                     >
                         <div className="flex items-center gap-3 min-w-0">
@@ -79,7 +79,7 @@ export function RecentEntradas({
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
                                     <span className="inline-flex items-center gap-1">
                                         <Calendar className="size-3" aria-hidden="true" />
-                                        {formatDate(lastDate)}
+                                        {formatDate(createdAt)}
                                     </span>
 
                                     {proveedorName && (
@@ -107,7 +107,7 @@ export function RecentEntradas({
                             variant="outline"
                             className="shrink-0 font-semibold border-amber-500 bg-amber-200/60 dark:text-amber-400 dark:bg-amber-500/20 px-2.5 py-1 text-xs"
                         >
-                            +{formatEntryQuantity(totalQuantity, product.unitType)}
+                            {formatEntryQuantity(quantity, product.unitType)}
                         </Badge>
                     </li>
                 )

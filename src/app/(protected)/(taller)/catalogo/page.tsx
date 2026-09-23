@@ -1,10 +1,10 @@
 "use client"
 
 /**
- * Página del Catálogo (ruta compartida por los tres roles).
+ * Página del Catálogo (solo para el rol taller).
  *
  * Container: junta los hooks de datos (useProducts, useCategories) con
- * la vista del catálogo. El precio de costo solo se muestra al Admin.
+ * la vista del catálogo. El precio de costo se mantiene oculto.
  */
 
 import { AlertTriangle } from "lucide-react"

@@ -1,4 +1,10 @@
 import type { ReactNode } from "react"
+import {
+    CircleDollarSign,
+    MapPin,
+    Package,
+    ShieldCheck,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import { Badge } from "@/components/ui/badge"
@@ -125,7 +131,8 @@ export function MovimientoDetailDialog({
 
                     {/* Información del Producto */}
                     <div className="rounded-lg border border-border/60 bg-card p-3.5 space-y-2.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border/40 pb-1.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary border-b border-border/40 pb-1.5">
+                            <Package className="size-3.5" aria-hidden="true" />
                             Información del Producto
                         </h4>
                         <dl className="space-y-2">
@@ -140,7 +147,8 @@ export function MovimientoDetailDialog({
 
                     {/* Costos e Importes (Acento Azul) */}
                     <div className="rounded-lg border border-blue-200/60 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-950/20 p-3.5 space-y-2.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 border-b border-blue-200/50 dark:border-blue-900/30 pb-1.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 border-b border-blue-200/50 dark:border-blue-900/30 pb-1.5">
+                            <CircleDollarSign className="size-3.5" aria-hidden="true" />
                             Métricas Financieras
                         </h4>
                         <dl className="space-y-2">
@@ -167,7 +175,8 @@ export function MovimientoDetailDialog({
 
                     {/* Detalles Operativos (Acento Morado) */}
                     <div className="rounded-lg border border-violet-200/60 dark:border-violet-900/40 bg-violet-50/40 dark:bg-violet-950/20 p-3.5 space-y-2.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300 border-b border-violet-200/50 dark:border-violet-900/30 pb-1.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300 border-b border-violet-200/50 dark:border-violet-900/30 pb-1.5">
+                            <MapPin className="size-3.5" aria-hidden="true" />
                             Origen y Motivo
                         </h4>
                         <dl className="space-y-2">
@@ -177,6 +186,11 @@ export function MovimientoDetailDialog({
                             <DetailItem label="Motivo">
                                 {orDash(getMovementMotivo(movement))}
                             </DetailItem>
+                            {movement.movementType === "merma" && (
+                                <DetailItem label="Detalle">
+                                    {orDash(movement.reason)}
+                                </DetailItem>
+                            )}
                             <DetailItem label="Grupo de Venta" mono valueClassName="text-violet-700 dark:text-violet-300">
                                 {orDash(movement.saleGroupId)}
                             </DetailItem>
@@ -185,7 +199,8 @@ export function MovimientoDetailDialog({
 
                     {/* Auditoría y Registro (Acento Ámbar/Cálido) */}
                     <div className="rounded-lg border border-amber-200/60 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-950/10 p-3.5 space-y-2.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 border-b border-amber-200/50 dark:border-amber-900/30 pb-1.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 border-b border-amber-200/50 dark:border-amber-900/30 pb-1.5">
+                            <ShieldCheck className="size-3.5" aria-hidden="true" />
                             Auditoría
                         </h4>
                         <dl className="space-y-2">

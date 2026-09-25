@@ -14,7 +14,7 @@ import { createLocalStore } from "@/lib/persistence"
 
 import { TIPO_CAMBIO_DEFAULT } from "../constants"
 import { calcularSubtotalLinea, calcularTotales, formatISODateLocal } from "../utils"
-import type { RegistrarOperacionRequest } from "../schemas"
+import type { OperacionCreateSchema } from "../schemas/operacionCreateSchema"
 
 import type {
     LineaOperacion,
@@ -200,12 +200,17 @@ export async function getOperacionesService(): Promise<OperacionComercioExterior
 
 // Registra una nueva operación actualizando el inventario y guardando en almacenamiento
 export async function registrarOperacionService(
-    data: RegistrarOperacionRequest
+    data: OperacionCreateSchema
 ): Promise<OperacionComercioExterior> {
     await delay()
 
     const products = await getProductsService()
     const productById = new Map(products.map((product) => [product.id, product]))
+
+    const socioComercial = MOCK_SOCIOS_COMERCIALES.find(
+        (socio) => socio.id === data.socioComercialId
+    )
+    if (!socioComercial) throw new Error("Socio comercial no encontrado")
 
     const lineas: LineaOperacion[] = data.lineas.map((linea) => {
         const product = productById.get(linea.productoId)
@@ -245,8 +250,8 @@ export async function registrarOperacionService(
                 responsable: data.responsable,
                 costoUnitarioSoles: round2(linea.precioUSD * data.tipoCambio),
                 proveedor: {
-                    id: data.socioComercial.id,
-                    name: data.socioComercial.nombre,
+                    id: socioComercial.id,
+                    name: socioComercial.nombre,
                 },
             })
             await appendMovimiento({
@@ -256,8 +261,8 @@ export async function registrarOperacionService(
                 quantity: linea.cantidad,
                 unitSoldPrice: productById.get(linea.producto.id)?.salePrice,
                 unitCostPrice: round2(linea.precioUSD * data.tipoCambio),
-                proveedor: data.socioComercial.nombre,
-                reason: data.socioComercial.pais,
+                proveedor: socioComercial.nombre,
+                reason: socioComercial.pais,
                 folio,
                 unitPriceUSD: linea.precioUSD,
                 tipoCambio: data.tipoCambio,
@@ -278,8 +283,8 @@ export async function registrarOperacionService(
                 unitCostPrice: round2(
                     costoConsumoTotal(detalle) / linea.cantidad
                 ),
-                proveedor: data.socioComercial.nombre,
-                reason: data.socioComercial.pais,
+                proveedor: socioComercial.nombre,
+                reason: socioComercial.pais,
                 folio,
                 unitPriceUSD: linea.precioUSD,
                 tipoCambio: data.tipoCambio,
@@ -292,7 +297,11 @@ export async function registrarOperacionService(
         folio,
         fecha: data.fecha,
         tipo: data.tipo,
-        socioComercial: data.socioComercial,
+        socioComercial: {
+            id: socioComercial.id,
+            nombre: socioComercial.nombre,
+            pais: socioComercial.pais,
+        },
         incoterm: data.incoterm,
         medioTransporte: data.medioTransporte,
         tipoCambio: data.tipoCambio,

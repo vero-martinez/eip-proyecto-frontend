@@ -1,34 +1,37 @@
 /**
  * Servicio de Movimientos de Inventario.
- * Unifica e integra registros de entradas, mermas, ventas y ledger enriqueciéndolos con metadatos.
+ * Concilia el ledger persistente y enriquece los registros con metadatos
+ * de producto, venta y comercio exterior.
  */
 
-import { getStockEntriesService } from "@/features/inventario/services/entradas.service";
-import { getMovimientosLedgerService } from "@/features/inventario/services/ledger.service";
-import { getProveedoresService } from "@/features/proveedores/services/proveedores.service";
-import { getMermasService } from "@/features/mermas/services/mermas.service";
-import { getProductsService } from "@/features/products/services/products.service";
-import { getVentasService } from "@/features/ventas/services/ventas.service";
-import { getTipoVentaLabel } from "@/features/ventas/utils";
+import { getStockEntriesService } from "@/features/inventario/services/entradas.service"
+import {
+    getMovimientosLedgerService,
+    seedMovimientosLedger,
+} from "@/features/inventario/services/ledger.service"
+import { getProveedoresService } from "@/features/proveedores/services/proveedores.service"
+import { getMermasService } from "@/features/mermas/services/mermas.service"
+import { getProductsService } from "@/features/products/services/products.service"
+import { getVentasService } from "@/features/ventas/services/ventas.service"
+import { getTipoVentaLabel } from "@/features/ventas/utils"
+import { getOperacionesService } from "@/features/comercio-exterior/services/comercio-exterior.service"
 
-import type { MovementRecord } from "@/features/inventario/types";
-import type { Venta } from "@/features/ventas/types";
-import type { Product } from "@/types/products";
-import type { InventoryMovement } from "../types";
+import type { MovementRecord } from "@/features/inventario/types"
+import type { Venta } from "@/features/ventas/types"
+import type { OperacionComercioExterior } from "@/features/comercio-exterior/types"
+import type { Product } from "@/types/products"
+import type { InventoryMovement } from "../types"
 
 /** Simula latencia de red. */
-const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 
-let seedId = 0;
-let seeded: MovementRecord[] | null = null;
-
-/** Inicializa el historial de movimientos a partir de entradas, mermas y ventas. */
-async function ensureSeeds(
+/** Reconstruye el historial inicial de movimientos a partir de entradas,
+ * mermas, ventas y operaciones de comercio exterior. */
+async function construirHistorialInicial(
     products: Product[],
     ventas: Venta[],
+    operaciones: OperacionComercioExterior[],
 ): Promise<MovementRecord[]> {
-    if (seeded) return seeded;
-
     const [entries, mermas, proveedores] = await Promise.all([
         getStockEntriesService(),
         getMermasService(),
@@ -45,7 +48,9 @@ async function ensureSeeds(
         products.map((product) => [product.id, product.salePrice]),
     );
 
-    seeded = [
+    let seedId = 0;
+
+    return [
         ...entries.map((entry): MovementRecord => {
             seedId += 1;
             return {
@@ -93,26 +98,71 @@ async function ensureSeeds(
                 };
             }),
         ),
+        ...operaciones.flatMap(
+            (operacion): MovementRecord[] =>
+                operacion.lineas.map((linea) => {
+                    seedId += 1;
+                    const esImportacion = operacion.tipo === "importacion";
+                    const unitCostPEN = linea.precioUSD * operacion.tipoCambio;
+                    return {
+                        id: seedId,
+                        productId: linea.producto.id,
+                        responsable: operacion.responsable,
+                        movementType: operacion.tipo,
+                        quantity: esImportacion
+                            ? linea.cantidad
+                            : -linea.cantidad,
+                        unitSoldPrice: esImportacion
+                            ? salePriceById.get(linea.producto.id)
+                            : Math.round(unitCostPEN * 100) / 100,
+                        unitCostPrice: esImportacion
+                            ? Math.round(unitCostPEN * 100) / 100
+                            : costById.get(linea.producto.id),
+                        proveedor: operacion.socioComercial.nombre,
+                        reason: operacion.socioComercial.pais,
+                        folio: operacion.folio,
+                        unitPriceUSD: linea.precioUSD,
+                        tipoCambio: operacion.tipoCambio,
+                        createdAt: operacion.createdAt,
+                    };
+                }),
+        ),
     ];
+}
 
-    return seeded;
+/** Asegura que el ledger persistente contenga el historial reconstruido. */
+async function ensureLedger(
+    products: Product[],
+    ventas: Venta[],
+    operaciones: OperacionComercioExterior[],
+): Promise<MovementRecord[]> {
+    const actual = await getMovimientosLedgerService();
+    if (actual.length > 0) return actual;
+
+    const historial = await construirHistorialInicial(
+        products,
+        ventas,
+        operaciones,
+    );
+    await seedMovimientosLedger(historial);
+    return getMovimientosLedgerService();
 }
 
 /** Obtiene la lista unificada y consolidada de todos los movimientos de inventario. */
 export async function getMovimientosService(): Promise<InventoryMovement[]> {
     await delay();
 
-    const [products, ventas, runtime] = await Promise.all([
+    const [products, ventas, operaciones] = await Promise.all([
         getProductsService(),
         getVentasService(),
-        getMovimientosLedgerService(),
+        getOperacionesService(),
     ]);
-    const seeds = await ensureSeeds(products, ventas);
+    const ledger = await ensureLedger(products, ventas, operaciones);
 
     const productById = new Map(products.map((product) => [product.id, product]));
     const ventaById = new Map(ventas.map((venta) => [venta.id, venta]));
 
-    return [...runtime, ...seeds]
+    return ledger
         .sort(
             (a, b) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -129,7 +179,7 @@ export async function getMovimientosService(): Promise<InventoryMovement[]> {
                 sku: product?.sku ?? "—",
                 unitType: product?.unitType ?? "UNIDAD",
                 tipoVenta: venta ? getTipoVentaLabel(venta.tipoVenta) : undefined,
-                folio: venta?.folio,
+                folio: record.folio ?? venta?.folio,
             };
         });
 }

@@ -1,54 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Rol } from "@/types/auth"; // O la ruta relativa correspondiente en tu proyecto
-
-// 1. Interfaz alineada a la tabla 'users' de la base de datos
-export interface UsuarioBD {
-  id: number | string;
-  full_name: string;
-  email: string;
-  hashed_password?: string;
-  role: Rol;
-  is_active: boolean;
-  created_at?: string;
-}
-
-// Datos iniciales por defecto
-const USUARIOS_INICIALES: UsuarioBD[] = [
-  {
-    id: 1,
-    full_name: "Admin General",
-    email: "admin@empresa.com",
-    role: "admin",
-    is_active: true,
-    created_at: "2026-09-01T10:00:00Z",
-  },
-  {
-    id: 2,
-    full_name: "Edson Pasión",
-    email: "edson.pasion@pasion.pe",
-    role: "admin",
-    is_active: true,
-    created_at: "2026-09-02T14:30:00Z",
-  },
-  {
-    id: 3,
-    full_name: "Carlos Vendedor",
-    email: "vendedor@empresa.com",
-    role: "vendedor",
-    is_active: true,
-    created_at: "2026-09-03T09:15:00Z",
-  },
-  {
-    id: 4,
-    full_name: "Encargado Taller",
-    email: "taller@empresa.com",
-    role: "taller",
-    is_active: true,
-    created_at: "2026-09-02T11:00:00Z",
-  },
-];
+import { Rol } from "@/types/auth";
+import { usersService, UsuarioBD } from "@/features/users/services/users.service";
 
 export default function AdminUsuariosPage() {
   const [usuarios, setUsuarios] = useState<UsuarioBD[]>([]);
@@ -69,34 +23,18 @@ export default function AdminUsuariosPage() {
     is_active: true,
   });
 
-  // Cargar usuarios guardados en localStorage al iniciar
+  // 1. Cargar usuarios mediante el servicio al montar la página
   useEffect(() => {
-    const guardados = localStorage.getItem("app_usuarios");
-    if (guardados) {
-      try {
-        setUsuarios(JSON.parse(guardados));
-      } catch {
-        setUsuarios(USUARIOS_INICIALES);
-      }
-    } else {
-      setUsuarios(USUARIOS_INICIALES);
-      localStorage.setItem("app_usuarios", JSON.stringify(USUARIOS_INICIALES));
-    }
+    setUsuarios(usersService.getAll());
   }, []);
 
-  // Función para guardar cambios en estado y localStorage al mismo tiempo
-  const actualizarListaUsuarios = (nuevaLista: UsuarioBD[]) => {
-    setUsuarios(nuevaLista);
-    localStorage.setItem("app_usuarios", JSON.stringify(nuevaLista));
-  };
-
-  // Métricas
+  // Métricas de la parte superior
   const totalUsuarios = usuarios.length;
   const totalAdmins = usuarios.filter((u) => u.role === "admin").length;
   const totalVendedores = usuarios.filter((u) => u.role === "vendedor").length;
   const totalTaller = usuarios.filter((u) => u.role === "taller").length;
 
-  // Filtrado de usuarios
+  // Filtro de búsqueda
   const usuariosFiltrados = usuarios.filter((u) => {
     const coincideTexto =
       u.full_name.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -136,7 +74,7 @@ export default function AdminUsuariosPage() {
     setIsModalOpen(true);
   };
 
-  // Guardar (Crear / Editar con validación)
+  // Guardar (Crear / Editar usando usersService)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
@@ -146,7 +84,6 @@ export default function AdminUsuariosPage() {
       return;
     }
 
-    // Expresión regular corregida sin barras innecesarias
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email.trim())) {
       setErrorMsg("Por favor, ingresa un formato de correo electrónico válido.");
@@ -159,52 +96,41 @@ export default function AdminUsuariosPage() {
     }
 
     if (selectedUser) {
-      // Editar
-      const listaActualizada = usuarios.map((u) =>
-        u.id === selectedUser.id
-          ? {
-              ...u,
-              full_name: form.full_name.trim(),
-              email: form.email.trim(),
-              role: form.role,
-              is_active: form.is_active,
-              hashed_password: form.password
-                ? `hashed_${form.password}`
-                : u.hashed_password,
-            }
-          : u
-      );
-      actualizarListaUsuarios(listaActualizada);
+      // Actualizar usuario existente
+      const listaActualizada = usersService.update(selectedUser.id, {
+        full_name: form.full_name.trim(),
+        email: form.email.trim(),
+        role: form.role,
+        is_active: form.is_active,
+        ...(form.password ? { hashed_password: `hashed_${form.password}` } : {}),
+      });
+      setUsuarios(listaActualizada);
     } else {
-      // Crear
-      const nuevoUsuario: UsuarioBD = {
-        id: Date.now(),
+      // Crear nuevo usuario
+      usersService.create({
         full_name: form.full_name.trim(),
         email: form.email.trim(),
         hashed_password: `hashed_${form.password}`,
         role: form.role,
         is_active: form.is_active,
-        created_at: new Date().toISOString(),
-      };
-      actualizarListaUsuarios([nuevoUsuario, ...usuarios]);
+      });
+      setUsuarios(usersService.getAll());
     }
 
     setIsModalOpen(false);
   };
 
-  // Alternar Estado (Activo / Inactivo)
+  // Cambiar estado activo / inactivo
   const handleToggleActive = (id: number | string) => {
-    const listaActualizada = usuarios.map((u) =>
-      u.id === id ? { ...u, is_active: !u.is_active } : u
-    );
-    actualizarListaUsuarios(listaActualizada);
+    const listaActualizada = usersService.toggleActive(id);
+    setUsuarios(listaActualizada);
   };
 
-  // Eliminar Usuario
+  // Eliminar usuario
   const handleDelete = (id: number | string, nombre: string) => {
     if (confirm(`¿Estás seguro de que deseas eliminar a ${nombre}?`)) {
-      const listaActualizada = usuarios.filter((u) => u.id !== id);
-      actualizarListaUsuarios(listaActualizada);
+      const listaActualizada = usersService.delete(id);
+      setUsuarios(listaActualizada);
     }
   };
 
@@ -278,15 +204,15 @@ export default function AdminUsuariosPage() {
           </button>
         </div>
 
-        {/* Tabla */}
+        {/* Tabla con etiquetas limpias */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-400 font-semibold border-b border-slate-100">
               <tr>
-                <th className="p-3">Nombre completo (`full_name`)</th>
+                <th className="p-3">Nombre completo</th>
                 <th className="p-3">Email</th>
-                <th className="p-3">Rol (`role`)</th>
-                <th className="p-3">Estado (`is_active`)</th>
+                <th className="p-3">Rol</th>
+                <th className="p-3">Estado</th>
                 <th className="p-3 text-right">Acciones</th>
               </tr>
             </thead>
@@ -362,7 +288,7 @@ export default function AdminUsuariosPage() {
             <form onSubmit={handleSubmit} className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-600 font-medium mb-1">
-                  Nombre Completo (`full_name`)
+                  Nombre completo
                 </label>
                 <input
                   type="text"
@@ -376,7 +302,7 @@ export default function AdminUsuariosPage() {
 
               <div>
                 <label className="block text-slate-600 font-medium mb-1">
-                  Email (`email`)
+                  Email
                 </label>
                 <input
                   type="email"
@@ -390,7 +316,7 @@ export default function AdminUsuariosPage() {
 
               <div>
                 <label className="block text-slate-600 font-medium mb-1">
-                  Contraseña (`hashed_password`)
+                  Contraseña
                   {selectedUser && (
                     <span className="text-slate-400 font-normal ml-1">
                       (Opcional)
@@ -409,7 +335,7 @@ export default function AdminUsuariosPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-600 font-medium mb-1">
-                    Rol (`role`)
+                    Rol
                   </label>
                   <select
                     value={form.role}
@@ -426,7 +352,7 @@ export default function AdminUsuariosPage() {
 
                 <div>
                   <label className="block text-slate-600 font-medium mb-1">
-                    Estado (`is_active`)
+                    Estado
                   </label>
                   <select
                     value={form.is_active ? "Activo" : "Inactivo"}

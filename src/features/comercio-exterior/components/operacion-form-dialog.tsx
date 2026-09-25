@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import type { Product } from "@/types/products"
-import type { SocioComercial, TipoOperacion } from "../types"
+import type { SocioComercial } from "../types"
 
 import {
     INCOTERMS,

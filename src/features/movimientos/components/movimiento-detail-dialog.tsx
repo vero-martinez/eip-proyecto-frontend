@@ -14,6 +14,8 @@ import { formatCurrency } from "@/lib/utils"
 
 import {
     formatMovementQuantity,
+    formatPrecioDoble,
+    formatPrecioSoles,
     formatVentaDateTime,
     getMovementDetail,
     getMovementMotivo,
@@ -63,7 +65,14 @@ export function MovimientoDetailDialog({
     movement,
     onOpenChange,
 }: MovimientoDetailDialogProps) {
-    const isSalida = movement?.movementType !== "entrada"
+    const isSalida =
+        movement?.movementType !== "entrada" &&
+        movement?.movementType !== "importacion"
+
+    const esComercio =
+        movement?.movementType === "importacion" ||
+        movement?.movementType === "exportacion"
+    const esImportacion = movement?.movementType === "importacion"
 
     const footer = (
         <div className="flex justify-end border-t bg-muted/40 p-3 sm:px-6">
@@ -154,22 +163,38 @@ export function MovimientoDetailDialog({
                         <dl className="space-y-2">
                             <DetailItem label="Precio Unit. Venta" valueClassName="text-blue-600 dark:text-blue-400 font-semibold">
                                 <span className="tabular-nums">
-                                        {movement.unitSoldPrice !==
-                                            undefined &&
-                                        movement.unitSoldPrice > 0
-                                            ? formatCurrency(
-                                                  movement.unitSoldPrice
-                                              )
-                                            : "—"}
-                                    </span>
+                                    {movement.movementType ===
+                                        "exportacion"
+                                        ? formatPrecioDoble(
+                                              movement.unitPriceUSD,
+                                              movement.unitSoldPrice
+                                          )
+                                        : formatPrecioSoles(
+                                              movement.unitSoldPrice
+                                          )}
+                                </span>
                             </DetailItem>
                             <DetailItem label="Costo Unitario">
                                 <span className="tabular-nums">
-                                    {movement.unitCostPrice !== undefined
-                                        ? formatCurrency(movement.unitCostPrice)
-                                        : "—"}
+                                    {esImportacion
+                                        ? formatPrecioDoble(
+                                              movement.unitPriceUSD,
+                                              movement.unitCostPrice
+                                          )
+                                        : movement.unitCostPrice !== undefined
+                                          ? formatCurrency(
+                                                movement.unitCostPrice
+                                            )
+                                          : "—"}
                                 </span>
                             </DetailItem>
+                            {esComercio && (
+                                <DetailItem label="Tipo de cambio">
+                                    <span className="tabular-nums">
+                                        {orDash(movement.tipoCambio)}
+                                    </span>
+                                </DetailItem>
+                            )}
                         </dl>
                     </div>
 
@@ -183,17 +208,35 @@ export function MovimientoDetailDialog({
                             <DetailItem label="Origen">
                                 {orDash(getMovementDetail(movement))}
                             </DetailItem>
-                            <DetailItem label="Motivo">
-                                {orDash(getMovementMotivo(movement))}
-                            </DetailItem>
+                            {getMovementMotivo(movement) !== undefined && (
+                                <DetailItem label="Motivo">
+                                    {orDash(getMovementMotivo(movement))}
+                                </DetailItem>
+                            )}
                             {movement.movementType === "merma" && (
                                 <DetailItem label="Detalle">
                                     {orDash(movement.reason)}
                                 </DetailItem>
                             )}
-                            <DetailItem label="Grupo de Venta" mono valueClassName="text-violet-700 dark:text-violet-300">
-                                {orDash(movement.saleGroupId)}
-                            </DetailItem>
+                            {movement.movementType === "venta" && (
+                                <DetailItem
+                                    label="Grupo de Venta"
+                                    mono
+                                    valueClassName="text-violet-700 dark:text-violet-300"
+                                >
+                                    {orDash(movement.saleGroupId)}
+                                </DetailItem>
+                            )}
+                            {(movement.movementType === "importacion" ||
+                                movement.movementType === "exportacion") && (
+                                <DetailItem
+                                    label="Folio"
+                                    mono
+                                    valueClassName="text-violet-700 dark:text-violet-300"
+                                >
+                                    {orDash(movement.folio)}
+                                </DetailItem>
+                            )}
                         </dl>
                     </div>
 

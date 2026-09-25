@@ -167,12 +167,6 @@ const operacionesStore = createLocalStore<OperacionComercioExterior[]>(
     ]
 )
 
-// Flag para migración de datos antiguos en localStorage
-const socioMigradoStore = createLocalStore<boolean>(
-    "comercio-exterior-migracion-socio",
-    () => false
-)
-
 // Devuelve verdadero si la operación es una importación
 const esImportacion = (tipo: TipoOperacion): boolean => tipo === "importacion"
 
@@ -181,16 +175,6 @@ const esImportacion = (tipo: TipoOperacion): boolean => tipo === "importacion"
 // Obtiene todas las operaciones ordenadas por fecha reciente
 export async function getOperacionesService(): Promise<OperacionComercioExterior[]> {
     await delay()
-    if (!socioMigradoStore.get()) {
-        const previas = operacionesStore.get() as (OperacionComercioExterior & {
-            contraparte?: Pick<SocioComercial, "id" | "nombre" | "pais">
-        })[]
-        const migradas = previas.map(({ contraparte, ...rest }) =>
-            contraparte ? { ...rest, socioComercial: contraparte } : rest
-        )
-        operacionesStore.set(migradas)
-        socioMigradoStore.set(true)
-    }
     return [...operacionesStore.get()].sort(
         (a, b) =>
             new Date(b.fecha).getTime() - new Date(a.fecha).getTime() ||

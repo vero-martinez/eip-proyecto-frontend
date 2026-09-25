@@ -11,6 +11,8 @@ export const MOVIMIENTO_TIPO_ITEMS: {
     { value: "entrada", label: "Entrada" },
     { value: "venta", label: "Venta" },
     { value: "merma", label: "Merma" },
+    { value: "importacion", label: "Importación" },
+    { value: "exportacion", label: "Exportación" },
 ]
 
 export type SortOption = "recent" | "oldest"

@@ -5,7 +5,7 @@
 
 import type { Proveedor } from "@/features/proveedores/types"
 
-export type OrigenLote = "apertura" | "entrada" | "compra"
+export type OrigenLote = "apertura" | "entrada" | "compra" | "importacion"
 
 /** Snapshot del proveedor guardado en el lote. */
 export type LoteProveedor = Pick<Proveedor, "id" | "name">
@@ -58,9 +58,14 @@ export interface StockEntry {
     responsable?: string
 }
 
-export type MovementType = "entrada" | "venta" | "merma"
+export type MovementType =
+    | "entrada"
+    | "venta"
+    | "merma"
+    | "importacion"
+    | "exportacion"
 
-/** Registro de movimientos de stock (entradas, ventas y mermas). */
+/** Registro de movimientos de stock (entradas, ventas, mermas y comercio exterior). */
 export interface MovementRecord {
     id: number
     productId: number
@@ -74,4 +79,7 @@ export interface MovementRecord {
     wasteType?: string
     saleGroupId?: number
     proveedor?: string
+    folio?: string
+    unitPriceUSD?: number
+    tipoCambio?: number
 }

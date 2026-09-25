@@ -4,6 +4,7 @@
  */
 
 import type { Product } from "@/types/products"
+import { createLocalStore } from "@/lib/persistence"
 import { actualizarStockService, obtenerProductosService } from "./adapters"
 import { getProveedoresService } from "@/features/proveedores/services/proveedores.service"
 import {
@@ -57,6 +58,8 @@ const ENTRADAS_INICIALES: {
         },
     ]
 
+const lotesStore = createLocalStore<Lote[]>("lotes", () => [])
+
 let MOCK_LOTES: Lote[] = []
 let loteNextId = 0
 let loteCodeCounter = 0
@@ -91,6 +94,7 @@ async function syncProductStock(productId: number): Promise<void> {
 /** Carga los lotes iniciales de prueba una sola vez. */
 async function ensureLotes(): Promise<void> {
     if (built) return
+
     const products = await obtenerProductosService()
     const proveedores = await getProveedoresService()
 
@@ -124,31 +128,49 @@ async function ensureLotes(): Promise<void> {
         })
     }
 
-    for (const apertura of APERTURAS_INICIALES) {
-        const product = products.find((p) => p.id === apertura.productId)
-        if (!product) continue
-        pushLote({
-            productId: product.id,
-            origen: "apertura",
-            cantidad: apertura.cantidad,
-            costoUnitarioSoles: apertura.costoUnitarioSoles,
-            proveedorId: apertura.proveedorId,
-            fechaIngreso: apertura.fechaIngreso ?? product.createdAt,
-        })
+    const stored = lotesStore.get()
+
+    if (stored.length === 0) {
+        for (const apertura of APERTURAS_INICIALES) {
+            const product = products.find((p) => p.id === apertura.productId)
+            if (!product) continue
+            pushLote({
+                productId: product.id,
+                origen: "apertura",
+                cantidad: apertura.cantidad,
+                costoUnitarioSoles: apertura.costoUnitarioSoles,
+                proveedorId: apertura.proveedorId,
+                fechaIngreso: apertura.fechaIngreso ?? product.createdAt,
+            })
+        }
+
+        for (const entrada of ENTRADAS_INICIALES) {
+            const product = products.find((p) => p.id === entrada.productId)
+            if (!product) continue
+            pushLote({
+                productId: product.id,
+                origen: "compra",
+                cantidad: entrada.cantidad,
+                costoUnitarioSoles: entrada.costoUnitarioSoles,
+                proveedorId: entrada.proveedorId,
+                fechaIngreso: entrada.fechaIngreso,
+            })
+        }
+
+        lotesStore.set(MOCK_LOTES)
+
+        for (const product of products) {
+            await syncProductStock(product.id)
+        }
+    } else {
+        MOCK_LOTES = stored
     }
 
-    for (const entrada of ENTRADAS_INICIALES) {
-        const product = products.find((p) => p.id === entrada.productId)
-        if (!product) continue
-        pushLote({
-            productId: product.id,
-            origen: "compra",
-            cantidad: entrada.cantidad,
-            costoUnitarioSoles: entrada.costoUnitarioSoles,
-            proveedorId: entrada.proveedorId,
-            fechaIngreso: entrada.fechaIngreso,
-        })
-    }
+    loteNextId = MOCK_LOTES.reduce((max, lote) => Math.max(max, lote.id), 0)
+    loteCodeCounter = MOCK_LOTES.reduce((max, lote) => {
+        const numero = parseInt(lote.codigo?.split("-")[1] ?? "", 10)
+        return Math.max(max, Number.isNaN(numero) ? 0 : numero)
+    }, 0)
 
     built = true
 }
@@ -221,6 +243,7 @@ export async function ingresarLoteService(data: LoteRequest): Promise<Lote> {
     }
 
     MOCK_LOTES = [...MOCK_LOTES, lote]
+    lotesStore.set(MOCK_LOTES)
     await syncProductStock(data.productId)
     return lote
 }
@@ -254,6 +277,8 @@ export async function consumirLotesService(
             ),
         }
     }
+
+    lotesStore.set(MOCK_LOTES)
 
     await syncProductStock(productId)
     return detalle

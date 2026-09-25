@@ -73,11 +73,23 @@ const MOVEMENT_TONE: Record<
         avatar: "bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300",
         cantidad: "text-rose-600 dark:text-rose-400",
     },
+    importacion: {
+        border: "border-sky-500/40",
+        accent: "border-l-sky-500",
+        avatar: "bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300",
+        cantidad: "text-emerald-600 dark:text-emerald-400",
+    },
+    exportacion: {
+        border: "border-indigo-500/40",
+        accent: "border-l-indigo-500",
+        avatar: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300",
+        cantidad: "text-rose-600 dark:text-rose-400",
+    },
 }
 
 function getMovementIcon(type: MovementType) {
-    if (type === "entrada") return ArrowDownLeft
-    if (type === "venta") return ArrowUpRight
+    if (type === "entrada" || type === "importacion") return ArrowDownLeft
+    if (type === "venta" || type === "exportacion") return ArrowUpRight
     return Trash2
 }
 

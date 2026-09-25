@@ -27,4 +27,9 @@ export const ORIGEN_LOTE_ITEMS: LoteInfoItem[] = [
         label: "Compra",
         tint: "bg-amber-500/10 text-amber-700 ring-amber-500/25 dark:text-amber-300",
     },
+    {
+        value: "importacion",
+        label: "Importación",
+        tint: "bg-indigo-500/10 text-indigo-700 ring-indigo-500/25 dark:text-indigo-300",
+    },
 ]

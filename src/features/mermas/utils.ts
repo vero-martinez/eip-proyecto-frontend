@@ -4,7 +4,7 @@
 
 import type { Product, UnitType } from "@/types/products"
 import { formatDate } from "@/lib/utils"
-import { UNIT_OPTIONS } from "@/features/products/utils"
+import { getUnitSymbol } from "@/lib/units"
 
 import type { Merma } from "./types"
 
@@ -33,8 +33,7 @@ function isInCurrentMonth(merma: Merma): boolean {
  * Agrega el símbolo de la unidad a la cantidad descartada (ej: "−6 u").
  */
 export function formatMermaQuantity(quantity: number, unitType: UnitType): string {
-    const unit = UNIT_OPTIONS.find((option) => option.value === unitType)
-    const symbol = unit?.symbol ?? unitType
+    const symbol = getUnitSymbol(unitType)
     return `−${quantity} ${symbol}`
 }
 

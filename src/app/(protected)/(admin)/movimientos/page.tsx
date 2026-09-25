@@ -10,7 +10,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { MovimientoDetailDialog } from "@/features/movimientos/components/movimiento-detail-dialog"
 import { MovimientosStats } from "@/features/movimientos/components/movimientos-stats"
-import { MovimientosTable } from "@/features/movimientos/components/movimientos-table"
+import { MovimientosList } from "@/features/movimientos/components/movimientos-list"
 import { useMovimientos } from "@/features/movimientos/hooks/use-movimientos"
 
 import type { InventoryMovement } from "@/features/movimientos/types"
@@ -93,7 +93,7 @@ export default function MovimientosPage() {
 
             <MovimientosStats movements={movements ?? []} />
 
-            <MovimientosTable
+            <MovimientosList
                 movements={movements ?? []}
                 onView={setMovimientoDetalle}
             />

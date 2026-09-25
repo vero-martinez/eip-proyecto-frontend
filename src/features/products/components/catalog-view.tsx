@@ -14,12 +14,12 @@ import { Inbox } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PaginationBar } from "@/components/common/pagination-bar"
 
+import { formatProductCount } from "@/lib/units"
 import {
-    formatProductCount,
     getCategoryTone,
     getParentCategoryName,
     getRootCategoryId,
-} from "../utils"
+} from "@/lib/categories"
 import { useCatalogFilters } from "../hooks/use-catalog-filters"
 import { CatalogFilters } from "./catalog-filters"
 import { ProductCard } from "./product-card"
@@ -30,14 +30,11 @@ import type { Product, Category } from "@/types/products"
 interface CatalogViewProps {
     products: Product[]
     categories: Category[]
-    /** Muestra u oculta el precio de costo en el detalle. */
-    showCost: boolean
 }
 
 export function CatalogView({
     products,
     categories,
-    showCost,
 }: CatalogViewProps) {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
@@ -139,7 +136,6 @@ export function CatalogView({
                 }}
                 product={selectedProduct}
                 categories={categories}
-                showCost={showCost}
             />
         </div>
     )

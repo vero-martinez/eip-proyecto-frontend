@@ -32,7 +32,7 @@ import { PaginationBar } from "@/components/common/pagination-bar"
 import { ProductFilters } from "./product-filters"
 import { getProductColumns } from "./columns"
 import { useProductFilters } from "../hooks/use-product-filters"
-import { formatProductCount } from "../utils"
+import { formatProductCount } from "@/lib/units"
 import type { Product, Category } from "@/types/products"
 
 interface ProductsTableProps {
@@ -40,6 +40,7 @@ interface ProductsTableProps {
     categories: Category[]
     onEdit: (product: Product) => void
     onDelete: (product: Product) => void
+    onViewLotes: (product: Product) => void
     onCreate: () => void
 }
 
@@ -48,9 +49,15 @@ export function ProductsTable({
     categories,
     onEdit,
     onDelete,
+    onViewLotes,
     onCreate,
 }: ProductsTableProps) {
-    const columns = getProductColumns(categories, onEdit, onDelete)
+    const columns = getProductColumns(
+        categories,
+        onEdit,
+        onDelete,
+        onViewLotes
+    )
 
     const {
         search,

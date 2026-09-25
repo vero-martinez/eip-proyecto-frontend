@@ -30,26 +30,15 @@ export const productSchema = z.object({
 
     salePrice: z
         .number({ message: "El precio de venta es obligatorio" })
-        .positive("El precio de venta debe ser mayor a 0"),
-
-    costPrice: z
-        .number({ message: "El precio de costo es obligatorio" })
-        .positive("El precio de costo debe ser mayor a 0"),
-
-
-
-    currentStock: z
-        .number({ message: "El stock actual es obligatorio" })
-        .min(0, "El stock no puede ser negativo"),
+        .min(0, "El precio de venta no puede ser negativo"),
 
     minStockAlert: z
         .number({ message: "El stock mínimo es obligatorio" })
         .min(0, "El stock mínimo no puede ser negativo"),
 
-
     isActive: z.boolean(),
-}).refine((data) => data.salePrice > data.costPrice, {
-    message: "El precio de venta debe ser mayor al precio de costo",
+}).refine((data) => !data.isActive || data.salePrice > 0, {
+    message: "Para activar el producto, el precio de venta debe ser mayor a 0",
     path: ["salePrice"],
 })
 

@@ -15,7 +15,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/common/searchable-select"
-import { getCategoryOptions, getRootCategories, getSubcategories } from "../utils"
+import { getCategoryOptions, getRootCategories, getSubcategories } from "@/lib/categories"
 import type { Category } from "@/types/products"
 import type { StatusFilter, SortBy } from "../types"
 

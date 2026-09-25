@@ -6,18 +6,14 @@
  */
 
 import type { ReactNode } from "react"
-import { Pencil, Trash2 } from "lucide-react"
+import { Layers, Pencil, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { StatusBadge } from "@/components/common/status-badge"
 import { formatCurrency } from "@/lib/utils"
-import {
-    formatStock,
-    getParentCategoryName,
-    getSubcategoryName,
-    hasLowStock,
-} from "../utils"
+import { formatStock, hasLowStock, isOutOfStock } from "@/lib/units"
+import { getParentCategoryName, getSubcategoryName } from "@/lib/categories"
 import type { Product, Category } from "@/types/products"
 
 export interface ProductColumn {
@@ -30,7 +26,8 @@ export interface ProductColumn {
 export function getProductColumns(
     categories: Category[],
     onEdit: (product: Product) => void,
-    onDelete: (product: Product) => void
+    onDelete: (product: Product) => void,
+    onViewLotes: (product: Product) => void
 ): ProductColumn[] {
     return [
         {
@@ -82,14 +79,16 @@ export function getProductColumns(
             width: "w-[13%]",
             render: (product) => {
                 const label = formatStock(product)
+                const outOfStock = isOutOfStock(product)
+                const lowStock = !outOfStock && hasLowStock(product)
 
-                if (hasLowStock(product)) {
+                if (outOfStock || lowStock) {
                     return (
                         <Badge
                             variant="destructive"
                             className="bg-destructive/15 px-2.5 text-destructive hover:bg-destructive/15"
                         >
-                            {label}
+                            {outOfStock ? "Sin stock" : label}
                         </Badge>
                     )
                 }
@@ -106,9 +105,18 @@ export function getProductColumns(
         {
             key: "actions",
             header: "Acciones",
-            width: "w-[11%]",
+            width: "w-[14%]",
             render: (product) => (
                 <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 bg-sky-100 text-sky-700 hover:bg-sky-200 hover:text-sky-800 dark:bg-sky-500/15 dark:text-sky-400 dark:hover:bg-sky-500/25 dark:hover:text-sky-300"
+                        onClick={() => onViewLotes(product)}
+                    >
+                        <Layers className="size-4" />
+                        <span className="sr-only">Lotes</span>
+                    </Button>
                     <Button
                         variant="ghost"
                         size="icon"

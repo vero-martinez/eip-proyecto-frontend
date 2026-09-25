@@ -4,8 +4,9 @@
  * Página de entradas del taller (solo rol taller).
  *
  * Container: junta los hooks de datos (useProducts, useStockEntries)
- * con los componentes armados en features/entradas: stats, la card de
- * registro y la lista de últimas entradas.
+ * con los componentes armados en features/lotes y entradas: stats, la
+ * card de registro (OperacionForm modo "produccion") y la lista de
+ * últimas entradas.
  *
  * Lee el query param "producto" (ej. desde Alertas) para pre-seleccionar
  * un producto en el formulario de registro.
@@ -18,11 +19,11 @@ import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/providers/auth-provider"
 import { useProducts } from "@/features/products/hooks/use-products"
-import { useStockEntries } from "@/features/entradas/hooks/use-entradas"
-import { useProveedores } from "@/features/entradas/hooks/use-proveedores"
-import { EntradasStats } from "@/features/entradas/components/entradas-stats"
-import { EntradaForm } from "@/features/entradas/components/entrada-form"
-import { RecentEntradas } from "@/features/entradas/components/recent-entradas"
+import { useStockEntries } from "@/features/inventario/hooks/use-entradas"
+import { useProveedores } from "@/features/proveedores/hooks/use-proveedores"
+import { OperacionForm } from "@/features/inventario/components/operacion-form"
+import { EntradasStats } from "@/features/inventario/components/entradas-stats"
+import { RecentEntradas } from "@/features/inventario/components/recent-entradas"
 
 function EntradasPageContent() {
     const searchParams = useSearchParams()
@@ -118,9 +119,9 @@ function EntradasPageContent() {
             <EntradasStats products={productList} entries={entryList} />
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
-                <EntradaForm
+                <OperacionForm
+                    modo="produccion"
                     products={productList}
-                    proveedores={proveedorList}
                     responsable={usuario?.nombre ?? "Sin asignar"}
                     initialProductId={initialProductId}
                 />

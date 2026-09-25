@@ -21,7 +21,7 @@ import {
     getCategoryOptions,
     getRootCategories,
     getSubcategories,
-} from "@/features/products/utils"
+} from "@/lib/categories"
 import type { Category } from "@/types/products"
 
 interface PosToolbarProps {

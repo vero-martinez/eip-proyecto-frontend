@@ -1,18 +1,14 @@
 /**
- * Hook con el estado de búsqueda, filtros, orden y paginación de la
- * tabla de productos. Centraliza el estado local y deriva la lista
- * ya filtrada, ordenada y paginada. El componente ProductsTable solo
- * consume lo que devuelve este hook y lo renderiza.
- *
- * Los setters resetean la página a 0 dentro del handler (no en un
- * efecto) para evitar renders en cascada.
+ * Hook personalizado para manejar los filtros, ordenamiento y paginación
+ * de la tabla de productos.
  */
 
 import { useMemo, useState } from "react"
 
-import { hasLowStock, isProductInCategoryTree } from "../utils"
-import type { StatusFilter, SortBy } from "../types"
-import type { Product, Category } from "@/types/products"
+import { isProductInCategoryTree } from "@/lib/categories"
+import { hasLowStock } from "@/lib/units"
+import type { Category, Product } from "@/types/products"
+import type { SortBy, StatusFilter } from "../types"
 
 const PAGE_SIZE = 10
 

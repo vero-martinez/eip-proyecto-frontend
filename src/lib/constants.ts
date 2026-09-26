@@ -56,6 +56,7 @@ export const NAV_ADMIN: NavSection[] = [
         title: "Negocio",
         items: [
             { label: "Comercio Exterior", href: "/comercio-exterior", icon: Store, description: "Gestionar operaciones de comercio exterior" },
+            { label: "Ventas", href: "/ventas-todas", icon: ClipboardList, description: "Ver todas las ventas del negocio, con filtro por responsable" },
         ],
     },
     {

@@ -1,7 +1,8 @@
 /**
  * Utilidades del módulo de Ventas: cálculo de totales, formato de
- * cantidades, labels de tipo/método y métricas del historial del
- * vendedor (hoy/semana). Fuente única para POS, boleta y "Mis ventas".
+ * cantidades, labels de tipo/método, opciones de responsable y
+ * métricas del historial (hoy/semana). Fuente única para POS, boleta,
+ * "Mis ventas" y el listado de todas las ventas de admin.
  */
 
 import { getUnitSymbol } from "@/lib/units"
@@ -54,7 +55,7 @@ export function formatSaleQuantity(
     return `${quantity} ${getUnitSymbol(unitType)}`
 }
 
-// --- Labels y Formato de venta (compartidos con boleta y Mis ventas) ---
+// --- Labels y Formato de venta (compartidos con boleta e historial) ---
 
 const getLabel = (
     options: { value: string; label: string }[],
@@ -69,6 +70,25 @@ export function getTipoVentaLabel(value: string): string {
 /** Label legible del método de pago. */
 export function getMetodoPagoLabel(value: string): string {
     return getLabel(METODOS_PAGO, value)
+}
+
+/**
+ * Opciones del filtro por responsable, derivadas de las propias ventas
+ * (no del padrón de usuarios) para que la lista coincida siempre con
+ * los datos. Se deduplican y ordenan alfabéticamente.
+ */
+export function getResponsablesOpciones(
+    ventas: Venta[]
+): { value: string; label: string }[] {
+    const names = new Set<string>()
+
+    for (const venta of ventas) {
+        if (venta.responsable) names.add(venta.responsable)
+    }
+
+    return [...names]
+        .sort((a, b) => a.localeCompare(b))
+        .map((name) => ({ value: name, label: name }))
 }
 
 /** Fecha y hora legibles de una venta (ej. "14/09/2026 · 16:00"). */
@@ -94,7 +114,7 @@ export interface PeriodSummary {
     total: number
 }
 
-export interface MisVentasResumen {
+export interface VentasResumen {
     hoy: PeriodSummary
     semana: PeriodSummary
 }
@@ -149,11 +169,11 @@ export function isInDateRange(
  * Calcula las métricas de "hoy" y "esta semana" (lunes a hoy) en un
  * solo recorrido sobre las ventas.
  */
-export function summarizeMisVentas(ventas: Venta[]): MisVentasResumen {
+export function summarizeVentas(ventas: Venta[]): VentasResumen {
     const now = new Date()
     const weekStart = startOfWeekMonday(now)
 
-    const resumen: MisVentasResumen = {
+    const resumen: VentasResumen = {
         hoy: { count: 0, total: 0 },
         semana: { count: 0, total: 0 },
     }

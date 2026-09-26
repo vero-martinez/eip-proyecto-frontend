@@ -13,9 +13,9 @@ import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/providers/auth-provider"
-import { useMisVentas } from "@/features/ventas/hooks/use-mis-ventas"
-import { MisVentasStats } from "@/features/ventas/components/mis-ventas-stats"
-import { MisVentasLista } from "@/features/ventas/components/mis-ventas-lista"
+import { useVentas } from "@/features/ventas/hooks/use-ventas"
+import { VentasStats } from "@/features/ventas/components/ventas-stats"
+import { VentasLista } from "@/features/ventas/components/ventas-lista"
 
 export default function MisVentasPage() {
     const { usuario } = useAuth()
@@ -24,7 +24,7 @@ export default function MisVentasPage() {
         isLoading,
         isError,
         refetch,
-    } = useMisVentas()
+    } = useVentas()
 
     const misVentas = useMemo(
         () => ventas.filter((venta) => venta.responsable === usuario?.nombre),
@@ -91,11 +91,11 @@ export default function MisVentasPage() {
             <h1 className="sr-only">Mis ventas</h1>
 
             <section aria-label="Métricas de ventas">
-                <MisVentasStats ventas={misVentas} />
+                <VentasStats ventas={misVentas} />
             </section>
 
             <section aria-label="Historial de ventas">
-                <MisVentasLista ventas={misVentas} />
+                <VentasLista ventas={misVentas} />
             </section>
         </main>
     )

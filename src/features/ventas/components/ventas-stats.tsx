@@ -1,6 +1,8 @@
 /**
- * Tarjetas de métricas de "Mis ventas": ventas de hoy (cantidad y
- * total en soles) y ventas de esta semana (cantidad y total).
+ * Tarjetas de métricas del historial de ventas: ventas de hoy
+ * (cantidad y total en soles) y ventas de esta semana (cantidad y
+ * total). Compartidas por "Mis ventas" y el listado de admin, que le
+ * pasa el subconjunto ya filtrado por responsable.
  */
 
 import { useMemo } from "react"
@@ -16,9 +18,9 @@ import { StatCard, type StatTone } from "@/components/common/stat-card"
 import { formatCurrency } from "@/lib/utils"
 import type { Venta } from "@/features/ventas/types"
 
-import { summarizeMisVentas } from "../utils"
+import { summarizeVentas } from "../utils"
 
-interface MisVentasStatsProps {
+interface VentasStatsProps {
     ventas: Venta[]
 }
 
@@ -30,11 +32,8 @@ interface StatConfig {
     tone: StatTone
 }
 
-export function MisVentasStats({ ventas }: MisVentasStatsProps) {
-    const { hoy, semana } = useMemo(
-        () => summarizeMisVentas(ventas),
-        [ventas]
-    )
+export function VentasStats({ ventas }: VentasStatsProps) {
+    const { hoy, semana } = useMemo(() => summarizeVentas(ventas), [ventas])
 
     const stats: StatConfig[] = [
         {
@@ -69,7 +68,7 @@ export function MisVentasStats({ ventas }: MisVentasStatsProps) {
 
     return (
         <section
-            aria-label="Resumen de mis ventas"
+            aria-label="Resumen de ventas"
             className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
             {stats.map((stat) => (

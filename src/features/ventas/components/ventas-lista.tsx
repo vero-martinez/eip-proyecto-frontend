@@ -1,14 +1,18 @@
 "use client"
 
 /**
- * Componente: MisVentasLista
- * Descripción: Muestra el historial de ventas del vendedor con ordenamiento,
- * filtro por rango de fechas, resumen de productos y acceso a la boleta.
+ * Componente: VentasLista
+ * Descripción: Muestra el historial de ventas con resumen de productos,
+ * paginación y acceso a la boleta, montado sobre las barras de filtros
+ * de ventas-filters-bar.
+ *
+ * Lo comparten "Mis ventas" (que le pasa solo sus propias ventas) y la
+ * vista de admin, que activa los controles propios del listado global:
+ * filtro por responsable y buscador por folio.
  */
 
 import { useMemo, useState } from "react"
 import {
-    ArrowUpDown,
     CalendarRange,
     Receipt,
     Store,
@@ -23,46 +27,38 @@ import {
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import { PaginationBar } from "@/components/common/pagination-bar"
-import { ClearFiltersButton } from "@/components/common/clear-filters-button"
 import { ListItemCard } from "@/components/common/list-item-card"
+import type { SearchableSelectOption } from "@/components/common/searchable-select"
 import { VentaBoletaDialog } from "@/features/ventas/components/boleta-dialog"
+import {
+    VentasFiltersBar,
+    VentasSearchBar,
+} from "@/features/ventas/components/ventas-filters-bar"
 import { cn, formatCurrency } from "@/lib/utils"
 import type { Venta } from "@/features/ventas/types"
-import { TIPOS_VENTA } from "@/features/ventas/constants"
 
+import { useVentasFilters } from "../hooks/use-ventas-filters"
 import {
     formatVentaDateTime,
     formatVentaItems,
     getMetodoPagoLabel,
+    getResponsablesOpciones,
     getTipoVentaLabel,
-    isInDateRange,
 } from "../utils"
 
-interface MisVentasListaProps {
+interface VentasListaProps {
     ventas: Venta[]
-}
-
-type SortOption = "recent" | "oldest"
-
-const PAGE_SIZE = 10
-
-const SORT_ITEMS: Record<SortOption, string> = {
-    recent: "Más recientes",
-    oldest: "Más antiguas",
-}
-
-const TIPO_FILTER_ITEMS: Record<string, string> = {
-    all: "Todos",
-    ...Object.fromEntries(TIPOS_VENTA.map((option) => [option.value, option.label])),
+    /**
+     * Vista global: agrega el filtro por responsable y lo muestra en
+     * cada card. El valor es controlado por la página, que también lo
+     * necesita para recalcular las tarjetas de métricas.
+     */
+    mostrarResponsable?: boolean
+    responsable?: string
+    onResponsableChange?: (value: string) => void
+    /** Vista global: agrega el buscador por folio en una barra secundaria. */
+    mostrarBuscador?: boolean
 }
 
 const TIPO_VENTA_CONFIG: Record<
@@ -120,173 +116,105 @@ const FALLBACK_CONFIG = {
     icon: CreditCard,
 }
 
-export function MisVentasLista({ ventas }: MisVentasListaProps) {
-    const [sort, setSort] = useState<SortOption>("recent")
-    const [tipo, setTipo] = useState("all")
-    const [desde, setDesde] = useState("")
-    const [hasta, setHasta] = useState("")
-    const [page, setPage] = useState(0)
+/** Formatea el total para el resumen de la paginación. */
+const formatVentaCount = (count: number) =>
+    `${count} venta${count !== 1 ? "s" : ""}`
+
+export function VentasLista({
+    ventas,
+    mostrarResponsable = false,
+    responsable = "all",
+    onResponsableChange,
+    mostrarBuscador = false,
+}: VentasListaProps) {
+    const {
+        search,
+        setSearch,
+        tipo,
+        setTipo,
+        desde,
+        setDesde,
+        hasta,
+        setHasta,
+        sort,
+        setSort,
+        pageItems,
+        totalCount,
+        page,
+        pageCount,
+        rangeStart,
+        rangeEnd,
+        hasActiveFilters,
+        clearFilters,
+        goToPage,
+    } = useVentasFilters(ventas, responsable)
+
     const [boletaSeleccionada, setBoletaSeleccionada] = useState<Venta | null>(null)
 
-    const hasRange = Boolean(desde || hasta)
-    const hasFilters = Boolean(tipo !== "all" || hasRange)
+    const responsableOptions: SearchableSelectOption[] = useMemo(
+        () => getResponsablesOpciones(ventas),
+        [ventas]
+    )
 
-    const items = useMemo(() => {
-        const filtered = ventas.filter(
-            (venta) =>
-                isInDateRange(venta.createdAt, desde || undefined, hasta || undefined) &&
-                (tipo === "all" || venta.tipoVenta === tipo)
-        )
-
-        return [...filtered].sort((a, b) => {
-            const diff =
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime()
-            return sort === "recent" ? diff : -diff
-        })
-    }, [ventas, sort, tipo, desde, hasta])
-
-    const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
-    const safePage = Math.min(page, pageCount - 1)
-    const pageItems = items.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE)
-
-    const clearFilters = () => {
-        setPage(0)
-        setTipo("all")
-        setSort("recent")
-        setDesde("")
-        setHasta("")
+    /** El responsable está controlado por la página, hay que reiniciarlo allá. */
+    const handleClearFilters = () => {
+        clearFilters()
+        onResponsableChange?.("all")
     }
 
     return (
         <>
             <Card className="overflow-hidden border-violet-200/60 shadow-md dark:border-violet-900/40">
             <CardHeader className="gap-4 pb-4">
-                {/* Controles de filtro y ordenamiento */}
-                <div 
-                    role="search"
-                    aria-label="Filtros de historial de ventas"
-                    className="flex flex-col items-center gap-3 rounded-2xl border border-violet-200/70 bg-white/60 p-3.5 dark:border-violet-900/40 dark:bg-slate-900/60 sm:flex-row sm:items-end sm:justify-between"
-                >
-                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
-                        <div className="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left gap-1">
-                            <label
-                                htmlFor="ventas-desde"
-                                className="text-[11px] font-bold uppercase tracking-wider text-violet-900/70 dark:text-violet-300"
-                            >
-                                Desde
-                            </label>
-                            <Input
-                                id="ventas-desde"
-                                type="date"
-                                value={desde}
-                                onChange={(e) => {
-                                    setPage(0)
-                                    setDesde(e.target.value)
-                                }}
-                                className="h-8 w-full sm:w-36 border-violet-200 text-xs text-center sm:text-left focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-800"
-                            />
-                        </div>
-
-                        <div className="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left gap-1">
-                            <label
-                                htmlFor="ventas-hasta"
-                                className="text-[11px] font-bold uppercase tracking-wider text-violet-900/70 dark:text-violet-300"
-                            >
-                                Hasta
-                            </label>
-                            <Input
-                                id="ventas-hasta"
-                                type="date"
-                                value={hasta}
-                                onChange={(e) => {
-                                    setPage(0)
-                                    setHasta(e.target.value)
-                                }}
-                                className="h-8 w-full sm:w-36 border-violet-200 text-xs text-center sm:text-left focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-800"
-                            />
-                        </div>
-
-                        {hasFilters && (
-                            <ClearFiltersButton
-                                onClick={clearFilters}
-                                ariaLabel="Limpiar todos los filtros activos"
-                                className="h-8"
-                            />
-                        )}
-                    </div>
-
-                    <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:ml-auto">
-                        <Select
-                            value={tipo}
-                            onValueChange={(val) => {
-                                setPage(0)
-                                setTipo(val ?? "all")
-                            }}
-                            items={TIPO_FILTER_ITEMS}
-                        >
-                            <SelectTrigger
-                                size="sm"
-                                aria-label="Filtrar por tipo de venta"
-                                className="h-8 w-full sm:w-auto justify-center gap-2 border-violet-300/80 text-xs font-bold text-violet-900 dark:border-violet-800 dark:text-violet-200"
-                            >
-                                <Store className="size-3.5 text-violet-600 dark:text-violet-400" aria-hidden="true" />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent align="end">
-                                <SelectItem value="all">Todos</SelectItem>
-                                {TIPOS_VENTA.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select
-                            value={sort}
-                            onValueChange={(val) => {
-                                setPage(0)
-                                setSort((val ?? "recent") as SortOption)
-                            }}
-                            items={SORT_ITEMS}
-                        >
-                            <SelectTrigger
-                                size="sm"
-                                aria-label="Ordenar resultados por fecha"
-                                className="h-8 w-full sm:w-auto justify-center gap-2 border-violet-300/80 text-xs font-bold text-violet-900 dark:border-violet-800 dark:text-violet-200"
-                            >
-                                <ArrowUpDown className="size-3.5 text-violet-600 dark:text-violet-400" aria-hidden="true" />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent align="end">
-                                <SelectItem value="recent">Más recientes</SelectItem>
-                                <SelectItem value="oldest">Más antiguas</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
+                <VentasFiltersBar
+                    mostrarResponsable={mostrarResponsable}
+                    responsable={responsable}
+                    onResponsableChange={onResponsableChange}
+                    responsableOptions={responsableOptions}
+                    desde={desde}
+                    onDesdeChange={setDesde}
+                    hasta={hasta}
+                    onHastaChange={setHasta}
+                    tipo={tipo}
+                    onTipoChange={setTipo}
+                    sort={sort}
+                    onSortChange={setSort}
+                    hasActiveFilters={hasActiveFilters}
+                    onClearFilters={handleClearFilters}
+                />
             </CardHeader>
 
             <CardContent className="flex-1 space-y-3 pt-0">
+                {/* Barra secundaria: buscador por folio */}
+                {mostrarBuscador && ventas.length > 0 && (
+                    <VentasSearchBar
+                        search={search}
+                        onSearchChange={setSearch}
+                    />
+                )}
+
                 {ventas.length === 0 ? (
-                    <div 
-                        role="status" 
+                    <div
+                        role="status"
                         className="flex h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-300/60 bg-violet-50/40 p-4 text-center dark:border-violet-900/50 dark:bg-violet-950/20"
                     >
                         <div className="flex size-12 items-center justify-center rounded-xl bg-violet-500 text-white">
                             <Receipt className="size-6" aria-hidden="true" />
                         </div>
                         <p className="text-base font-bold text-foreground">
-                            Aún no tenés ventas registradas
+                            {mostrarResponsable
+                                ? "Aún no hay ventas registradas"
+                                : "Aún no tenés ventas registradas"}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Tus ventas del punto de venta aparecerán acá en tiempo real.
+                            {mostrarResponsable
+                                ? "Las ventas del punto de venta aparecerán acá en tiempo real."
+                                : "Tus ventas del punto de venta aparecerán acá en tiempo real."}
                         </p>
                     </div>
-                ) : items.length === 0 ? (
-                    <div 
-                        role="status" 
+                ) : totalCount === 0 ? (
+                    <div
+                        role="status"
                         className="flex h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300/60 bg-amber-50/40 p-4 text-center dark:border-amber-900/50 dark:bg-amber-950/20"
                     >
                         <div className="flex size-12 items-center justify-center rounded-xl bg-amber-500 text-white">
@@ -300,8 +228,8 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                         </p>
                     </div>
                 ) : (
-                    <ul 
-                        aria-label="Listado de ventas" 
+                    <ul
+                        aria-label="Listado de ventas"
                         className="space-y-3"
                     >
                         {pageItems.map((venta) => {
@@ -314,6 +242,10 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                             const tipoLabel = getTipoVentaLabel(venta.tipoVenta)
                             const metodoLabel = getMetodoPagoLabel(venta.metodoPago)
                             const formattedTotal = formatCurrency(venta.total)
+                            const resumenItems = formatVentaItems(venta.items)
+                            const descripcion = mostrarResponsable
+                                ? `${resumenItems} · ${venta.responsable}`
+                                : resumenItems
 
                             return (
                                 <ListItemCard
@@ -363,7 +295,7 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                                             </Badge>
                                         </>
                                     }
-                                    description={formatVentaItems(venta.items)}
+                                    description={descripcion}
                                     trailing={
                                         <>
                                             <span
@@ -401,18 +333,17 @@ export function MisVentasLista({ ventas }: MisVentasListaProps) {
                 )}
             </CardContent>
 
-            {ventas.length > 0 && items.length > 0 && (
+            {ventas.length > 0 && totalCount > 0 && (
                 <div className="border-t border-violet-100/60 px-4 py-3 dark:border-violet-900/30">
                     <PaginationBar
-                        page={safePage}
+                        page={page}
                         pageCount={pageCount}
-                        onPageChange={setPage}
+                        onPageChange={goToPage}
                         summary={{
-                            from: items.length === 0 ? 0 : safePage * PAGE_SIZE + 1,
-                            to: Math.min(items.length, (safePage + 1) * PAGE_SIZE),
-                            total: items.length,
-                            formatCount: (count) =>
-                                `${count} venta${count !== 1 ? "s" : ""}`,
+                            from: rangeStart,
+                            to: rangeEnd,
+                            total: totalCount,
+                            formatCount: formatVentaCount,
                         }}
                         ariaLabel="Paginación de historial de ventas"
                     />

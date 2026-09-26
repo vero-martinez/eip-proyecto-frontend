@@ -24,7 +24,7 @@ const seed = (): StoredUser[] => [
     {
         id: "2",
         fullName: "Vendedor Mock",
-        email: "vendedor@eip.com",
+        email: "vendedor@pasion.pe",
         role: "vendedor",
         isActive: true,
         createdAt: "2026-09-12T04:21:22.600Z",
@@ -33,7 +33,7 @@ const seed = (): StoredUser[] => [
     {
         id: "3",
         fullName: "Taller Mock",
-        email: "taller@eip.com",
+        email: "taller@pasion.pe",
         role: "taller",
         isActive: true,
         createdAt: "2026-09-12T04:21:22.600Z",

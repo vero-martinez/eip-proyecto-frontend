@@ -1,51 +1,22 @@
 /**
  * Servicio de autenticación mockeado.
- * Simula el login usando usuarios de prueba hasta tener el backend real.
+ * Delega la verificación de credenciales en usersService, que es
+ * la misma fuente de datos que usa el módulo de administración de
+ * usuarios — así un usuario creado desde ahí puede loguearse.
  */
 
-import { Usuario } from "@/types/auth";
-
-// Usuarios de prueba que simulan los datos del backend.
-const USUARIOS_MOCK: (Usuario & { email: string; password: string })[] = [
-    {
-        id: "1",
-        nombre: "Admin Mock",
-        rol: "admin",
-        email: "admin@eip.com",
-        password: "admin123",
-    },
-    {
-        id: "2",
-        nombre: "Vendedor Mock",
-        rol: "vendedor",
-        email: "vendedor@eip.com",
-        password: "vendedor123",
-    },
-    {
-        id: "3",
-        nombre: "Taller Mock",
-        rol: "taller",
-        email: "taller@eip.com",
-        password: "taller123",
-    },
-];
+import type { Usuario } from "@/types/auth"
+import { verifyCredentialsService } from "@/features/usuarios/users.service"
 
 export const authService = {
-    // Simula un login validando las credenciales.
     login: async (email: string, password: string): Promise<Usuario> => {
-        // Simula el tiempo de respuesta de una API.
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        const user = await verifyCredentialsService(email, password)
 
-        const encontrado = USUARIOS_MOCK.find(
-            (u) => u.email === email && u.password === password
-        );
-
-        if (!encontrado) {
-            throw new Error("Email o contraseña incorrectos");
+        // Adapta la forma de User (admin) a Usuario (sesión).
+        return {
+            id: user.id,
+            nombre: user.fullName,
+            rol: user.role,
         }
-
-        // Devuelve los datos del usuario sin la contraseña.
-        const { email: _email, password: _password, ...usuario } = encontrado;
-        return usuario;
     },
-};
+}

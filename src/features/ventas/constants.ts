@@ -1,6 +1,7 @@
 /**
- * Opciones del paso de pago del Punto de Venta: fuente única para los
- * selectores de tipo de venta y método de pago.
+ * Opciones del paso de pago del Punto de Venta y del historial de
+ * ventas: fuente única para los selectores de tipo de venta, método
+ * de pago y ordenamiento.
  */
 
 export const TIPOS_VENTA: { value: string; label: string }[] = [
@@ -13,6 +14,13 @@ export const TIPOS_VENTA: { value: string; label: string }[] = [
 export const METODOS_PAGO: { value: string; label: string }[] = [
     { value: "efectivo", label: "Efectivo" },
     { value: "billetera-digital", label: "Billetera digital (Yape / Plin)" },
+]
+
+export type SortOption = "recent" | "oldest"
+
+export const SORT_ITEMS: { value: SortOption; label: string }[] = [
+    { value: "recent", label: "Más recientes" },
+    { value: "oldest", label: "Más antiguas" },
 ]
 
 /**

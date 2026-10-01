@@ -76,14 +76,6 @@ export function getMedioTransporteLabel(value?: string): string | undefined {
 
 // --- CÁLCULOS Y RESÚMENES ---
 
-// Calcula el precio total de un ítem (cantidad × precio unitario)
-export function calcularSubtotalLinea(linea: {
-    cantidad: number
-    precioUSD: number
-}): number {
-    return round2(linea.cantidad * linea.precioUSD)
-}
-
 // Calcula los totales en USD y en Soles (PEN) según el tipo de cambio
 export function calcularTotales(
     lineas: { cantidad: number; precioUSD: number }[],

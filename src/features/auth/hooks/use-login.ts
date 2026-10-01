@@ -1,7 +1,7 @@
 /**
  * Hook de login con TanStack Query.
  * Usa useMutation para manejar automáticamente los estados del login.
- * Actualmente utiliza el servicio de autenticación mockeado.
+ * Llama al servicio de autenticación real del backend.
  */
 
 import { useMutation } from "@tanstack/react-query";

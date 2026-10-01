@@ -1,234 +1,80 @@
 /**
- * Servicio de Productos con datos mock en localStorage.
- * Simula las operaciones CRUD y categorías hasta tener el backend real.
- * Luego las funciones se reemplazarán por llamadas a la API con Axios.
+ * Servicio de Productos contra la API de FastAPI.
+ *
+ * Stock y costo son calculados por el backend.
  */
 
-import { Product, Category } from "@/types/products"
+import api from "@/lib/axios"
 import { configurarAdapters } from "@/features/inventario/services/adapters"
-import { createLocalStore } from "@/lib/persistence"
+import type { Category, Product } from "@/types/products"
 
-// ===== Seeds / Datos Iniciales =====
+// ===== Tipos =====
 
-const INITIAL_CATEGORIES: Category[] = [
-    { id: 1, parentId: null, name: "MINERALES NATURALES", description: null },
-    { id: 2, parentId: null, name: "CUARZOS Y CRISTALES", description: null },
-    { id: 3, parentId: null, name: "PIEDRAS SEMIPRECIOSAS", description: null },
-    { id: 4, parentId: null, name: "JOYERÍA", description: null },
-    { id: 5, parentId: null, name: "DECORACIÓN", description: null },
-    { id: 6, parentId: null, name: "PRODUCTOS PARA EXPORTACIÓN", description: null },
+/** Datos para crear un producto. */
+export type ProductCreateData = Omit<
+    Product,
+    "id" | "createdAt" | "costPrice" | "currentStock"
+>
 
-    { id: 9, parentId: 1, name: "Minerales metálicos", description: null },
-    { id: 11, parentId: 2, name: "Amatistas", description: null },
-    { id: 12, parentId: 2, name: "Citrinos", description: null },
-    { id: 24, parentId: 4, name: "Anillos", description: null },
-    { id: 27, parentId: 4, name: "Pulseras", description: null },
-]
+/** Datos para actualizar un producto. */
+export type ProductUpdateData = Partial<ProductCreateData>
 
-const INITIAL_PRODUCTS: Product[] = [
-    {
-        id: 1,
-        categoryId: 27,
-        sku: "PUL-AMAT-8MM",
-        name: "Pulsera Amatista 8mm",
-        unitType: "UNIDAD",
-        salePrice: 25.0,
-        costPrice: 8.0,
-        currentStock: 40,
-        minStockAlert: 10,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 2,
-        categoryId: 9,
-        sku: "PIR-BRUTO-KG",
-        name: "Pirita Metálica en Bruto",
-        unitType: "KILOGRAMO",
-        salePrice: 45.0,
-        costPrice: 18.0,
-        currentStock: 85.5,
-        minStockAlert: 15,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 3,
-        categoryId: 6,
-        sku: "EXP-PIRITA-L",
-        name: "Lote Pirita Exportación",
-        unitType: "KILOGRAMO",
-        salePrice: 60.0,
-        costPrice: 22.0,
-        currentStock: 250,
-        minStockAlert: 40,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 4,
-        categoryId: 11,
-        sku: "EIP-0001",
-        name: "Amatista pulida S",
-        unitType: "UNIDAD",
-        salePrice: 60.0,
-        costPrice: 20.0,
-        currentStock: 12,
-        minStockAlert: 5,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 5,
-        categoryId: 11,
-        sku: "EIP-0002",
-        name: "Amatista pulida M",
-        unitType: "UNIDAD",
-        salePrice: 85.0,
-        costPrice: 30.0,
-        currentStock: 3,
-        minStockAlert: 5,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 6,
-        categoryId: 24,
-        sku: "EIP-0007",
-        name: "Anillo citrino plata",
-        unitType: "UNIDAD",
-        salePrice: 70.0,
-        costPrice: 25.0,
-        currentStock: 9,
-        minStockAlert: 3,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 7,
-        categoryId: 12,
-        sku: "EIP-0008",
-        name: "Pulsera citrino 8mm",
-        unitType: "UNIDAD",
-        salePrice: 30.0,
-        costPrice: 10.0,
-        currentStock: 2,
-        minStockAlert: 5,
-        isActive: true,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-    {
-        id: 8,
-        categoryId: 9,
-        sku: "EIP-0005",
-        name: "Pirita natural bruta",
-        unitType: "UNIDAD",
-        salePrice: 75.0,
-        costPrice: 28.0,
-        currentStock: 0,
-        minStockAlert: 5,
-        isActive: false,
-        createdAt: "2026-09-12T04:21:22.600Z",
-    },
-]
+// ===== Productos =====
 
-// ===== Declaración de Stores de Persistencia =====
-
-const productsStore = createLocalStore<Product[]>("products", () => INITIAL_PRODUCTS)
-const categoriesStore = createLocalStore<Category[]>("categories", () => INITIAL_CATEGORIES)
-
-// Simula la latencia (demora) de una llamada real a la API.
-const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
-
-// ===== Service =====
-
-/**
- * Lista todos los productos desde el store de localStorage.
- */
+/** Lista los productos. */
 export async function getProductsService(): Promise<Product[]> {
-    await delay()
-    return productsStore.get()
+    const { data } = await api.get<Product[]>("/productos")
+    return data
 }
 
-/**
- * Obtiene un producto por id. Lanza error si no existe.
- */
+/** Obtiene un producto por ID. */
 export async function getProductByIdService(id: number): Promise<Product> {
-    await delay()
-    const products = productsStore.get()
-    const product = products.find((p) => p.id === id)
-    if (!product) throw new Error("Producto no encontrado")
-    return product
+    const { data } = await api.get<Product>(`/productos/${id}`)
+    return data
 }
 
-/**
- * Crea un producto nuevo y actualiza localStorage.
- */
+/** Crea un producto. */
 export async function createProductService(
-    data: Omit<Product, "id" | "createdAt">
+    data: ProductCreateData
 ): Promise<Product> {
-    await delay()
-    const products = productsStore.get()
-    
-    const maxId = products.length > 0 ? Math.max(...products.map((p) => p.id)) : 0
-    const newProduct: Product = {
-        ...data,
-        id: maxId + 1,
-        createdAt: new Date().toISOString(),
-    }
-
-    productsStore.set([...products, newProduct])
-    return newProduct
+    const { data: created } = await api.post<Product>("/productos", data)
+    return created
 }
 
-/**
- * Actualiza un producto existente en localStorage.
- */
+/** Actualiza un producto. */
 export async function updateProductService(
     id: number,
-    data: Partial<Omit<Product, "id" | "createdAt">>
+    data: ProductUpdateData
 ): Promise<Product> {
-    await delay()
-    const products = productsStore.get()
-    const index = products.findIndex((p) => p.id === id)
-    if (index === -1) throw new Error("Producto no encontrado")
-
-    const updatedProduct = { ...products[index], ...data }
-    const updatedProducts = [...products]
-    updatedProducts[index] = updatedProduct
-
-    productsStore.set(updatedProducts)
-    return updatedProduct
+    const { data: updated } = await api.put<Product>(`/productos/${id}`, data)
+    return updated
 }
 
-/**
- * Elimina un producto por id en localStorage.
- */
+/** Elimina un producto. */
 export async function deleteProductService(id: number): Promise<void> {
-    await delay()
-    const products = productsStore.get()
-    const exists = products.some((p) => p.id === id)
-    if (!exists) throw new Error("Producto no encontrado")
-
-    const filteredProducts = products.filter((p) => p.id !== id)
-    productsStore.set(filteredProducts)
+    await api.delete(`/productos/${id}`)
 }
 
-/**
- * Lista todas las categorías desde el store de localStorage.
- */
+// ===== Categorías =====
+
+/** Lista las categorías. */
 export async function getCategoriesService(): Promise<Category[]> {
-    await delay()
-    return categoriesStore.get()
+    const { data } = await api.get<Category[]>("/categorias")
+    return data
 }
 
 // ===== Adaptadores =====
+//
+// Mantiene el contrato de Inventario.
+// El stock solo se modifica desde el backend.
 
 configurarAdapters({
     obtenerProductos: getProductsService,
     obtenerProducto: getProductByIdService,
-    actualizarStock: async (productId, patch) => {
-        await updateProductService(productId, patch)
+    actualizarStock: async () => {
+        throw new Error(
+            "El stock se actualiza desde el backend"
+        )
     },
     crearProducto: createProductService,
 })

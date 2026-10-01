@@ -5,7 +5,6 @@
  */
 
 import api from "@/lib/axios"
-import { configurarAdapters } from "@/features/inventario/services/adapters"
 import type { Category, Product } from "@/types/products"
 
 // ===== Tipos =====
@@ -62,19 +61,3 @@ export async function getCategoriesService(): Promise<Category[]> {
     const { data } = await api.get<Category[]>("/categorias")
     return data
 }
-
-// ===== Adaptadores =====
-//
-// Mantiene el contrato de Inventario.
-// El stock solo se modifica desde el backend.
-
-configurarAdapters({
-    obtenerProductos: getProductsService,
-    obtenerProducto: getProductByIdService,
-    actualizarStock: async () => {
-        throw new Error(
-            "El stock se actualiza desde el backend"
-        )
-    },
-    crearProducto: createProductService,
-})

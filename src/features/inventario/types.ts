@@ -15,18 +15,6 @@ export interface LotesFilters {
     origen?: OrigenLote
 }
 
-/** Datos requeridos para registrar un nuevo lote. */
-export interface LoteRequest {
-    productId: number
-    cantidad: number
-    origen: OrigenLote
-    responsable: string
-    costoUnitarioSoles?: number
-    proveedor?: LoteProveedor
-    codigo?: string
-    fechaIngreso?: string
-}
-
 /** Representación de un lote guardado en el sistema. */
 export interface Lote {
     id: number
@@ -39,13 +27,6 @@ export interface Lote {
     proveedor?: LoteProveedor
     responsable: string
     fechaIngreso: string
-}
-
-/** Detalle del descuento de inventario y costo por lote. */
-export interface ConsumoDetalle {
-    loteId: number
-    cantidad: number
-    costoUnitarioSoles: number
 }
 
 /** Registro de ingreso de producto al inventario. */

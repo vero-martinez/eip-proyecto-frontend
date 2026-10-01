@@ -1,5 +1,8 @@
 /**
  * Servicio de usuarios mockeado con persistencia en localStorage.
+ *
+ * PENDIENTE (paso 3): reemplazar por llamadas a /api/v1/usuarios.
+ * El login ya NO usa este servicio: auth.service.ts llama al backend.
  */
 
 import { createLocalStore } from "@/lib/persistence"
@@ -122,31 +125,4 @@ export async function updateUserService(
 export async function deleteUserService(id: string): Promise<void> {
     store.set(store.get().filter((u) => u.id !== id))
     return delay(undefined)
-}
-
-/**
- * Verifica email + contraseña contra el mismo store que usa el
- * módulo de administración. La usa authService.login.
- */
-export async function verifyCredentialsService(
-    email: string,
-    password: string
-): Promise<User> {
-    const users = store.get()
-    const encontrado = users.find(
-        (u) =>
-            u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    )
-
-    if (!encontrado) {
-        await delay(null, 300)
-        throw new Error("Email o contraseña incorrectos")
-    }
-
-    if (!encontrado.isActive) {
-        await delay(null, 300)
-        throw new Error("Tu cuenta está inactiva. Contactá a un administrador.")
-    }
-
-    return delay(toPublicUser(encontrado))
 }

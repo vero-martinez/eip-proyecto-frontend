@@ -2,7 +2,7 @@
  * Instancia centralizada de Axios para comunicación con la API (FastAPI).
  *
  * En vez de usar Axios en cada archivo, todo el proyecto importa esta instancia ya configurada
- * 
+ *
  * Incluye interceptores para:
  * - Agregar automáticamente el token en las peticiones (cuando exista sesión).
  * - Estandarizar los mensajes de error del backend.
@@ -10,6 +10,7 @@
 
 import axios from "axios";
 import { env } from "@/lib/env";
+import { getToken, clearSession } from "@/lib/session";
 
 // Instancia base de Axios. Usa la URL del backend definida en env.ts
 const api = axios.create({
@@ -20,16 +21,15 @@ const api = axios.create({
 /**
  * INTERCEPTOR DE REQUEST
  *
- * Se ejecuta antes de cada petición y permite agregar automáticamente
- * el token de autenticación al header Authorization.
- *
- * Actualmente no modifica la petición porque aún no hay autenticación;
- * queda preparado para cuando exista un usuario logueado.
+ * Se ejecuta antes de cada petición y agrega automáticamente el token
+ * de autenticación al header Authorization.
  */
 api.interceptors.request.use((config) => {
-    // TODO: cuando exista el store de auth (mock o real), traer el token de ahí
-    // const token = useAuthStore.getState().token;
-    // if (token) config.headers.Authorization = `Bearer ${token}`;
+    const token = getToken();
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
 
     return config;
 });
@@ -55,6 +55,20 @@ api.interceptors.response.use(
 
         // Sobreescribe el mensaje de Axios para que el error ya esté listo para mostrar al usuario.
         error.message = message;
+
+        // 401 en una ruta protegida = token inválido o expirado.
+        // Se limpia la sesión para forzar un nuevo login.
+        const status = error.response?.status;
+        const url = error.config?.url ?? "";
+
+        if (status === 401 && !url.includes("/auth/login")) {
+            clearSession();
+
+            // Redirige al login evitando loops si ya estás ahí.
+            if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+                window.location.href = "/login";
+            }
+        }
 
         return Promise.reject(error);
     }

@@ -1,57 +1,77 @@
-"use client"
-
 /**
  * AuthProvider — maneja la sesión del usuario en toda la app.
- * Guarda el usuario globalmente y mantiene la sesión en localStorage.
+ * Guarda el token JWT y el usuario globalmente, y los persiste en
+ * localStorage mediante session.ts.
  * Permite acceder al usuario, login y logout desde cualquier componente.
  */
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Usuario } from "@/types/auth";
+import { getSession, setSession, clearSession } from "@/lib/session";
+import { authService } from "@/features/auth/services/auth.service";
 
 interface AuthContextType {
     usuario: Usuario | null;
     isLoading: boolean;
-    login: (usuario: Usuario) => void;
+    login: (usuario: Usuario, accessToken: string) => void;
     logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const STORAGE_KEY = "eip-auth-usuario";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [usuario, setUsuario] = useState<Usuario | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Recupera la sesión guardada al cargar la aplicación.
+    // Recupera la sesión guardada y la valida contra el backend al cargar.
     useEffect(() => {
-        const recuperarSesion = () => {
-            const guardado = localStorage.getItem(STORAGE_KEY);
+        let cancelado = false;
 
-            if (guardado) {
-                setUsuario(JSON.parse(guardado));
+        const recuperarSesion = async () => {
+            const session = getSession();
+
+            if (!session) {
+                setIsLoading(false);
+                return;
             }
 
-            setIsLoading(false);
+            try {
+                // Confirma que el token siga vigente y recupera el usuario.
+                const usuarioActual = await authService.me();
+
+                if (cancelado) return;
+
+                setUsuario(usuarioActual);
+                setSession({ accessToken: session.accessToken, usuario: usuarioActual });
+            } catch {
+                // Token inválido o expirado: se descarta la sesión.
+                if (cancelado) return;
+                clearSession();
+                setUsuario(null);
+            } finally {
+                if (!cancelado) setIsLoading(false);
+            }
         };
 
-        const timer = window.setTimeout(recuperarSesion, 0);
-        return () => window.clearTimeout(timer);
+        recuperarSesion();
+
+        return () => {
+            cancelado = true;
+        };
     }, []);
 
-    // Guarda el usuario autenticado en memoria y localStorage.
-    const login = (usuarioAutenticado: Usuario) => {
+    // Guarda el usuario autenticado y su token.
+    const login = (usuarioAutenticado: Usuario, accessToken: string) => {
         setUsuario(usuarioAutenticado);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(usuarioAutenticado));
+        setSession({ accessToken, usuario: usuarioAutenticado });
     };
 
-    // Cierra la sesión, elimina el usuario guardado y redirige al login.
+    // Cierra la sesión, elimina lo guardado y redirige al login.
     const logout = () => {
         setUsuario(null);
-        localStorage.removeItem(STORAGE_KEY);
+        clearSession();
         router.push("/login");
     };
 

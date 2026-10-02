@@ -34,9 +34,9 @@ export function useLoginForm() {
         loginMutation.mutate(
             { email: data.email, password: data.password },
             {
-                onSuccess: (usuario) => {
-                    guardarSesion(usuario)
-                    router.push("/")
+                onSuccess: ({ usuario, accessToken }) => {
+                    guardarSesion(usuario, accessToken);
+                    router.push("/");
                 },
                 onError: (error) => {
                     toast.error(error.message)

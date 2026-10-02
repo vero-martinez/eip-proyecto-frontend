@@ -4,12 +4,14 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { updateProductService } from "../services/products.service"
-import type { Product } from "@/types/products"
+import {
+    updateProductService,
+    type ProductUpdateData,
+} from "../services/products.service"
 
 interface UpdateProductParams {
     id: number
-    data: Partial<Omit<Product, "id" | "createdAt">>
+    data: ProductUpdateData
 }
 
 export function useUpdateProduct() {

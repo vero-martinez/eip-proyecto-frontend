@@ -3,9 +3,9 @@
 /**
  * Página de compras del Admin (solo rol admin).
  *
- * Container de la compra a proveedores nacionales: stats de ingresos,
+ * Container de la compra a proveedores nacionales: stats de compras,
  * el formulario de compra (OperacionForm modo "compra") y las últimas
- * entradas registradas.
+ * compras registradas.
  */
 
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
@@ -43,8 +43,17 @@ export default function ComprasPage() {
     } = useProveedores()
 
     const productList = products ?? []
-    const entryList = entries ?? []
     const proveedorList = proveedores ?? []
+
+    /**
+     * `GET /entradas` no distingue compras de entradas de producción: ambas
+     * comparten la misma tabla y `StockEntry` no trae un campo de tipo. La
+     * única señal disponible es `proveedorId`, que solo traen las compras.
+     * Sin este filtro, las entradas del taller aparecerían como compras.
+     */
+    const compraList = (entries ?? []).filter(
+        (entry) => entry.proveedorId != null
+    )
 
     const handleRetry = () => {
         refetchProducts()
@@ -100,7 +109,7 @@ export default function ComprasPage() {
         <main className="flex flex-col gap-6 sm:gap-8">
             <h1 className="sr-only">Compras de Inventario</h1>
 
-            <EntradasStats products={productList} entries={entryList} />
+            <EntradasStats products={productList} entries={compraList} />
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
                 <OperacionForm
@@ -111,7 +120,7 @@ export default function ComprasPage() {
                 />
                 <RecentEntradas
                     products={productList}
-                    entries={entryList}
+                    entries={compraList}
                     proveedores={proveedorList}
                 />
             </div>

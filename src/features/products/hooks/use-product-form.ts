@@ -135,9 +135,9 @@ export function useProductForm({
                 name: data.name,
                 categoryId: data.categoryId,
                 unitType: data.unitType,
+                // El alta es mínima: sin precio y nace inactivo. El stock
+                // y el costo los calcula el backend (vía compras/lotes).
                 salePrice: 0,
-                costPrice: 0,
-                currentStock: 0,
                 minStockAlert: data.minStockAlert,
                 isActive: false,
             },

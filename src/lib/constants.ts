@@ -40,7 +40,7 @@ export const NAV_ADMIN: NavSection[] = [
         title: "Principal",
         items: [
             { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, description: "Analítica de Ventas del negocio" },
-            { label: "Punto de venta", href: "/ventas", icon: ShoppingCart, description: "Ventas minoristas: ferias, tienda y canales digitales" },
+            { label: "Catálogo de venta", href: "/ventas", icon: ShoppingCart, description: "Ventas minoristas: ferias, tienda y canales digitales" },
         ],
     },
     {
@@ -72,7 +72,7 @@ export const NAV_VENDEDOR: NavSection[] = [
     {
         title: "",
         items: [
-            { label: "Punto de venta", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas: ferias, tienda y canales digitales" },
+            { label: "Catálogo de venta", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas: ferias, tienda y canales digitales" },
             { label: "Mis ventas", href: "/mis-ventas", icon: ClipboardList, description: "Visualizar el historial de mis ventas" },
         ],
     },

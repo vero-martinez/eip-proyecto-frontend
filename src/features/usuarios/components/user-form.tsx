@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { formatDate } from "@/lib/utils"
+import { useAuth } from "@/providers/auth-provider"
 import type { Rol } from "@/types/auth"
 import type { User } from "../types"
 
@@ -43,6 +44,9 @@ interface UserFormProps {
 export function UserForm({ open, onOpenChange, user }: UserFormProps) {
     const isEditing = !!user
 
+    const { usuario } = useAuth()
+    const isSelf = isEditing && user?.id === usuario?.id
+
     const { methods, isSubmitting, onSubmit } = useUserForm({
         user,
         open,
@@ -62,9 +66,11 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
             onOpenChange={onOpenChange}
             title={isEditing ? "Editar usuario" : "Nuevo usuario"}
             description={
-                isEditing
-                    ? "Modificá los datos del usuario. Dejá la contraseña vacía para no cambiarla."
-                    : "Creá una cuenta de acceso al sistema para un nuevo usuario."
+                !isEditing
+                    ? "Creá una cuenta de acceso al sistema para un nuevo usuario."
+                    : isSelf
+                      ? "Modificá tus datos. Dejá la contraseña vacía para no cambiarla."
+                      : "Modificá los datos del usuario."
             }
             formId={FORM_ID}
             submitLabel={isEditing ? "Guardar cambios" : "Crear usuario"}
@@ -157,12 +163,13 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="password">
-                                    {isEditing ? "Nueva contraseña" : "Contraseña"}
+                                    {isSelf ? "Nueva contraseña" : "Contraseña"}
                                 </Label>
                                 <Input
                                     id="password"
                                     type="password"
-                                    placeholder={isEditing ? "Dejar vacío para no cambiar" : "••••••••"}
+                                    placeholder="••••••••"
+                                    disabled={isEditing && !isSelf}
                                     aria-invalid={errors.password ? true : undefined}
                                     aria-describedby={errors.password ? "password-error" : undefined}
                                     {...register("password")}

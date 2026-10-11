@@ -36,6 +36,8 @@ interface FormDialogProps {
     formId?: string
     submitLabel?: string
     isSubmitting?: boolean
+    /** Deshabilita el botón de guardar (ej. falta una confirmación) */
+    submitDisabled?: boolean
     /** Solo se usa cuando no se pasa formId (sin form nativo) */
     onSubmit?: () => void
     /** Reemplaza el footer default (Cancelar + Guardar) */
@@ -53,6 +55,7 @@ export function FormDialog({
     formId,
     submitLabel = "Guardar",
     isSubmitting = false,
+    submitDisabled = false,
     onSubmit,
     footer,
     className,
@@ -72,7 +75,7 @@ export function FormDialog({
                 type={formId ? "submit" : "button"}
                 form={formId}
                 onClick={formId ? undefined : onSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || submitDisabled}
             >
                 {isSubmitting ? (
                     <>

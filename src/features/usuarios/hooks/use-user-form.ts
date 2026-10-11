@@ -25,14 +25,16 @@ const DEFAULT_VALUES = {
     role: "vendedor" as Rol,
     password: "",
     isActive: true,
+    informado: false,
 }
 
 interface UseUserFormParams {
     user?: User
+    open: boolean
     onClose: () => void
 }
 
-export function useUserForm({ user, onClose }: UseUserFormParams) {
+export function useUserForm({ user, open, onClose }: UseUserFormParams) {
     const createUser = useCreateUser()
     const updateUser = useUpdateUser()
 
@@ -46,6 +48,8 @@ export function useUserForm({ user, onClose }: UseUserFormParams) {
     const { reset, handleSubmit } = methods
 
     useEffect(() => {
+        if (!open) return
+
         if (user) {
             reset({
                 fullName: user.fullName,
@@ -53,11 +57,12 @@ export function useUserForm({ user, onClose }: UseUserFormParams) {
                 role: user.role,
                 password: "",
                 isActive: user.isActive,
+                informado: true,
             })
         } else {
             reset(DEFAULT_VALUES)
         }
-    }, [user, reset])
+    }, [open, user, reset])
 
     const onSubmit = handleSubmit((data) => {
         const onSuccess = (message: string) => {

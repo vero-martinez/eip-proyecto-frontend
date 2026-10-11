@@ -11,22 +11,34 @@ const ROLES = ["admin", "vendedor", "taller"] as const
 const baseSchema = z.object({
     fullName: z
         .string()
+        .trim()
         .min(1, "El nombre es obligatorio")
-        .min(3, "El nombre debe tener al menos 3 caracteres"),
+        .min(3, "El nombre debe tener al menos 3 caracteres")
+        .regex(
+            /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$/,
+            "El nombre solo puede contener letras, espacios, guiones y apóstrofes"
+        ),
     email: z
         .string()
         .min(1, "El email es obligatorio")
         .email("El email no tiene un formato válido"),
     role: z.enum(ROLES, { message: "Seleccioná un rol" }),
     isActive: z.boolean(),
+    informado: z.boolean(),
 })
 
-export const createUserSchema = baseSchema.extend({
-    password: z
-        .string()
-        .min(1, "La contraseña es obligatoria")
-        .min(6, "La contraseña debe tener al menos 6 caracteres"),
-})
+export const createUserSchema = baseSchema
+    .extend({
+        password: z
+            .string()
+            .min(1, "La contraseña es obligatoria")
+            .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    })
+    .refine((data) => data.informado, {
+        message:
+            "Confirmá que informaste a la persona sobre el tratamiento de sus datos",
+        path: ["informado"],
+    })
 
 export const updateUserSchema = baseSchema.extend({
     password: z

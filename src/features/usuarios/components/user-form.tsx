@@ -4,13 +4,15 @@
  * Formulario de usuario (crear/editar), mostrado dentro de un Dialog.
  */
 
-import { FormProvider } from "react-hook-form"
-import { Calendar, Mail } from "lucide-react"
+import { FormProvider, useFormState, useWatch } from "react-hook-form"
+import Link from "next/link"
+import { Calendar, Mail, ShieldCheck } from "lucide-react"
 
 import { FormDialog } from "@/components/common/form-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Select,
     SelectContent,
@@ -43,18 +45,16 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
 
     const { methods, isSubmitting, onSubmit } = useUserForm({
         user,
+        open,
         onClose: () => onOpenChange(false),
     })
 
-    const {
-        register,
-        setValue,
-        watch,
-        formState: { errors },
-    } = methods
+    const { register, setValue, control } = methods
+    const { errors } = useFormState({ control })
 
-    const role = watch("role")
-    const isActive = watch("isActive")
+    const role = useWatch({ control, name: "role" })
+    const isActive = useWatch({ control, name: "isActive" })
+    const informado = useWatch({ control, name: "informado" })
 
     return (
         <FormDialog
@@ -69,6 +69,7 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
             formId={FORM_ID}
             submitLabel={isEditing ? "Guardar cambios" : "Crear usuario"}
             isSubmitting={isSubmitting}
+            submitDisabled={!isEditing && !informado}
             meta={
                 user ? (
                     <>
@@ -189,6 +190,66 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
                                 className="data-checked:bg-emerald-500"
                             />
                         </div>
+
+                        {!isEditing && (
+                            <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3">
+                                <div className="flex gap-2">
+                                    <ShieldCheck
+                                        className="mt-0.5 size-4 shrink-0 text-primary"
+                                        aria-hidden="true"
+                                    />
+                                    <p className="text-xs leading-relaxed text-muted-foreground">
+                                        <span className="font-medium text-foreground">
+                                            Tratamiento de datos:
+                                        </span>{" "}
+                                        se registrarán el nombre, correo, rol y estado de
+                                        la cuenta para gestionar el acceso y la
+                                        autenticación en el sistema. Responsable: Import
+                                        &amp; Export Pasión.{" "}
+                                        <Link
+                                            href="/privacidad"
+                                            className="text-primary underline-offset-4 hover:underline"
+                                        >
+                                            Política de Privacidad
+                                        </Link>
+                                        .
+                                    </p>
+                                </div>
+
+                                <div className="flex items-start gap-2">
+                                    <Checkbox
+                                        id="informado"
+                                        checked={informado}
+                                        onCheckedChange={(checked) =>
+                                            setValue("informado", checked)
+                                        }
+                                        aria-invalid={errors.informado ? true : undefined}
+                                        aria-describedby={
+                                            errors.informado ? "informado-error" : undefined
+                                        }
+                                        className="mt-0.5"
+                                    />
+                                    <Label
+                                        htmlFor="informado"
+                                        className="items-start text-xs leading-relaxed font-normal text-muted-foreground"
+                                    >
+                                        Confirmo que informé a esta persona sobre el
+                                        tratamiento de sus datos personales y la finalidad
+                                        indicada.
+                                    </Label>
+                                </div>
+
+                                {errors.informado && (
+                                    <p
+                                        id="informado-error"
+                                        role="alert"
+                                        className="text-xs text-destructive"
+                                    >
+                                        {errors.informado.message}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </form>
             </FormProvider>

@@ -17,6 +17,7 @@ import type { Usuario } from "@/types/auth"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ThemeToggle } from "./theme-toggle"
 
 interface NavbarProps {
   usuario: Usuario | null
@@ -55,6 +56,8 @@ export function Navbar({ usuario, sections }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-4 rounded-xl border border-border bg-muted/40 py-2 px-4">
+        <ThemeToggle />
+        <Separator orientation="vertical" className="h-8" />
         <Avatar className="size-9 border border-border">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
             {initials}

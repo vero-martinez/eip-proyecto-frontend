@@ -22,20 +22,20 @@ para digitalizar los procesos de una empresa peruana dedicada a la comercializac
 - [Stack técnico](#️-stack-técnico)
 - [Roles del sistema](#-roles-del-sistema)
 - [Cómo correr el proyecto](#-cómo-correr-el-proyecto)
-- [Autenticación](#-autenticación-versión-actual-mockeada)
+- [Autenticación](#-autenticación)
 - [Estructura del proyecto](#-estructura-del-proyecto)
 
 ---
 
 ## 🚧 Estado del proyecto
 
-> **En desarrollo** — autenticación mockeada, layouts por rol y estructura base ya funcionando.
+> **En desarrollo** — funcionalidades principales conectadas al backend (FastAPI).
 
 | ✅ Listo | ⏳ Pendiente |
 |---|---|
-| Autenticación mockeada | Integración con backend (FastAPI) |
-| Layouts por rol | Features de negocio |
-| Estructura base del proyecto | Conexión a datos reales |
+| Autenticación real (JWT) | Despliegue a producción (Postgres/Supabase) |
+| Integración con backend (FastAPI) | CORS/variables de entorno de producción |
+| Módulos de negocio con datos reales | Ajustes y pruebas finales |
 
 ---
 
@@ -58,6 +58,7 @@ para digitalizar los procesos de una empresa peruana dedicada a la comercializac
 | 📷 **html5-qrcode** | Lectura de códigos QR y de barras |
 | 🔳 **qrcode** | Generación de códigos QR |
 | 📄 **jsPDF + html2canvas-pro** | Generación y exportación de reportes en PDF |
+| 📊 **exceljs** | Exportación de reportes en Excel (xlsx) |
 | 🌗 **next-themes** | Gestión de temas (claro/oscuro) |
 | 🧹 **ESLint** | Análisis y calidad del código |
 
@@ -75,7 +76,7 @@ La app tiene **3 roles**, cada uno con su propio layout, sidebar y rutas protegi
 
 ### 👔 Admin
 - Dashboard
-- Punto de venta
+- Catálogo de venta
 - Productos
 - Compras
 - Movimientos
@@ -88,7 +89,7 @@ La app tiene **3 roles**, cada uno con su propio layout, sidebar y rutas protegi
 <td width="33%" valign="top">
 
 ### 🛍️ Vendedor
-- Punto de venta
+- Catálogo de venta
 - Mis ventas
 
 </td>
@@ -115,48 +116,44 @@ git clone <URL_DEL_REPOSITORIO>
 cd eip-proyecto-frontend
 ```
 
-2️⃣ **Cambia a la rama `dev`**
-```powershell
-git checkout dev
-```
-
-3️⃣ **Instala las dependencias**
+2️⃣ **Instala las dependencias**
 ```powershell
 npm install
 ```
 
-4️⃣ **Copia el archivo de variables de entorno**
+3️⃣ **Copia el archivo de variables de entorno y define la URL del backend**
 ```powershell
 Copy-Item .env.example .env.local
 ```
+Luego editá `.env.local` y completá la URL del API (es obligatoria, la app no arranca sin ella):
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
 
-5️⃣ **Corre el servidor de desarrollo**
+4️⃣ **Corre el servidor de desarrollo**
 ```powershell
 npm run dev
 ```
 
-6️⃣ **Abre en el navegador** 🎉
+5️⃣ **Abre en el navegador** 🎉
 ```
 http://localhost:3000
 ```
 
-> ⚠️ **Importante:** el proyecto debe ejecutarse desde la rama `dev`. Las nuevas funcionalidades deben desarrollarse en ramas `feature/*` y luego integrarse a `dev`.
+> ⚠️ **Importante:** creá las nuevas funcionalidades en ramas `feature/*` a partir de `dev` e integralas mediante pull requests.
 
 ---
 
-## 🔐 Autenticación (versión actual: mockeada)
+## 🔐 Autenticación
 
-El login todavía **no está conectado a un backend real** — valida contra una lista fija de usuarios de prueba en `features/auth/services/auth.service.ts`.
+El login está conectado al backend (FastAPI): valida credenciales en
+`POST /api/v1/auth/login`, guarda el token (JWT) y lo revalida al cargar la
+app con `GET /api/v1/auth/me` (`src/features/auth/services/auth.service.ts`).
 
-<div align="center">
-
-| Rol | Email | Contraseña |
-|:---|:---|:---|
-| 👔 Admin | `admin@pasion.pe` | `admin123` |
-| 🛍️ Vendedor | `vendedor@pasion.pe` | `vendedor123` |
-| 🔨 Taller | `taller@pasion.pe` | `taller123` |
-
-</div>
+- El token se envía como `Bearer` en cada petición (`src/lib/axios.ts`).
+- La sesión se guarda en `src/lib/session.ts` y se consume con `useAuth()`
+  (`src/providers/auth-provider.tsx`).
+- Un `401` limpia la sesión y redirige a `/login`.
 
 ---
 

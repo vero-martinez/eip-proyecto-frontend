@@ -29,6 +29,7 @@ para digitalizar los procesos de una empresa peruana dedicada a la comercializac
 
 ## 🚧 Estado del proyecto
 
+
 > **En desarrollo** — funcionalidades principales conectadas al backend (FastAPI).
 
 | ✅ Listo | ⏳ Pendiente |
@@ -36,6 +37,7 @@ para digitalizar los procesos de una empresa peruana dedicada a la comercializac
 | Autenticación real (JWT) | Despliegue a producción (Postgres/Supabase) |
 | Integración con backend (FastAPI) | CORS/variables de entorno de producción |
 | Módulos de negocio con datos reales | Ajustes y pruebas finales |
+
 
 ---
 
@@ -101,7 +103,7 @@ La app tiene **3 roles**, cada uno con su propio layout, sidebar y rutas protegi
 - Etiquetas QR
 - Catálogo
 - Alertas
-
+          
 </td>
 </tr>
 </table>

@@ -13,10 +13,15 @@ import type {
 
 // ===== Usuarios =====
 
-/** Lista los usuarios. */
+/** Email del usuario de sistema, que no debe listarse ni contarse. */
+const SYSTEM_USER_EMAIL = "sistema@eip.pe"
+
+/** Lista los usuarios, excluyendo el usuario de sistema. */
 export async function getUsersService(): Promise<User[]> {
     const { data } = await api.get<User[]>("/usuarios")
-    return data
+    return data.filter(
+        (user) => user.email.toLowerCase() !== SYSTEM_USER_EMAIL
+    )
 }
 
 /** Crea un usuario. */

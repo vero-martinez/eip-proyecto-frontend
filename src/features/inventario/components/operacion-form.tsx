@@ -39,7 +39,7 @@ import {
     InputGroupAddon,
     InputGroupText,
 } from "@/components/ui/input-group"
-import { formatStock, hasLowStock, UNIT_OPTIONS } from "@/lib/units"
+import { formatStock, hasLowStock, isOutOfStock, UNIT_OPTIONS } from "@/lib/units"
 import type { Product } from "@/types/products"
 
 import type { Proveedor } from "@/features/proveedores/types"
@@ -117,6 +117,7 @@ export function OperacionForm({
             ?.symbol ?? "u"
 
     const productIsLow = selectedProduct ? hasLowStock(selectedProduct) : false
+    const productIsOut = selectedProduct ? isOutOfStock(selectedProduct) : false
 
     return (
         <Card className="border-border/70 shadow-sm transition-all duration-200 hover:shadow-md">
@@ -185,7 +186,7 @@ export function OperacionForm({
                         {selectedProduct && (
                             <div
                                 className={`mt-2.5 animate-in fade-in-50 slide-in-from-top-1 duration-200 rounded-lg border p-3 text-xs ${
-                                    productIsLow
+                                    productIsOut || productIsLow
                                         ? "border-destructive/30 bg-destructive/10 text-destructive"
                                         : "border-success/30 bg-success/10 text-success"
                                 }`}
@@ -208,7 +209,12 @@ export function OperacionForm({
                                 </div>
 
                                 <div className="mt-2 flex items-center gap-1.5 border-t border-foreground/10 pt-2 font-medium">
-                                    {productIsLow ? (
+                                    {productIsOut ? (
+                                        <>
+                                            <AlertTriangle className="size-3.5 shrink-0 text-destructive" aria-hidden="true" />
+                                            <span>Sin stock — no hay unidades disponibles.</span>
+                                        </>
+                                    ) : productIsLow ? (
                                         <>
                                             <AlertTriangle className="size-3.5 shrink-0 text-destructive" aria-hidden="true" />
                                             <span>Stock bajo — se sugiere reponer.</span>

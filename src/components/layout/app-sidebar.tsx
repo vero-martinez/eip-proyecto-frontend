@@ -55,8 +55,6 @@ export function AppSidebar({ sections, onLogout }: AppSidebarProps) {
         </div>
       </SidebarHeader>
 
-      <SidebarSeparator className="bg-sidebar-border/50" />
-
       {/* Navegación */}
       <SidebarContent>
         {sections.map((section, index) => (

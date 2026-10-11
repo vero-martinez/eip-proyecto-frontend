@@ -9,15 +9,24 @@
  * El logout vive en el footer del sidebar, no acá.
  */
 
+import { useSyncExternalStore } from "react"
 import { usePathname } from "next/navigation"
 
-import { getInitials } from "@/lib/utils"
+import { cn, getInitials } from "@/lib/utils"
 import type { NavSection } from "@/lib/constants"
 import type { Usuario } from "@/types/auth"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ThemeToggle } from "./theme-toggle"
+
+function subscribeToScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true })
+  return () => window.removeEventListener("scroll", onChange)
+}
+
+const getScrollSnapshot = () => window.scrollY > 0
+const getServerScrollSnapshot = () => false
 
 interface NavbarProps {
   usuario: Usuario | null
@@ -26,6 +35,11 @@ interface NavbarProps {
 
 export function Navbar({ usuario, sections }: NavbarProps) {
   const pathname = usePathname()
+  const scrolled = useSyncExternalStore(
+    subscribeToScroll,
+    getScrollSnapshot,
+    getServerScrollSnapshot
+  )
 
   const currentItem = sections
     .flatMap((section) => section.items)
@@ -36,7 +50,12 @@ export function Navbar({ usuario, sections }: NavbarProps) {
   const initials = getInitials(usuario?.nombre)
 
   return (
-    <header className="flex h-20 items-center justify-between border-b border-border bg-background px-4">
+    <header
+      className={cn(
+        "sticky top-0 z-30 flex h-20 items-center justify-between border-b border-border bg-background px-4 transition-shadow duration-200",
+        scrolled && "shadow-sm"
+      )}
+    >
       <div className="flex items-center gap-4">
         <SidebarTrigger className="size-8 text-foreground" />
         <Separator orientation="vertical" className="h-8" />

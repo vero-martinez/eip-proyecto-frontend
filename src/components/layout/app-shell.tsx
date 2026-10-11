@@ -32,7 +32,7 @@ export function AppShell({
       <AppSidebar sections={sections} onLogout={onLogout} />
       <SidebarInset>
         <Navbar usuario={usuario} sections={sections} />
-        <main className="flex-1 p-6 lg:p-14">{children}</main>
+        <main className="flex-1 px-6 pt-6 pb-6 lg:px-14 lg:pt-8 lg:pb-14">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

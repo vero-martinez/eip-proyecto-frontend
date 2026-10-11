@@ -114,7 +114,7 @@ export function VentaCart({
                                             active &&
                                                 "bg-primary text-primary-foreground ring-4 ring-primary/15",
                                             done &&
-                                                "bg-emerald-600 text-white",
+                                                "bg-success text-success-foreground",
                                             !active &&
                                                 !done &&
                                                 "bg-muted text-muted-foreground"
@@ -142,7 +142,7 @@ export function VentaCart({
                                     <div
                                         className={cn(
                                             "mx-1.5 h-0.5 flex-1 rounded-full transition-colors",
-                                            done ? "bg-emerald-500/60" : "bg-muted"
+                                            done ? "bg-success/60" : "bg-muted"
                                         )}
                                         aria-hidden="true"
                                     />

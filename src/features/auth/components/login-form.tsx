@@ -37,7 +37,7 @@ export function LoginForm() {
   } = methods
 
   return (
-    <Card className="w-full max-w-md border-border/60 shadow-xl shadow-black/5">
+      <Card className="w-full max-w-md border-border/60 shadow-xl shadow-foreground/5">
       <CardHeader className="gap-1 px-8 pt-8">
         {/* Logo / monograma de la empresa */}
         <div className="flex size-14 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">

@@ -180,7 +180,7 @@ export function OperacionFormDialog({
             >
                 {/* Modalidad de Operación */}
                 <div className="space-y-1.5">
-                    <SectionLabel icon={Globe2} iconClassName="text-blue-500">
+                    <SectionLabel icon={Globe2} iconClassName="text-info">
                         Modalidad de Operación
                     </SectionLabel>
                     <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted/50 p-1.5 border border-border/60">
@@ -222,7 +222,7 @@ export function OperacionFormDialog({
                 {/* Socio Comercial */}
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <SectionLabel icon={Landmark} iconClassName="text-purple-500">
+                        <SectionLabel icon={Landmark} iconClassName="text-primary">
                             Socio Comercial
                         </SectionLabel>
                         {selectedSocioComercial && (
@@ -262,7 +262,7 @@ export function OperacionFormDialog({
 
                 {/* Detalles de Despacho */}
                 <div className="space-y-3">
-                    <SectionLabel icon={PackageCheck} iconClassName="text-emerald-500">
+                    <SectionLabel icon={PackageCheck} iconClassName="text-success">
                         Detalles de Despacho
                     </SectionLabel>
 
@@ -367,7 +367,7 @@ export function OperacionFormDialog({
 
                 {/* Observaciones */}
                 <div className="space-y-1.5">
-                    <SectionLabel icon={FileText} iconClassName="text-amber-500">
+                    <SectionLabel icon={FileText} iconClassName="text-warning">
                         Observaciones y Notas <span className="font-normal text-muted-foreground/70 normal-case">(opcional)</span>
                     </SectionLabel>
                     <Textarea

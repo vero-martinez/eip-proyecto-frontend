@@ -137,8 +137,8 @@ export function OperacionDetailDialog({
                                 className={cn(
                                     "text-base font-bold tabular-nums",
                                     operacion.tipo === "exportacion"
-                                        ? "text-emerald-600 dark:text-emerald-400"
-                                        : "text-sky-600 dark:text-sky-400"
+                                        ? "text-success"
+                                        : "text-info"
                                 )}
                             >
                                 {formatUSD(operacion.totalUSD)}
@@ -168,8 +168,8 @@ export function OperacionDetailDialog({
                     </div>
 
                     {/* Datos de despacho */}
-                    <div className="rounded-lg border border-violet-200/60 dark:border-violet-900/40 bg-violet-50/40 dark:bg-violet-950/20 p-3.5 space-y-2.5">
-                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300 border-b border-violet-200/50 dark:border-violet-900/30 pb-1.5">
+                    <div className="rounded-lg border border-primary/25 bg-primary/10 p-3.5 space-y-2.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary border-b border-primary/20 pb-1.5">
                             {operacion.medioTransporte === "aereo" ? (
                                 <Plane className="size-3.5" aria-hidden="true" />
                             ) : (
@@ -249,8 +249,8 @@ export function OperacionDetailDialog({
                     </div>
 
                     {/* Montos */}
-                    <div className="rounded-lg border border-amber-200/60 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-950/10 p-3.5 space-y-2.5">
-                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 border-b border-amber-200/50 dark:border-amber-900/30 pb-1.5">
+                    <div className="rounded-lg border border-warning/25 bg-warning/10 p-3.5 space-y-2.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-warning border-b border-warning/20 pb-1.5">
                             <CircleDollarSign className="size-3.5" aria-hidden="true" />
                             Montos
                         </h4>

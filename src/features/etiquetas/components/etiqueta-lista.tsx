@@ -78,7 +78,7 @@ export function EtiquetaLista({
             <CardHeader className="pb-4">
                 <div className="flex items-start gap-3">
                     <span
-                        className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 ring-1 ring-violet-300 dark:bg-violet-950/60 dark:text-violet-300 dark:ring-violet-800"
+                        className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-primary/30"
                         aria-hidden="true"
                     >
                         <QrCode className="size-5" />
@@ -168,7 +168,7 @@ export function EtiquetaLista({
                                     ? `Generando PDF con las ${total} etiquetas activas`
                                     : `Descargar PDF con todas las ${total} etiquetas`
                             }
-                            className="h-9 flex-1 gap-2 bg-amber-400 text-white hover:bg-amber-500 dark:bg-amber-500 dark:hover:bg-amber-600 sm:flex-none"
+                            className="h-9 flex-1 gap-2 bg-warning text-warning-foreground hover:bg-warning/90 sm:flex-none"
                         >
                             {isDownloadingAll ? (
                                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

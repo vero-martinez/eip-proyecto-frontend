@@ -22,10 +22,8 @@ export const TIPO_OPERACION_ITEMS: {
 
 // Estilos de colores (Tailwind) para las etiquetas según el tipo de operación
 export const TIPO_OPERACION_TINT: Record<TipoOperacion, string> = {
-    importacion:
-        "bg-sky-500/10 text-sky-700 border-sky-500/50! dark:bg-sky-500/15 dark:text-sky-400 dark:border-sky-400/50!",
-    exportacion:
-        "bg-violet-500/10 text-violet-700 border-violet-500/50! dark:bg-violet-500/15 dark:text-violet-400 dark:border-violet-400/50!",
+    importacion: "bg-info/10 text-info border-info/50!",
+    exportacion: "bg-primary/10 text-primary border-primary/50!",
 }
 
 // --- CATÁLOGOS ---

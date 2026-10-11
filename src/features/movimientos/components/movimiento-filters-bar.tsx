@@ -116,7 +116,7 @@ export function MovimientoFiltersBar({
                         filterInputBaseClass,
                         "h-9 min-h-9 w-full justify-start gap-2 sm:w-auto",
                         tipo !== "all" &&
-                            "border-violet-500 font-medium text-violet-700 dark:text-violet-300"
+                            "border-primary font-medium text-primary"
                     )}
                 >
                     <Boxes

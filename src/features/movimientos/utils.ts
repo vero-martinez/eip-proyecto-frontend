@@ -77,15 +77,15 @@ export function getMovementMotivo(
 export function getMovementTint(type: MovementType): string {
     switch (type) {
         case "entrada":
-            return "bg-emerald-500/10 text-emerald-700 border-emerald-500/50! dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-400/50!"
+            return "bg-success/10 text-success border-success/50!"
         case "venta":
-            return "bg-violet-500/10 text-violet-700 border-violet-500/50! dark:bg-violet-500/15 dark:text-violet-400 dark:border-violet-400/50!"
+            return "bg-primary/10 text-primary border-primary/50!"
         case "importacion":
-            return "bg-sky-500/10 text-sky-700 border-sky-500/50! dark:bg-sky-500/15 dark:text-sky-400 dark:border-sky-400/50!"
+            return "bg-info/10 text-info border-info/50!"
         case "exportacion":
-            return "bg-indigo-500/10 text-indigo-700 border-indigo-500/50! dark:bg-indigo-500/15 dark:text-indigo-400 dark:border-indigo-400/50!"
+            return "bg-cat-6/10 text-cat-6 border-cat-6/50!"
         default:
-            return "bg-destructive/10 text-destructive border-destructive/50! dark:bg-destructive/20 dark:text-destructive dark:border-destructive/60!"
+            return "bg-destructive/10 text-destructive border-destructive/50!"
     }
 }
 

@@ -19,9 +19,9 @@ interface DashboardTopProductosProps {
 
 /** Estilos de la posición según el puesto (podio para los 3 primeros). */
 const RANK_STYLES = [
-    "bg-amber-100 text-amber-700 ring-amber-300/60 dark:bg-amber-500/15 dark:text-amber-400 dark:ring-amber-500/30",
-    "bg-slate-100 text-slate-600 ring-slate-300/60 dark:bg-slate-500/15 dark:text-slate-300 dark:ring-slate-500/30",
-    "bg-orange-100 text-orange-700 ring-orange-300/60 dark:bg-orange-500/15 dark:text-orange-400 dark:ring-orange-500/30",
+    "bg-warning/15 text-warning ring-warning/30",
+    "bg-muted-foreground/15 text-muted-foreground ring-muted-foreground/30",
+    "bg-cat-5/15 text-cat-5 ring-cat-5/30",
 ]
 
 export function DashboardTopProductos({ productos }: DashboardTopProductosProps) {
@@ -69,7 +69,7 @@ export function DashboardTopProductos({ productos }: DashboardTopProductosProps)
                             return (
                                 <li
                                     key={producto.productId}
-                                    className="flex items-center gap-4 rounded-2xl bg-background/80 px-4 py-3.5 shadow-sm ring-1 ring-black/5 transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md dark:ring-white/10"
+                                    className="flex items-center gap-4 rounded-2xl bg-background/80 px-4 py-3.5 shadow-sm ring-1 ring-foreground/10 transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md"
                                 >
                                     <span
                                         className={cn(

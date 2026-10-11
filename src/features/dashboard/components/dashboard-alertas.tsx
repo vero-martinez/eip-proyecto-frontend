@@ -65,8 +65,8 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                         className={cn(
                             "flex size-10 shrink-0 items-center justify-center rounded-lg",
                             sinAlertas
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                ? "bg-success/10 text-success"
+                                : "bg-warning/10 text-warning"
                         )}
                         aria-hidden="true"
                     >
@@ -196,13 +196,13 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                                                             aria-label={`${nivel}% del stock mínimo`}
                                                         >
                                                             <div
-                                                                className="h-full rounded-full bg-amber-500"
+                                                                className="h-full rounded-full bg-warning"
                                                                 style={{ width: `${nivel}%` }}
                                                             />
                                                         </div>
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="px-4 py-3 text-right text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                                                <TableCell className="px-4 py-3 text-right text-sm font-semibold tabular-nums text-destructive">
                                                     {item.unidadesFaltantes > 0 ? "−" : ""}
                                                     {formatPiezas(item.unidadesFaltantes)}{" "}
                                                     <span className="text-xs font-normal text-muted-foreground">

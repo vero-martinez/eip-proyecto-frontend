@@ -29,9 +29,9 @@ import type {
 
 // Colores asignados a cada FormatoReporte ("xlsx" | "csv" | "pdf")
 const FORMATO_ICON_COLORS: Record<FormatoReporte, string> = {
-  xlsx: "text-emerald-600 dark:text-emerald-400",
-  csv: "text-blue-600 dark:text-blue-400",
-  pdf: "text-rose-600 dark:text-rose-400",
+  xlsx: "text-success",
+  csv: "text-info",
+  pdf: "text-destructive",
 }
 
 // Ancho y alto estandarizados para los 3 controles principales
@@ -88,9 +88,9 @@ export function ReportesFiltersBar({
         {snapshot ? (
           <Badge
             variant="outline"
-            className="h-9 gap-2 rounded-lg border-amber-500/30 bg-amber-500/10 px-3 text-xs font-medium text-amber-700 dark:text-amber-400"
+            className="h-9 gap-2 rounded-lg border-warning/30 bg-warning/10 px-3 text-xs font-medium text-warning"
           >
-            <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            <Info className="h-3.5 w-3.5 text-warning" aria-hidden="true" />
             Snapshot actual del inventario (sin histórico)
           </Badge>
         ) : (

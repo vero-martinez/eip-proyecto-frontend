@@ -59,7 +59,7 @@ export function getOrigenLoteInfo(origen: OrigenLote): (typeof ORIGEN_LOTE_ITEMS
         ORIGEN_LOTE_ITEMS.find((item) => item.value === origen) ?? {
             value: origen,
             label: "Desconocido",
-            tint: "bg-slate-500/10 text-slate-600 ring-slate-500/25 dark:text-slate-300",
+            tint: "bg-muted-foreground/10 text-muted-foreground ring-muted-foreground/25",
         }
     )
 }

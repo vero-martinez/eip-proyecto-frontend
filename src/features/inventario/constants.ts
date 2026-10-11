@@ -15,21 +15,21 @@ export const ORIGEN_LOTE_ITEMS: LoteInfoItem[] = [
     {
         value: "apertura",
         label: "Apertura",
-        tint: "bg-sky-500/10 text-sky-700 ring-sky-500/25 dark:text-sky-300",
+        tint: "bg-info/10 text-info ring-info/25",
     },
     {
         value: "entrada",
         label: "Entrada",
-        tint: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300",
+        tint: "bg-success/10 text-success ring-success/25",
     },
     {
         value: "compra",
         label: "Compra",
-        tint: "bg-amber-500/10 text-amber-700 ring-amber-500/25 dark:text-amber-300",
+        tint: "bg-warning/10 text-warning ring-warning/25",
     },
     {
         value: "importacion",
         label: "Importación",
-        tint: "bg-indigo-500/10 text-indigo-700 ring-indigo-500/25 dark:text-indigo-300",
+        tint: "bg-cat-6/10 text-cat-6 ring-cat-6/25",
     },
 ]

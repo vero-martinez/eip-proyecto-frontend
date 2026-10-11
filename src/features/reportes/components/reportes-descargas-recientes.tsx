@@ -11,18 +11,18 @@ import type { DescargaRegistrada } from "../hooks/use-descargas-recientes"
 const CONFIG_FORMATO = {
   xlsx: {
     icon: FileSpreadsheet,
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    iconClass: "text-emerald-600 dark:text-emerald-400",
+    badgeClass: "bg-success/10 text-success border-success/20",
+    iconClass: "text-success",
   },
   csv: {
     icon: Sheet,
-    badgeClass: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
-    iconClass: "text-teal-600 dark:text-teal-400",
+    badgeClass: "bg-info/10 text-info border-info/20",
+    iconClass: "text-info",
   },
   pdf: {
     icon: FileText,
-    badgeClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
-    iconClass: "text-rose-600 dark:text-rose-400",
+    badgeClass: "bg-destructive/10 text-destructive border-destructive/20",
+    iconClass: "text-destructive",
   },
 } as const
 

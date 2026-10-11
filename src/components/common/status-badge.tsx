@@ -15,8 +15,8 @@ interface StatusBadgeProps {
 }
 
 const statusClasses = {
-    active: "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/15 dark:text-emerald-400",
-    inactive: "border-slate-400/60",
+    active: "border-success/40 bg-success/15 text-success hover:bg-success/15",
+    inactive: "border-muted-foreground/40",
 } as const
 
 export function StatusBadge({

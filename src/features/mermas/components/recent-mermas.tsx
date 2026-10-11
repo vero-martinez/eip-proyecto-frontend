@@ -44,7 +44,7 @@ export function RecentMermas({
                     className="flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
                 >
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive text-white border border-destructive/20">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive text-destructive-foreground border border-destructive/20">
                             <Package className="size-4" aria-hidden="true" />
                         </div>
 

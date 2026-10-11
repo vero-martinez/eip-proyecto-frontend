@@ -97,7 +97,7 @@ export function ProductForm({
                             <span
                                 className={`size-1.5 rounded-full ${
                                     product.isActive
-                                        ? "bg-emerald-400"
+                                        ? "bg-success"
                                         : "bg-muted-foreground"
                                 }`}
                                 aria-hidden="true"
@@ -344,7 +344,7 @@ export function ProductForm({
                                         checked={isActive}
                                         onCheckedChange={handleActiveChange}
                                         aria-describedby="isActive-description"
-                                        className="data-checked:bg-emerald-500"
+                                        className="data-checked:bg-success"
                                     />
                                 </div>
                             </>

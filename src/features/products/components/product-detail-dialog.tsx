@@ -118,12 +118,12 @@ export function ProductDetailDialog({
                         surface
                     )}
                 >
-                    <div className="flex size-16 items-center justify-center rounded-full bg-white/70 shadow-sm ring-1 ring-black/5 dark:bg-white/10 dark:ring-white/10">
+                    <div className="flex size-16 items-center justify-center rounded-full bg-card/70 shadow-sm ring-1 ring-foreground/10">
                         <Gem className={cn("size-8", icon)} />
                     </div>
                     <Badge
                         variant="secondary"
-                        className="absolute top-3 left-3 border-transparent bg-black/50 font-mono text-white"
+                        className="absolute top-3 left-3 border-transparent bg-foreground/70 font-mono text-background"
                     >
                         <Barcode aria-hidden="true" />
                         {product.sku}
@@ -171,7 +171,7 @@ export function ProductDetailDialog({
                             Precio de venta
                         </p>
                         <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                            <span className="text-2xl font-bold tracking-tight tabular-nums text-sidebar">
+                            <span className="text-2xl font-bold tracking-tight tabular-nums text-primary">
                                 {formatCurrency(product.salePrice)}
                             </span>
                             {showCost && (

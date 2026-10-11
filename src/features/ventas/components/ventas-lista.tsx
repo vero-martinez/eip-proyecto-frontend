@@ -71,27 +71,27 @@ const TIPO_VENTA_CONFIG: Record<
     }
 > = {
     tienda: {
-        badge: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-        borderAccent: "border-l-purple-500",
-        avatarBg: "bg-purple-100 text-purple-600 dark:bg-purple-950/80 dark:text-purple-300",
+        badge: "border-cat-1/40 bg-cat-1/15 text-cat-1",
+        borderAccent: "border-l-cat-1",
+        avatarBg: "bg-cat-1/15 text-cat-1",
         icon: Store,
     },
     feria: {
-        badge: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-        borderAccent: "border-l-amber-500",
-        avatarBg: "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300",
+        badge: "border-cat-5/40 bg-cat-5/15 text-cat-5",
+        borderAccent: "border-l-cat-5",
+        avatarBg: "bg-cat-5/15 text-cat-5",
         icon: Tent,
     },
     digital: {
-        badge: "bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
-        borderAccent: "border-l-cyan-500",
-        avatarBg: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300",
+        badge: "border-info/40 bg-info/15 text-info",
+        borderAccent: "border-l-info",
+        avatarBg: "bg-info/15 text-info",
         icon: Globe,
     },
     otro: {
-        badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700",
-        borderAccent: "border-l-slate-400",
-        avatarBg: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+        badge: "border-border bg-muted text-muted-foreground",
+        borderAccent: "border-l-muted-foreground",
+        avatarBg: "bg-muted text-muted-foreground",
     },
 }
 
@@ -100,19 +100,19 @@ const METODO_PAGO_CONFIG: Record<
     { badge: string; icon: React.ElementType }
 > = {
     efectivo: {
-        badge: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+        badge: "border-success/40 bg-success/15 text-success",
         icon: Banknote,
     },
     "billetera-digital": {
-        badge: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+        badge: "border-cat-6/40 bg-cat-6/15 text-cat-6",
         icon: Smartphone,
     },
 }
 
 const FALLBACK_CONFIG = {
-    badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300",
-    borderAccent: "border-l-slate-300",
-    avatarBg: "bg-slate-100 text-slate-600",
+    badge: "border-border bg-muted text-muted-foreground",
+    borderAccent: "border-l-muted-foreground",
+    avatarBg: "bg-muted text-muted-foreground",
     icon: CreditCard,
 }
 
@@ -164,7 +164,7 @@ export function VentasLista({
 
     return (
         <>
-            <Card className="overflow-hidden border-violet-200/60 shadow-md dark:border-violet-900/40">
+            <Card className="overflow-hidden border-primary/20 shadow-md">
             <CardHeader className="gap-4 pb-4">
                 <VentasFiltersBar
                     mostrarResponsable={mostrarResponsable}
@@ -196,9 +196,9 @@ export function VentasLista({
                 {ventas.length === 0 ? (
                     <div
                         role="status"
-                        className="flex h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-300/60 bg-violet-50/40 p-4 text-center dark:border-violet-900/50 dark:bg-violet-950/20"
+                        className="flex h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 text-center"
                     >
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-violet-500 text-white">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                             <Receipt className="size-6" aria-hidden="true" />
                         </div>
                         <p className="text-base font-bold text-foreground">
@@ -215,9 +215,9 @@ export function VentasLista({
                 ) : totalCount === 0 ? (
                     <div
                         role="status"
-                        className="flex h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-amber-300/60 bg-amber-50/40 p-4 text-center dark:border-amber-900/50 dark:bg-amber-950/20"
+                        className="flex h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-warning/30 bg-warning/5 p-4 text-center"
                     >
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-amber-500 text-white">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-warning text-warning-foreground">
                             <CalendarRange className="size-6" aria-hidden="true" />
                         </div>
                         <p className="text-base font-bold text-foreground">
@@ -250,7 +250,7 @@ export function VentasLista({
                             return (
                                 <ListItemCard
                                     key={venta.id}
-                                    className="border-violet-100 hover:border-violet-300 dark:border-violet-900/30"
+                                    className="hover:border-primary/40"
                                     accentClassName={tipoConfig.borderAccent}
                                     avatarClassName={tipoConfig.avatarBg}
                                     icon={Receipt}
@@ -299,7 +299,7 @@ export function VentasLista({
                                     trailing={
                                         <>
                                             <span
-                                                className="text-2xl font-black tracking-tight text-slate-900 tabular-nums dark:text-slate-50"
+                                                className="text-2xl font-black tracking-tight text-foreground tabular-nums"
                                                 aria-label={`Total: ${formattedTotal}`}
                                             >
                                                 {formattedTotal}
@@ -312,7 +312,7 @@ export function VentasLista({
                                                     setBoletaSeleccionada(venta)
                                                 }
                                                 aria-label={`Ver boleta número ${venta.folio}`}
-                                                className="h-8 gap-1.5 rounded-xl bg-violet-600 text-xs font-bold text-white hover:bg-violet-700 hover:text-white dark:bg-violet-600 dark:hover:bg-violet-700 dark:hover:text-white"
+                                                className="h-8 gap-1.5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                             >
                                                 <Receipt
                                                     className="size-3.5"
@@ -334,7 +334,7 @@ export function VentasLista({
             </CardContent>
 
             {ventas.length > 0 && totalCount > 0 && (
-                <div className="border-t border-violet-100/60 px-4 py-3 dark:border-violet-900/30">
+                <div className="border-t border-border px-4 py-3">
                     <PaginationBar
                         page={page}
                         pageCount={pageCount}

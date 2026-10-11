@@ -22,23 +22,27 @@ interface StatCardProps {
     valueClassName?: string
 }
 
-const toneClasses: Record<StatTone, { card: string; panel: string; value?: string }> = {
+const toneClasses: Record<StatTone, { card: string; panel: string; icon: string; value?: string }> = {
     violet: {
-        card: "border-violet-300 bg-violet-100/70 dark:border-violet-700 dark:bg-violet-950/50",
-        panel: "bg-violet-400 dark:bg-violet-600",
+        card: "border-primary/30 bg-primary/10",
+        panel: "bg-primary",
+        icon: "text-primary-foreground",
     },
     rose: {
-        card: "border-rose-300 bg-rose-100/70 dark:border-rose-700 dark:bg-rose-950/50",
-        panel: "bg-rose-500 dark:bg-rose-600",
-        value: "text-rose-600 dark:text-rose-400",
+        card: "border-destructive/30 bg-destructive/10",
+        panel: "bg-destructive",
+        icon: "text-destructive-foreground",
+        value: "text-destructive",
     },
     slate: {
-        card: "border-slate-300 bg-slate-100/70 dark:border-slate-700 dark:bg-slate-950/50",
-        panel: "bg-slate-300 dark:bg-slate-600",
+        card: "border-border bg-muted",
+        panel: "bg-muted-foreground",
+        icon: "text-background",
     },
     amber: {
-        card: "border-amber-300 bg-amber-100/70 dark:border-amber-700 dark:bg-amber-950/50",
-        panel: "bg-amber-200 dark:bg-amber-600",
+        card: "border-warning/30 bg-warning/10",
+        panel: "bg-warning",
+        icon: "text-warning-foreground",
     },
 }
 
@@ -52,7 +56,7 @@ export function StatCard({
     panelClassName,
     valueClassName,
 }: StatCardProps) {
-    const { card, panel, value: toneValue } = toneClasses[tone]
+    const { card, panel, icon, value: toneValue } = toneClasses[tone]
 
     return (
         <Card className={cn("border py-0 ring-0", card, cardClassName)}>
@@ -65,7 +69,7 @@ export function StatCard({
                         panelClassName
                     )}
                 >
-                    <Icon className="size-7 text-white" />
+                    <Icon className={cn("size-7", icon)} />
                 </div>
                 {/* Agregado min-w-0 para permitir que los hijos con truncate funcionen correctamente en flex */}
                 <CardContent className="flex flex-1 min-w-0 flex-col justify-center p-5">

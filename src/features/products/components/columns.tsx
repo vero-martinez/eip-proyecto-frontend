@@ -111,7 +111,7 @@ export function getProductColumns(
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="size-8 bg-sky-100 text-sky-700 hover:bg-sky-200 hover:text-sky-800 dark:bg-sky-500/15 dark:text-sky-400 dark:hover:bg-sky-500/25 dark:hover:text-sky-300"
+                        className="size-8 bg-info/15 text-info hover:bg-info/25"
                         onClick={() => onViewLotes(product)}
                     >
                         <Layers className="size-4" />
@@ -120,7 +120,7 @@ export function getProductColumns(
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="size-8 bg-amber-100 text-amber-700 hover:bg-amber-200 hover:text-amber-800 dark:bg-amber-500/15 dark:text-amber-400 dark:hover:bg-amber-500/25 dark:hover:text-amber-300"
+                        className="size-8 bg-warning/15 text-warning hover:bg-warning/25"
                         onClick={() => onEdit(product)}
                     >
                         <Pencil className="size-4" />

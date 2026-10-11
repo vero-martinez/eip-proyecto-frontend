@@ -3,9 +3,9 @@ import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface ListItemCardProps {
-	/** Clases del borde completo (ej: "border-emerald-500"). */
+	/** Clases del borde completo (ej: "border-success"). */
 	borderClassName?: string
-	/** Clases del borde izquierdo de acento (ej: "border-l-emerald-500"). */
+	/** Clases del borde izquierdo de acento (ej: "border-l-success"). */
 	accentClassName?: string
 	/** Clases del avatar con el icono (fondo, color, redondeo). */
 	avatarClassName?: string

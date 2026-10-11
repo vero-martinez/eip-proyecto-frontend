@@ -149,15 +149,15 @@ export function MermaForm({ products, responsable }: MermaFormProps) {
                                     </div>
                                 </div>
 
-                                <div className="mt-2 flex items-center gap-1.5 border-t border-black/5 pt-2 font-medium dark:border-white/10">
+                                <div className="mt-2 flex items-center gap-1.5 border-t border-foreground/10 pt-2 font-medium">
                                     {productIsLow ? (
                                         <>
-                                            <AlertTriangle className="size-3.5 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+                                            <AlertTriangle className="size-3.5 shrink-0 text-destructive" aria-hidden="true" />
                                             <span>Stock bajo — revisá el descarte antes de confirmar.</span>
                                         </>
                                     ) : (
                                         <>
-                                            <AlertTriangle className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                                            <AlertTriangle className="size-3.5 shrink-0 text-warning" aria-hidden="true" />
                                             <span>Stock disponible en nivel óptimo.</span>
                                         </>
                                     )}

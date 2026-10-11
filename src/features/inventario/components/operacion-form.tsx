@@ -186,8 +186,8 @@ export function OperacionForm({
                             <div
                                 className={`mt-2.5 animate-in fade-in-50 slide-in-from-top-1 duration-200 rounded-lg border p-3 text-xs ${
                                     productIsLow
-                                        ? "border-rose-500/30 bg-rose-500/10 text-rose-900 dark:text-rose-200"
-                                        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200"
+                                        ? "border-destructive/30 bg-destructive/10 text-destructive"
+                                        : "border-success/30 bg-success/10 text-success"
                                 }`}
                             >
                                 <div className="flex items-center justify-between gap-2">
@@ -207,15 +207,15 @@ export function OperacionForm({
                                     </div>
                                 </div>
 
-                                <div className="mt-2 flex items-center gap-1.5 border-t border-black/5 pt-2 font-medium dark:border-white/10">
+                                <div className="mt-2 flex items-center gap-1.5 border-t border-foreground/10 pt-2 font-medium">
                                     {productIsLow ? (
                                         <>
-                                            <AlertTriangle className="size-3.5 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+                                            <AlertTriangle className="size-3.5 shrink-0 text-destructive" aria-hidden="true" />
                                             <span>Stock bajo — se sugiere reponer.</span>
                                         </>
                                     ) : (
                                         <>
-                                            <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                                            <CheckCircle2 className="size-3.5 shrink-0 text-success" aria-hidden="true" />
                                             <span>Stock en nivel óptimo.</span>
                                         </>
                                     )}

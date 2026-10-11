@@ -49,12 +49,12 @@ export function ProductCard({
                         surface
                     )}
                 >
-                    <div className="flex size-16 items-center justify-center rounded-full bg-white/70 shadow-sm ring-1 ring-black/5 dark:bg-white/10 dark:ring-white/10">
+                    <div className="flex size-16 items-center justify-center rounded-full bg-card/70 shadow-sm ring-1 ring-foreground/10">
                         <Gem className={cn("size-8", icon)} />
                     </div>
                     <Badge
                         variant="secondary"
-                        className="absolute top-2 right-2 border-transparent bg-black/50 font-mono text-white"
+                        className="absolute top-2 right-2 border-transparent bg-foreground/70 font-mono text-background"
                     >
                         {product.sku}
                     </Badge>
@@ -73,7 +73,7 @@ export function ProductCard({
                     </div>
 
                     <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                        <span className="text-xl text-sidebar font-bold">
+                        <span className="text-xl text-primary font-bold">
                             {formatCurrency(product.salePrice)}
                         </span>
                         <span

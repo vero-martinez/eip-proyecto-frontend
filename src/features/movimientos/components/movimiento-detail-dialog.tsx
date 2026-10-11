@@ -129,8 +129,8 @@ export function MovimientoDetailDialog({
                                 className={cn(
                                     "text-base font-bold tabular-nums",
                                     isSalida
-                                        ? "text-rose-600 dark:text-rose-400"
-                                        : "text-emerald-600 dark:text-emerald-400"
+                                        ? "text-destructive"
+                                        : "text-success"
                                 )}
                             >
                                 {formatMovementQuantity(movement)}
@@ -155,13 +155,13 @@ export function MovimientoDetailDialog({
                     </div>
 
                     {/* Costos e Importes (Acento Azul) */}
-                    <div className="rounded-lg border border-blue-200/60 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-950/20 p-3.5 space-y-2.5">
-                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 border-b border-blue-200/50 dark:border-blue-900/30 pb-1.5">
+                    <div className="rounded-lg border border-info/25 bg-info/10 p-3.5 space-y-2.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-info border-b border-info/20 pb-1.5">
                             <CircleDollarSign className="size-3.5" aria-hidden="true" />
                             Métricas Financieras
                         </h4>
                         <dl className="space-y-2">
-                            <DetailItem label="Precio Unit. Venta" valueClassName="text-blue-600 dark:text-blue-400 font-semibold">
+                            <DetailItem label="Precio Unit. Venta" valueClassName="text-info font-semibold">
                                 <span className="tabular-nums">
                                     {movement.movementType ===
                                         "exportacion"
@@ -199,8 +199,8 @@ export function MovimientoDetailDialog({
                     </div>
 
                     {/* Detalles Operativos (Acento Morado) */}
-                    <div className="rounded-lg border border-violet-200/60 dark:border-violet-900/40 bg-violet-50/40 dark:bg-violet-950/20 p-3.5 space-y-2.5">
-                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300 border-b border-violet-200/50 dark:border-violet-900/30 pb-1.5">
+                    <div className="rounded-lg border border-primary/25 bg-primary/10 p-3.5 space-y-2.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary border-b border-primary/20 pb-1.5">
                             <MapPin className="size-3.5" aria-hidden="true" />
                             Origen y Motivo
                         </h4>
@@ -222,7 +222,7 @@ export function MovimientoDetailDialog({
                                 <DetailItem
                                     label="Grupo de Venta"
                                     mono
-                                    valueClassName="text-violet-700 dark:text-violet-300"
+                                    valueClassName="text-primary"
                                 >
                                     {orDash(movement.saleGroupId)}
                                 </DetailItem>
@@ -232,7 +232,7 @@ export function MovimientoDetailDialog({
                                 <DetailItem
                                     label="Folio"
                                     mono
-                                    valueClassName="text-violet-700 dark:text-violet-300"
+                                    valueClassName="text-primary"
                                 >
                                     {orDash(movement.folio)}
                                 </DetailItem>
@@ -241,8 +241,8 @@ export function MovimientoDetailDialog({
                     </div>
 
                     {/* Auditoría y Registro (Acento Ámbar/Cálido) */}
-                    <div className="rounded-lg border border-amber-200/60 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-950/10 p-3.5 space-y-2.5">
-                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 border-b border-amber-200/50 dark:border-amber-900/30 pb-1.5">
+                    <div className="rounded-lg border border-warning/25 bg-warning/10 p-3.5 space-y-2.5">
+                        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-warning border-b border-warning/20 pb-1.5">
                             <ShieldCheck className="size-3.5" aria-hidden="true" />
                             Auditoría
                         </h4>

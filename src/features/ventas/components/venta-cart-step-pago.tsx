@@ -257,12 +257,12 @@ export function VentaCartStepPago({
                                 </p>
                             )}
                             {vueltoValido && (
-                                <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5">
-                                    <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                                <div className="flex items-center justify-between rounded-lg border border-success/30 bg-success/10 px-3 py-2.5">
+                                    <span className="flex items-center gap-1.5 text-sm font-medium text-success">
                                         <Check className="size-4" aria-hidden="true" />
                                         Vuelto
                                     </span>
-                                    <span className="text-base font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                                    <span className="text-base font-bold tabular-nums text-success">
                                         {formatCurrency(
                                             (pagoConNumber ?? 0) - totals.total
                                         )}

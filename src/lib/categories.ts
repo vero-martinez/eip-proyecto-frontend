@@ -96,33 +96,33 @@ export const CATEGORY_TONE_CLASSES: Record<
     { surface: string; icon: string; badge: string }
 > = {
     violet: {
-        surface: "bg-violet-400 dark:bg-violet-950/50",
-        icon: "text-violet-600 dark:text-violet-400",
-        badge: "border-violet-300 bg-violet-100 text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
+        surface: "bg-cat-1/15",
+        icon: "text-cat-1",
+        badge: "border-cat-1/40 bg-cat-1/15 text-cat-1",
     },
     pink: {
-        surface: "bg-pink-300 dark:bg-pink-950/50",
-        icon: "text-pink-500 dark:text-pink-400",
-        badge: "border-pink-300 bg-pink-100 text-pink-700 dark:border-pink-700 dark:bg-pink-950/50 dark:text-pink-300",
+        surface: "bg-cat-2/15",
+        icon: "text-cat-2",
+        badge: "border-cat-2/40 bg-cat-2/15 text-cat-2",
     },
     zinc: {
-        surface: "bg-zinc-200 dark:bg-zinc-800/60",
-        icon: "text-zinc-500 dark:text-zinc-300",
-        badge: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300",
+        surface: "bg-cat-3/15",
+        icon: "text-cat-3",
+        badge: "border-cat-3/40 bg-cat-3/15 text-cat-3",
     },
     fuchsia: {
-        surface: "bg-fuchsia-300 dark:bg-fuchsia-950/50",
-        icon: "text-fuchsia-500 dark:text-fuchsia-400",
-        badge: "border-fuchsia-300 bg-fuchsia-100 text-fuchsia-700 dark:border-fuchsia-700 dark:bg-fuchsia-950/50 dark:text-fuchsia-300",
+        surface: "bg-cat-4/15",
+        icon: "text-cat-4",
+        badge: "border-cat-4/40 bg-cat-4/15 text-cat-4",
     },
     yellow: {
-        surface: "bg-yellow-200 dark:bg-yellow-950/50",
-        icon: "text-yellow-600 dark:text-yellow-300",
-        badge: "border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-300",
+        surface: "bg-cat-5/15",
+        icon: "text-cat-5",
+        badge: "border-cat-5/40 bg-cat-5/15 text-cat-5",
     },
     indigo: {
-        surface: "bg-indigo-400 dark:bg-indigo-950/50",
-        icon: "text-indigo-600 dark:text-indigo-400",
-        badge: "border-indigo-300 bg-indigo-100 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300",
+        surface: "bg-cat-6/15",
+        icon: "text-cat-6",
+        badge: "border-cat-6/40 bg-cat-6/15 text-cat-6",
     },
 }

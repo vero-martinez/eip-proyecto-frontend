@@ -39,7 +39,7 @@ export const ALERTA_ESTADO_ITEMS: {
         label: "Stock bajo",
         variant: "default",
         className:
-            "border-amber-500/40 bg-amber-500/15 text-amber-700 hover:bg-amber-500/15 dark:text-amber-400",
+            "border-warning/40 bg-warning/15 text-warning hover:bg-warning/15",
     },
     {
         value: "inactivo",

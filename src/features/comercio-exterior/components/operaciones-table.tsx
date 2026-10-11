@@ -133,7 +133,7 @@ export function OperacionesTable({
 
                 <Badge
                     variant="outline"
-                    className="h-9 w-fit border-violet-300 bg-violet-50/50 px-3 text-xs font-medium text-violet-700 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
+                    className="h-9 w-fit border-primary/30 bg-primary/10 px-3 text-xs font-medium text-primary"
                 >
                     {formatOperacionCount(totalCount)}
                 </Badge>
@@ -311,7 +311,7 @@ export function OperacionesTable({
                                             size="icon"
                                             onClick={() => onView(operacion)}
                                             aria-label={`Ver detalle de la operación ${operacion.folio}`}
-                                            className="size-8 cursor-pointer rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 hover:text-violet-800 dark:bg-violet-500/15 dark:text-violet-400 dark:hover:bg-violet-500/25 dark:hover:text-violet-300 transition-colors"
+                                                className="size-8 cursor-pointer rounded-lg bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
                                         >
                                             <Eye
                                                 className="size-4"

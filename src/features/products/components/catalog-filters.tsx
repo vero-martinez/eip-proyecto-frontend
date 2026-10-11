@@ -78,7 +78,7 @@ export function CatalogFilters({
 
     return (
         <div className="flex flex-wrap items-center gap-3 sm:gap-2">
-            <InputGroup className="w-full border-border bg-white shadow-sm sm:w-60 dark:bg-input/30">
+                <InputGroup className="w-full border-border bg-background shadow-sm sm:w-60">
                 <InputGroupAddon align="inline-start">
                     <Search className="size-4 text-primary" aria-hidden="true" />
                 </InputGroupAddon>

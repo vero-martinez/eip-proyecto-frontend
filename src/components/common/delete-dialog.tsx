@@ -74,7 +74,7 @@ export function DeleteDialog({
                         {cancelLabel}
                     </AlertDialogCancel>
                     <AlertDialogAction
-                        className="flex-1 h-9 bg-destructive text-white hover:bg-destructive/90"
+                        className="flex-1 h-9 bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         onClick={onConfirm}
                         disabled={isLoading}
                     >

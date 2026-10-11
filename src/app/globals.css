@@ -27,6 +27,26 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-paper: var(--paper);
+  --color-paper-foreground: var(--paper-foreground);
+  --color-overlay: var(--overlay);
+  --color-brand-light: var(--brand-light);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-cat-1: var(--cat-1);
+  --color-cat-2: var(--cat-2);
+  --color-cat-3: var(--cat-3);
+  --color-cat-4: var(--cat-4);
+  --color-cat-5: var(--cat-5);
+  --color-cat-6: var(--cat-6);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -48,99 +68,160 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Paleta base (de la referencia):
+ *   Lavender        #E1DAFB   superficies suaves
+ *   Petal Frost     #FFD2F4   acento rosado
+ *   Glaucous        #758AD1   azul periwinkle (primario en oscuro)
+ *   Persian Blue    #4D3EA3   primario en claro
+ *   Midnight Violet #450C3F   texto en claro, sidebar y fondos en oscuro
+ */
+
 :root {
   /* ===== MODO CLARO ===== */
-  --background: #F4F2FB;
-  --foreground: #1A1625;
+  --background: #F3F0FD;          /* Lavender muy aclarado */
+  --foreground: #450C3F;          /* Midnight Violet */
 
   --card: #FFFFFF;
-  --card-foreground: #1A1625;
+  --card-foreground: #450C3F;
 
   --popover: #FFFFFF;
-  --popover-foreground: #1A1625;
+  --popover-foreground: #450C3F;
 
-  /* Primario — violeta, botones y elementos activos */
-  --primary: #7463b8;
+  /* Primario — Persian Blue (contraste 8.3:1 con blanco) */
+  --primary: #4D3EA3;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #EDE9FB;
-  --secondary-foreground: #4A3F80;
+  --secondary: #E1DAFB;           /* Lavender */
+  --secondary-foreground: #4D3EA3;
 
-  --muted: #EDE9FB;
-  --muted-foreground: #6B6580;
+  --muted: #ECE7FC;
+  --muted-foreground: #66507F;
 
-  --accent: #EDE9FB;
-  --accent-foreground: #7C5CFC;
+  --accent: #F9E3F6;              /* Petal Frost suavizado (hover de menús y botones) */
+  --accent-foreground: #450C3F;
 
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.55 0.22 18);
+  --destructive-foreground: #FFFFFF;
 
-  --border: #E4E0F2;
-  --input: #E4E0F2;
-  --ring: #7C5CFC;
+  --border: #D8CFF3;
+  --input: #C8BDEE;
+  --ring: #758AD1;                /* Glaucous */
 
-  --chart-1: #7C5CFC;
-  --chart-2: #A78BFA;
-  --chart-3: #C4B5FD;
-  --chart-4: #DDD6FE;
-  --chart-5: #EDE9FE;
+  /* Semánticos de estado (éxito / advertencia / información) */
+  --success: #047857;
+  --success-foreground: #FFFFFF;
+  --warning: #B45309;
+  --warning-foreground: #FFFFFF;
+  --info: #3D5BB5;
+  --info-foreground: #FFFFFF;
+
+  /* Boleta térmica: monocromática, fija en ambos temas */
+  --paper: #FFFFFF;
+  --paper-foreground: #000000;
+
+  /* Fondo de overlays/modales (backdrop), tintado con Midnight Violet */
+  --overlay: #450C3F33;
+
+  /* Marca: gradiente del panel de login, fijo en ambos temas
+     (Glaucous → Persian Blue → Midnight Violet, como en la referencia) */
+  --brand-light: #758AD1;
+  --brand: #4D3EA3;
+  --brand-deep: #382d71;
+  --brand-foreground: #FFFFFF;
+
+  /* Tonos categóricos (uno por tono; superficie/ícono/badge vía opacidad) */
+  --cat-1: #4D3EA3; /* persian blue */
+  --cat-2: #B0357F; /* rosa frambuesa */
+  --cat-3: #3D5BB5; /* glaucous oscuro */
+  --cat-4: #8A2F7A; /* ciruela */
+  --cat-5: #A16207; /* ámbar */
+  --cat-6: #0F766E; /* verde azulado */
+
+  /* Gráficas: base de la paleta + turquesa y ámbar para distinguir series */
+  --chart-1: #4D3EA3;
+  --chart-2: #758AD1;
+  --chart-3: #E060B8;
+  --chart-4: #2FA5A0;
+  --chart-5: #F2A33A;
 
   --radius: 0.75rem;
 
-  --sidebar: #422c6f;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #7f6fbe;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #d4c2e0;
-  --sidebar-accent-foreground: #1A1625;
-  --sidebar-border: #E4E0F2;
-  --sidebar-ring: #7C5CFC;
+  /* Sidebar: Midnight Violet con ítem activo en Persian Blue */
+  --sidebar: #25326d;
+  --sidebar-foreground: #E1DAFB;
+  --sidebar-primary: #758AD1;
+  --sidebar-primary-foreground: #450C3F;
+  --sidebar-accent: #776ac1;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #5A2552;
+  --sidebar-ring: #758AD1;
 }
 
 .dark {
   /* ===== MODO OSCURO ===== */
-  --background: #0B0A14;
-  --foreground: #EDEBF5;
+  --background: #1A0B24;          /* ciruela casi negro */
+  --foreground: #EEE8FD;
 
-  --card: #17151F;
-  --card-foreground: #EDEBF5;
+  --card: #26123A;
+  --card-foreground: #EEE8FD;
 
-  --popover: #17151F;
-  --popover-foreground: #EDEBF5;
+  --popover: #2D1744;
+  --popover-foreground: #EEE8FD;
 
-  --primary: #8B6CFC;
-  --primary-foreground: #FFFFFF;
+  /* Primario — Glaucous aclarado (Persian Blue no contrasta sobre fondo oscuro) */
+  --primary: #8195DB;
+  --primary-foreground: #1A0B24;
 
-  --secondary: #1F1D2B;
-  --secondary-foreground: #EDEBF5;
+  --secondary: #2B2268;
+  --secondary-foreground: #E1DAFB;
 
-  --muted: #1F1D2B;
-  --muted-foreground: #9691A8;
+  --muted: #2A1838;
+  --muted-foreground: #B3A5CC;
 
-  --accent: #241F35;
-  --accent-foreground: #8B6CFC;
+  --accent: #46204F;
+  --accent-foreground: #FFD2F4;   /* Petal Frost */
 
   --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: #1A0A0E;
 
-  --border: #232030;
-  --input: #232030;
-  --ring: #8B6CFC;
+  --border: #3A2352;
+  --input: #44285F;
+  --ring: #8195DB;
 
-  --chart-1: #8B6CFC;
-  --chart-2: #A78BFA;
-  --chart-3: #C4B5FD;
-  --chart-4: #6D28D9;
-  --chart-5: #4C1D95;
+  --success: #34D399;
+  --success-foreground: #07130E;
+  --warning: #FBBF24;
+  --warning-foreground: #1A1203;
+  --info: #8EA8F0;
+  --info-foreground: #0E1230;
+
+  /* Fondo de overlays/modales (backdrop) */
+  --overlay: #0E0314A6;
+
+  --cat-1: #A89BF0;
+  --cat-2: #F59ADC;
+  --cat-3: #8FA6EE;
+  --cat-4: #D88AD0;
+  --cat-5: #FACC15;
+  --cat-6: #2DD4BF;
+
+  --chart-1: #8195DB;
+  --chart-2: #F7A8E4;
+  --chart-3: #A99BF0;
+  --chart-4: #2DD4BF;
+  --chart-5: #FBBF24;
 
   --radius: 0.75rem;
 
-  --sidebar: #0B0A14;
-  --sidebar-foreground: #EDEBF5;
-  --sidebar-primary: #8B6CFC;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1F1D2B;
-  --sidebar-accent-foreground: #EDEBF5;
-  --sidebar-border: #232030;
-  --sidebar-ring: #8B6CFC;
+  --sidebar: #130619;
+  --sidebar-foreground: #EEE8FD;
+  --sidebar-primary: #8195DB;
+  --sidebar-primary-foreground: #1A0B24;
+  --sidebar-accent: #34287A;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #2A1535;
+  --sidebar-ring: #8195DB;
 }
 
 @layer base {

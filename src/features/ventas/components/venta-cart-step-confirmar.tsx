@@ -107,11 +107,11 @@ export function VentaCartStepConfirmar({
                                         {formatCurrency(pagoConNumber ?? 0)}
                                     </span>
                                 </p>
-                                <div className="flex items-center justify-between gap-2 rounded-md bg-emerald-500/10 px-2 py-1.5 text-xs">
-                                    <span className="font-medium text-emerald-800 dark:text-emerald-300">
+                                <div className="flex items-center justify-between gap-2 rounded-md bg-success/10 px-2 py-1.5 text-xs">
+                                    <span className="font-medium text-success">
                                         Vuelto
                                     </span>
-                                    <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                                    <span className="font-bold tabular-nums text-success">
                                         {formatCurrency(
                                             (pagoConNumber ?? 0) - totals.total
                                         )}
@@ -165,7 +165,7 @@ export function VentaCartStepConfirmar({
                         type="button"
                         onClick={onSubmitVenta}
                         disabled={isSubmitting}
-                        className="h-11 flex-[2] gap-1.5 bg-emerald-600 font-medium shadow-sm hover:bg-emerald-700"
+                        className="h-11 flex-[2] gap-1.5 bg-success font-medium text-success-foreground shadow-sm hover:bg-success/90"
                     >
                         {isSubmitting ? (
                             <>

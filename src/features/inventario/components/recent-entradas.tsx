@@ -65,7 +65,7 @@ export function RecentEntradas({
                                     {isLow && (
                                         <Badge
                                             variant="outline"
-                                            className="gap-1 shrink-0 rounded-full border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 dark:bg-rose-500/20 px-2 py-0.5 text-[10px] font-medium"
+                                            className="gap-1 shrink-0 rounded-full border-destructive/30 bg-destructive/10 text-destructive px-2 py-0.5 text-[10px] font-medium"
                                         >
                                             <AlertTriangle
                                                 className="size-2.5"
@@ -105,7 +105,7 @@ export function RecentEntradas({
 
                         <Badge
                             variant="outline"
-                            className="shrink-0 font-semibold border-amber-500 bg-amber-200/60 dark:text-amber-400 dark:bg-amber-500/20 px-2.5 py-1 text-xs"
+                            className="shrink-0 font-semibold border-warning bg-warning/20 text-warning px-2.5 py-1 text-xs"
                         >
                             {formatEntryQuantity(quantity, product.unitType)}
                         </Badge>

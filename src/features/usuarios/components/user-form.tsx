@@ -80,7 +80,7 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
                         <span className="flex items-center gap-1.5">
                             <span
                                 className={`size-1.5 rounded-full ${
-                                    user.isActive ? "bg-emerald-400" : "bg-muted-foreground"
+                                    user.isActive ? "bg-success" : "bg-muted-foreground"
                                 }`}
                                 aria-hidden="true"
                             />
@@ -187,7 +187,7 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
                                 checked={isActive}
                                 onCheckedChange={(checked) => setValue("isActive", checked)}
                                 aria-describedby="isActive-description"
-                                className="data-checked:bg-emerald-500"
+                                        className="data-checked:bg-success"
                             />
                         </div>
 

@@ -53,7 +53,7 @@ export function EtiquetaCard({
                 {/* Icono QR decorativo */}
                 <div
                     aria-hidden="true"
-                    className="flex size-14 items-center justify-center rounded-full bg-white/70 shadow-sm ring-1 ring-black/5 dark:bg-white/10 dark:ring-white/10"
+                    className="flex size-14 items-center justify-center rounded-full bg-card/70 shadow-sm ring-1 ring-foreground/10"
                 >
                     <QrCode className={cn("size-7", icon)} />
                 </div>
@@ -61,7 +61,7 @@ export function EtiquetaCard({
                 {/* SKU visible y legible por lector de pantalla */}
                 <Badge
                     variant="secondary"
-                    className="absolute top-2 right-2 border-transparent bg-black/60 font-mono text-[10px] text-white backdrop-blur-sm"
+                    className="absolute top-2 right-2 border-transparent bg-foreground/70 font-mono text-[10px] text-background backdrop-blur-sm"
                 >
                     <span className="sr-only">SKU: </span>
                     {product.sku}
@@ -73,7 +73,7 @@ export function EtiquetaCard({
                     onCheckedChange={onToggleSelect}
                     aria-label={`Seleccionar etiqueta de ${product.name}`}
                     title="Marcar para descargar junto con las seleccionadas"
-                    className="absolute top-2 left-2 bg-white/90 shadow-sm dark:bg-background/90"
+                    className="absolute top-2 left-2 bg-card/90 shadow-sm"
                 />
             </div>
 

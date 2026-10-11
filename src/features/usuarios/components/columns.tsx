@@ -19,12 +19,9 @@ const ROLE_LABELS: Record<Rol, string> = {
 }
 
 const ROLE_BADGE_CLASSES: Record<Rol, string> = {
-    admin:
-        "border-rose-300 bg-rose-100/70 text-rose-700 dark:border-rose-700 dark:bg-rose-950/50 dark:text-rose-300",
-    vendedor:
-        "border-violet-300 bg-violet-100/70 text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
-    taller:
-        "border-amber-300 bg-amber-100/70 text-amber-700 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+    admin: "border-cat-2/40 bg-cat-2/15 text-cat-2",
+    vendedor: "border-cat-1/40 bg-cat-1/15 text-cat-1",
+    taller: "border-cat-5/40 bg-cat-5/15 text-cat-5",
 }
 
 interface Column {

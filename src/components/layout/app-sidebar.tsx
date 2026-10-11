@@ -41,8 +41,8 @@ export function AppSidebar({ sections, onLogout }: AppSidebarProps) {
       {/* Marca */}
       <SidebarHeader className="px-4 pt-5 pb-4 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-sidebar-primary ring-1 ring-white/25 backdrop-blur">
-            <GemIcon className="size-5 text-white" />
+          <div className="flex size-11 items-center justify-center rounded-xl bg-sidebar-primary ring-1 ring-sidebar-primary-foreground/25 backdrop-blur">
+            <GemIcon className="size-5 text-sidebar-foreground" />
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="truncate text-[15px] leading-tight font-bold tracking-tight text-sidebar-foreground">
@@ -90,7 +90,7 @@ export function AppSidebar({ sections, onLogout }: AppSidebarProps) {
               onClick={onLogout}
               aria-label="Cerrar sesión"
               tooltip="Cerrar sesión"
-              className="h-9 gap-4 rounded-lg px-4 text-base text-sidebar-foreground transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center hover:bg-sidebar-accent/80 hover:text-foreground"
+              className="h-9 gap-4 rounded-lg px-4 text-base text-sidebar-foreground transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center hover:bg-sidebar-accent/80 hover:text-sidebar-foreground"
             >
               <SquareArrowRightExit className="size-4" />
               <span className="group-data-[collapsible=icon]:hidden">

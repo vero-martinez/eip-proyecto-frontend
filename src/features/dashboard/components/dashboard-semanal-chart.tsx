@@ -71,7 +71,7 @@ function ChartTooltip({ active, label, payload, promedio }: ChartTooltipProps) {
                 className={cn(
                     "mt-1.5 flex items-center gap-1 text-xs font-medium",
                     sobrePromedio
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-success"
                         : "text-muted-foreground"
                 )}
             >
@@ -138,7 +138,7 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                     <>
                         {/* Gráfico */}
                         <div
-                            className="h-72 w-full rounded-2xl bg-background/80 px-3 pb-3 pt-2 shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                            className="h-72 w-full rounded-2xl bg-background/80 px-3 pb-3 pt-2 shadow-sm ring-1 ring-foreground/10"
                             aria-hidden="true"
                         >
                             <ResponsiveContainer width="100%" height="100%">
@@ -260,7 +260,7 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
 
                         {/* Métricas */}
                         <dl className="grid gap-3 sm:grid-cols-3">
-                            <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                            <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
                                 <div
                                     className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"
                                     aria-hidden="true"
@@ -278,9 +278,9 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                             </div>
 
                             {semanaPico && (
-                                <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                                <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
                                     <div
-                                        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning/15 text-warning"
                                         aria-hidden="true"
                                     >
                                         <CalendarRange className="size-5" />
@@ -296,15 +296,15 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                            <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
                                 <div
                                     className={cn(
                                         "flex size-10 shrink-0 items-center justify-center rounded-xl",
                                         variacion === null
                                             ? "bg-muted text-muted-foreground"
                                             : variacionPositiva
-                                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                              : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                                              ? "bg-success/15 text-success"
+                                              : "bg-destructive/15 text-destructive"
                                     )}
                                     aria-hidden="true"
                                 >
@@ -324,8 +324,8 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                                             variacion === null
                                                 ? "text-muted-foreground"
                                                 : variacionPositiva
-                                                  ? "text-emerald-600 dark:text-emerald-400"
-                                                  : "text-rose-600 dark:text-rose-400"
+                                                  ? "text-success"
+                                                  : "text-destructive"
                                         )}
                                     >
                                         {variacion === null

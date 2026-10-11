@@ -48,7 +48,7 @@ const TIPO_FILTER_ITEMS: Record<string, string> = {
 
 /** Clases del buscador por folio, con el mismo tinte violeta de la barra. */
 const SEARCH_GROUP_CLASS =
-    "h-8 w-full max-w-xs border-violet-200 bg-white/60 focus-within:ring-2 focus-within:ring-violet-500 dark:border-violet-800 dark:bg-slate-900/60"
+    "h-8 w-full max-w-xs border-primary/20 bg-background/60 focus-within:ring-2 focus-within:ring-ring"
 
 interface VentasFiltersBarProps {
     /** Muestra el selector de responsable (solo vista global). */
@@ -88,12 +88,12 @@ export function VentasFiltersBar({
         <div
             role="search"
             aria-label="Filtros de historial de ventas"
-            className="flex flex-col items-center gap-3 rounded-2xl border border-violet-200/70 bg-white/60 p-3.5 dark:border-violet-900/40 dark:bg-slate-900/60 sm:flex-row sm:items-end sm:justify-between"
+            className="flex flex-col items-center gap-3 rounded-2xl border border-primary/25 bg-background/60 p-3.5 sm:flex-row sm:items-end sm:justify-between"
         >
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
                 {mostrarResponsable && onResponsableChange && (
                     <div className="flex w-full flex-col items-center text-center gap-1 sm:w-56 sm:items-start sm:text-left">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-violet-900/70 dark:text-violet-300">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
                             Responsable
                         </span>
                         <SearchableSelect
@@ -104,7 +104,7 @@ export function VentasFiltersBar({
                             searchPlaceholder="Buscar responsable..."
                             emptyText="Sin responsables"
                             ariaLabel="Filtrar por responsable"
-                            triggerClassName="h-8 w-full justify-start gap-1.5 border-violet-300/80 text-xs font-bold text-violet-900 dark:border-violet-800 dark:text-violet-200"
+                            triggerClassName="h-8 w-full justify-start gap-1.5 border-primary/30 text-xs font-bold text-primary"
                             contentClassName="max-w-[300px]"
                         />
                     </div>
@@ -113,7 +113,7 @@ export function VentasFiltersBar({
                 <div className="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left gap-1">
                     <label
                         htmlFor="ventas-desde"
-                        className="text-[11px] font-bold uppercase tracking-wider text-violet-900/70 dark:text-violet-300"
+                        className="text-[11px] font-bold uppercase tracking-wider text-primary"
                     >
                         Desde
                     </label>
@@ -122,14 +122,14 @@ export function VentasFiltersBar({
                         type="date"
                         value={desde}
                         onChange={(e) => onDesdeChange(e.target.value)}
-                        className="h-8 w-full sm:w-36 border-violet-200 text-xs text-center sm:text-left focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-800"
+                        className="h-8 w-full sm:w-36 border-primary/20 text-xs text-center sm:text-left focus-visible:ring-2 focus-visible:ring-ring"
                     />
                 </div>
 
                 <div className="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left gap-1">
                     <label
                         htmlFor="ventas-hasta"
-                        className="text-[11px] font-bold uppercase tracking-wider text-violet-900/70 dark:text-violet-300"
+                        className="text-[11px] font-bold uppercase tracking-wider text-primary"
                     >
                         Hasta
                     </label>
@@ -138,7 +138,7 @@ export function VentasFiltersBar({
                         type="date"
                         value={hasta}
                         onChange={(e) => onHastaChange(e.target.value)}
-                        className="h-8 w-full sm:w-36 border-violet-200 text-xs text-center sm:text-left focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-800"
+                        className="h-8 w-full sm:w-36 border-primary/20 text-xs text-center sm:text-left focus-visible:ring-2 focus-visible:ring-ring"
                     />
                 </div>
 
@@ -160,9 +160,9 @@ export function VentasFiltersBar({
                     <SelectTrigger
                         size="sm"
                         aria-label="Filtrar por tipo de venta"
-                        className="h-8 w-full sm:w-auto justify-center gap-2 border-violet-300/80 text-xs font-bold text-violet-900 dark:border-violet-800 dark:text-violet-200"
+                        className="h-8 w-full sm:w-auto justify-center gap-2 border-primary/30 text-xs font-bold text-primary"
                     >
-                        <Store className="size-3.5 text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                        <Store className="size-3.5 text-primary" aria-hidden="true" />
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="end">
@@ -187,9 +187,9 @@ export function VentasFiltersBar({
                     <SelectTrigger
                         size="sm"
                         aria-label="Ordenar resultados por fecha"
-                        className="h-8 w-full sm:w-auto justify-center gap-2 border-violet-300/80 text-xs font-bold text-violet-900 dark:border-violet-800 dark:text-violet-200"
+                        className="h-8 w-full sm:w-auto justify-center gap-2 border-primary/30 text-xs font-bold text-primary"
                     >
-                        <ArrowUpDown className="size-3.5 text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                        <ArrowUpDown className="size-3.5 text-primary" aria-hidden="true" />
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="end">
@@ -218,7 +218,7 @@ export function VentasSearchBar({
         <InputGroup className={SEARCH_GROUP_CLASS}>
             <InputGroupAddon align="inline-start">
                 <Search
-                    className="size-3.5 text-violet-600 dark:text-violet-400"
+                    className="size-3.5 text-primary"
                     aria-hidden="true"
                 />
             </InputGroupAddon>
@@ -228,7 +228,7 @@ export function VentasSearchBar({
                 aria-label="Buscar por número de código"
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="text-xs font-medium text-violet-900 dark:text-violet-200"
+                className="text-xs font-medium text-foreground"
             />
 
             {search && (

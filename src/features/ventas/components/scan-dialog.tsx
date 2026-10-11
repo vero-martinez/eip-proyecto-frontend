@@ -217,7 +217,7 @@ export function ScanDialog({
                 {message && (
                     <p
                         role="alert"
-                        className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-800 dark:text-amber-300"
+                        className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs font-medium text-warning"
                     >
                         {message}
                     </p>

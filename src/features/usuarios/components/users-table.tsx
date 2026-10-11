@@ -85,7 +85,7 @@ export function UsersTable({ users, onEdit, onDelete, onCreate }: UsersTableProp
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4 sm:gap-3">
-                <InputGroup className="w-full max-w-sm h-10 border-border bg-white shadow-sm dark:bg-input/30">
+                <InputGroup className="w-full max-w-sm h-10 border-border bg-background shadow-sm">
                     <InputGroupAddon align="inline-start">
                         <Search className="size-4 text-primary" aria-hidden="true" />
                     </InputGroupAddon>
@@ -109,7 +109,7 @@ export function UsersTable({ users, onEdit, onDelete, onCreate }: UsersTableProp
                 </InputGroup>
                 <Badge
                     variant="outline"
-                    className="border-violet-300 bg-violet-100/70 px-3 py-3 text-base text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300"
+                    className="border-primary/30 bg-primary/10 px-3 py-3 text-base text-primary"
                 >
                     {totalCount} {totalCount === 1 ? "usuario" : "usuarios"}
                 </Badge>

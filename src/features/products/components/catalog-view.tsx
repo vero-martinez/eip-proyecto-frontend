@@ -77,7 +77,7 @@ export function CatalogView({
 
                 <Badge
                     variant="outline"
-                    className="border-violet-300 bg-violet-100/70 px-3 py-3 text-base text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300"
+                    className="border-primary/30 bg-primary/10 px-3 py-3 text-base text-primary"
                 >
                     {formatProductCount(totalCount)}
                 </Badge>

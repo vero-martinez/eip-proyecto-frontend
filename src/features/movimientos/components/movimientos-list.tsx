@@ -56,34 +56,34 @@ const MOVEMENT_TONE: Record<
     }
 > = {
     entrada: {
-        border: "border-emerald-500/40",
-        accent: "border-l-emerald-500",
-        avatar: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300",
-        cantidad: "text-emerald-600 dark:text-emerald-400",
+        border: "border-success/40",
+        accent: "border-l-success",
+        avatar: "bg-success/15 text-success",
+        cantidad: "text-success",
     },
     venta: {
-        border: "border-violet-500/40",
-        accent: "border-l-violet-500",
-        avatar: "bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300",
-        cantidad: "text-rose-600 dark:text-rose-400",
+        border: "border-primary/40",
+        accent: "border-l-primary",
+        avatar: "bg-primary/15 text-primary",
+        cantidad: "text-destructive",
     },
     merma: {
-        border: "border-rose-500/40",
-        accent: "border-l-rose-500",
-        avatar: "bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300",
-        cantidad: "text-rose-600 dark:text-rose-400",
+        border: "border-destructive/40",
+        accent: "border-l-destructive",
+        avatar: "bg-destructive/15 text-destructive",
+        cantidad: "text-destructive",
     },
     importacion: {
-        border: "border-sky-500/40",
-        accent: "border-l-sky-500",
-        avatar: "bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300",
-        cantidad: "text-emerald-600 dark:text-emerald-400",
+        border: "border-info/40",
+        accent: "border-l-info",
+        avatar: "bg-info/15 text-info",
+        cantidad: "text-success",
     },
     exportacion: {
-        border: "border-indigo-500/40",
-        accent: "border-l-indigo-500",
-        avatar: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300",
-        cantidad: "text-rose-600 dark:text-rose-400",
+        border: "border-cat-6/40",
+        accent: "border-l-cat-6",
+        avatar: "bg-cat-6/15 text-cat-6",
+        cantidad: "text-destructive",
     },
 }
 
@@ -184,7 +184,7 @@ export function MovimientosList({
 
                 <Badge
                     variant="outline"
-                    className="h-9 w-fit border-violet-300 bg-violet-50/50 px-3 text-xs font-medium text-violet-700 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
+                    className="h-9 w-fit border-primary/30 bg-primary/10 px-3 text-xs font-medium text-primary"
                 >
                     {formatMovementCount(totalCount)}
                 </Badge>
@@ -200,7 +200,7 @@ export function MovimientosList({
                         return (
                             <ListItemCard
                                 key={movement.id}
-                                className="bg-white dark:bg-white"
+                                className="bg-card"
                                 borderClassName={tone.border}
                                 accentClassName={tone.accent}
                                 avatarClassName={tone.avatar}
@@ -242,7 +242,7 @@ export function MovimientosList({
                                             size="sm"
                                             onClick={() => onView(movement)}
                                             aria-label={`Ver detalle del movimiento ${movement.id}`}
-                                            className="h-8 gap-1.5 rounded-xl bg-violet-600 text-xs font-bold text-white hover:bg-violet-700 hover:text-white dark:bg-violet-600 dark:hover:bg-violet-700 dark:hover:text-white"
+                                            className="h-8 gap-1.5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90"
                                         >
                                             <Eye
                                                 className="size-3.5"

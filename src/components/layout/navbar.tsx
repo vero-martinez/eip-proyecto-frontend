@@ -38,7 +38,7 @@ export function Navbar({ usuario, sections }: NavbarProps) {
   return (
     <header className="flex h-20 items-center justify-between border-b border-border bg-background px-4">
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="size-8 text-sidebar" />
+        <SidebarTrigger className="size-8 text-foreground" />
         <Separator orientation="vertical" className="h-8" />
 
         {currentItem && (

@@ -66,22 +66,22 @@ const TONES: Record<
     { stripe: string; bar: string; icon: string; text: string }
 > = {
     agotado: {
-        stripe: "before:bg-rose-500",
-        bar: "bg-rose-500",
-        icon: "bg-rose-500/10 text-rose-600 ring-rose-500/25 dark:text-rose-400",
-        text: "text-rose-600 dark:text-rose-400",
+        stripe: "before:bg-destructive",
+        bar: "bg-destructive",
+        icon: "bg-destructive/10 text-destructive ring-destructive/25",
+        text: "text-destructive",
     },
     bajo: {
-        stripe: "before:bg-amber-300",
-        bar: "bg-amber-300",
-        icon: "bg-amber-300/20 text-amber-600 ring-amber-300/50 dark:text-amber-300",
-        text: "text-amber-700 dark:text-amber-400",
+        stripe: "before:bg-warning",
+        bar: "bg-warning",
+        icon: "bg-warning/20 text-warning ring-warning/40",
+        text: "text-warning",
     },
     inactivo: {
-        stripe: "before:bg-slate-400 dark:before:bg-slate-600",
-        bar: "bg-slate-400",
-        icon: "bg-slate-500/10 text-slate-500 ring-slate-500/25 dark:text-slate-400",
-        text: "text-slate-600 dark:text-slate-400",
+        stripe: "before:bg-muted-foreground",
+        bar: "bg-muted-foreground",
+        icon: "bg-muted-foreground/10 text-muted-foreground ring-muted-foreground/25",
+        text: "text-muted-foreground",
     },
 }
 
@@ -108,7 +108,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
         <Card className="border-border/80 shadow-sm">
             <CardHeader className="gap-4 pb-4">
                 <div className="flex items-start gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/25 dark:text-rose-400">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive ring-1 ring-destructive/25">
                         <AlertTriangle className="size-4" aria-hidden="true" />
                     </span>
                     <div className="flex flex-col gap-0.5">
@@ -144,7 +144,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                                     "inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium transition-colors",
                                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                     active
-                                        ? "border-violet-400 bg-violet-400 text-violet-950"
+                                        ? "border-primary bg-primary text-primary-foreground"
                                         : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
                                 )}
                             >
@@ -153,7 +153,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                                     className={cn(
                                         "rounded-full px-1.5 text-xs tabular-nums",
                                         active
-                                            ? "bg-violet-950/15 text-violet-950"
+                                            ? "bg-primary-foreground/20 text-primary-foreground"
                                             : "bg-muted text-muted-foreground"
                                     )}
                                 >
@@ -232,7 +232,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                                             {badges.agotado && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="rounded-full border-rose-500/30 bg-rose-500/10 px-2 py-0 text-xs font-medium text-rose-600 dark:text-rose-400"
+                                                    className="rounded-full border-destructive/30 bg-destructive/10 px-2 py-0 text-xs font-medium text-destructive"
                                                 >
                                                     Agotado
                                                 </Badge>
@@ -240,7 +240,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                                             {badges.bajoStock && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="rounded-full border-amber-300/60 bg-amber-300/20 px-2 py-0 text-xs font-medium text-amber-700 dark:text-amber-300"
+                                                    className="rounded-full border-warning/40 bg-warning/15 px-2 py-0 text-xs font-medium text-warning"
                                                 >
                                                     Bajo stock
                                                 </Badge>
@@ -248,7 +248,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                                             {badges.inactivo && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="rounded-full border-slate-500/30 bg-slate-500/10 px-2 py-0 text-xs font-medium text-slate-600 dark:text-slate-300"
+                                                    className="rounded-full border-muted-foreground/30 bg-muted-foreground/10 px-2 py-0 text-xs font-medium text-muted-foreground"
                                                 >
                                                     Inactivo
                                                 </Badge>
@@ -291,7 +291,7 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                                             "text-xs font-medium",
                                             missing > 0
                                                 ? styles.text
-                                                : "text-emerald-600 dark:text-emerald-400"
+                                                : "text-success"
                                         )}
                                     >
                                         {missing > 0
@@ -324,9 +324,9 @@ export function AlertasLista({ products, categories }: AlertasListaProps) {
                     })
                 ) : (
                     <div className="flex h-44 flex-col items-center justify-center gap-2.5 text-center">
-                        <div className="flex size-11 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                        <div className="flex size-11 items-center justify-center rounded-full bg-success/10 ring-1 ring-success/20">
                             <CheckCircle2
-                                className="size-5 text-emerald-500"
+                                className="size-5 text-success"
                                 aria-hidden="true"
                             />
                         </div>

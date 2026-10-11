@@ -16,6 +16,7 @@
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "cn": "^0.2.6",
+    "exceljs": "^4.4.0",
     "html2canvas-pro": "^2.4.4",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",

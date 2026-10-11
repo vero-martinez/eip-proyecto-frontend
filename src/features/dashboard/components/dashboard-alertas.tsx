@@ -33,6 +33,13 @@ interface DashboardAlertasProps {
     alertas: AlertasStock
 }
 
+/** Porcentaje (0-100) del mínimo requerido que hay en existencia. */
+function getNivelStock(currentStock: number, unidadesFaltantes: number) {
+    const minimo = currentStock + unidadesFaltantes
+    if (minimo <= 0 || unidadesFaltantes <= 0) return null
+    return Math.max(0, Math.min(100, Math.round((currentStock / minimo) * 100)))
+}
+
 export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
     const priorizadas = getAlertasPriorizadas(alertas.items)
     const visibles = priorizadas.slice(0, MAX_ALERTAS_DETALLADAS)
@@ -48,32 +55,30 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
     return (
         <Card
             className={cn(
-                "overflow-hidden border bg-gradient-to-br shadow-sm",
-                sinAlertas
-                    ? "border-emerald-200 from-emerald-100 via-teal-50 to-emerald-50 dark:border-emerald-500/20 dark:from-emerald-500/20 dark:via-teal-500/10 dark:to-emerald-500/5"
-                    : "border-amber-200 from-amber-100 via-orange-50 to-rose-50 dark:border-amber-500/20 dark:from-amber-500/20 dark:via-orange-500/10 dark:to-rose-500/10"
+                "overflow-hidden border-l-4 shadow-none",
+                sinAlertas ? "border-l-emerald-500" : "border-l-amber-500"
             )}
         >
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 p-6 pb-4">
-                <div className="flex items-center gap-4">
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 p-5 sm:p-6">
+                <div className="flex items-center gap-3.5">
                     <div
                         className={cn(
-                            "flex size-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg",
+                            "flex size-10 shrink-0 items-center justify-center rounded-lg",
                             sinAlertas
-                                ? "bg-emerald-500 shadow-emerald-500/30"
-                                : "bg-gradient-to-br from-amber-500 to-orange-500 shadow-orange-500/30"
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                         )}
                         aria-hidden="true"
                     >
                         {sinAlertas ? (
-                            <PackageCheck className="size-6" />
+                            <PackageCheck className="size-5" />
                         ) : (
-                            <AlertTriangle className="size-6" />
+                            <AlertTriangle className="size-5" />
                         )}
                     </div>
-                    <div className="space-y-1">
-                        <CardTitle className="text-lg">Alertas de stock</CardTitle>
-                        <CardDescription className="text-foreground/60">
+                    <div className="space-y-0.5">
+                        <CardTitle className="text-base font-semibold">Alertas de stock</CardTitle>
+                        <CardDescription>
                             {sinAlertas
                                 ? "Sin alertas activas"
                                 : `${alertas.total} ${
@@ -86,29 +91,32 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                 </div>
 
                 {!sinAlertas && (
-                    <span className="hidden shrink-0 rounded-full bg-background/80 px-4 py-1.5 text-2xl font-bold tabular-nums text-orange-600 shadow-sm ring-1 ring-orange-500/20 sm:block dark:text-orange-400">
+                    <span
+                        className="text-4xl font-semibold leading-none tabular-nums tracking-tight"
+                        aria-hidden="true"
+                    >
                         {alertas.total}
                     </span>
                 )}
             </CardHeader>
 
-            <CardContent className="flex flex-col gap-5 px-6 pb-6 pt-0">
+            <CardContent className="flex flex-col gap-5 px-5 pb-5 pt-0 sm:px-6 sm:pb-6">
                 {sinAlertas ? (
-                    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-background/70 px-6 py-12 text-center ring-1 ring-emerald-500/15 backdrop-blur">
-                        <p className="text-base font-semibold">Todo en orden</p>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="rounded-lg border border-dashed py-10 text-center">
+                        <p className="text-sm font-medium">Todo en orden</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
                             Todo el inventario está por encima de su mínimo.
                         </p>
                     </div>
                 ) : (
                     <>
-                        {/* Contadores */}
+                        {/* Contadores: una sola banda dividida en segmentos */}
                         {contadores.length > 0 && (
-                            <ul className="grid gap-3 sm:grid-cols-3">
+                            <ul className="grid grid-cols-1 divide-y overflow-hidden rounded-lg border sm:grid-cols-[repeat(auto-fit,minmax(0,1fr))] sm:divide-x sm:divide-y-0">
                                 {contadores.map((contador) => (
                                     <li
                                         key={contador.key}
-                                        className="flex flex-col gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur dark:ring-white/10"
+                                        className="flex items-center justify-between gap-3 px-4 py-3.5 sm:flex-col sm:items-start sm:gap-2.5"
                                     >
                                         <Badge
                                             variant={contador.presentacion?.variant}
@@ -119,7 +127,7 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                                         >
                                             {contador.label}
                                         </Badge>
-                                        <span className="text-4xl font-bold leading-none tabular-nums tracking-tight">
+                                        <span className="text-3xl font-semibold leading-none tabular-nums tracking-tight">
                                             {contador.cantidad}
                                         </span>
                                     </li>
@@ -128,20 +136,20 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                         )}
 
                         {/* Detalle */}
-                        <div className="overflow-hidden rounded-2xl bg-background/90 shadow-sm ring-1 ring-black/5 backdrop-blur dark:ring-white/10">
+                        <div className="overflow-hidden rounded-lg border">
                             <Table>
-                                <TableHeader>
-                                    <TableRow className="border-b hover:bg-transparent">
-                                        <TableHead className="h-12 px-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="h-10 px-4 text-xs font-medium text-muted-foreground">
                                             Producto
                                         </TableHead>
-                                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <TableHead className="h-10 text-xs font-medium text-muted-foreground">
                                             Estado
                                         </TableHead>
-                                        <TableHead className="h-12 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <TableHead className="h-10 min-w-36 text-xs font-medium text-muted-foreground">
                                             Stock
                                         </TableHead>
-                                        <TableHead className="h-12 px-5 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <TableHead className="h-10 px-4 text-right text-xs font-medium text-muted-foreground">
                                             Faltantes
                                         </TableHead>
                                     </TableRow>
@@ -150,20 +158,21 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                                     {visibles.map((item) => {
                                         const presentacion = getAlertaEstadoItem(item.estado)
                                         const simbolo = getUnitSymbol(item.unitType)
+                                        const nivel = getNivelStock(
+                                            item.currentStock,
+                                            item.unidadesFaltantes
+                                        )
                                         return (
-                                            <TableRow
-                                                key={item.productId}
-                                                className="transition-colors hover:bg-orange-500/[0.06]"
-                                            >
-                                                <TableCell className="px-5 py-4">
-                                                    <p className="truncate font-medium leading-tight">
+                                            <TableRow key={item.productId}>
+                                                <TableCell className="max-w-56 px-4 py-3">
+                                                    <p className="truncate text-sm font-medium leading-tight">
                                                         {item.nombre}
                                                     </p>
-                                                    <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
+                                                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                                                         {item.sku}
                                                     </p>
                                                 </TableCell>
-                                                <TableCell className="py-4">
+                                                <TableCell className="py-3">
                                                     {presentacion && (
                                                         <Badge
                                                             variant={presentacion.variant}
@@ -173,13 +182,28 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                                                         </Badge>
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="py-4 text-right font-medium tabular-nums">
-                                                    {formatPiezas(item.currentStock)}{" "}
-                                                    <span className="text-xs font-normal text-muted-foreground">
-                                                        {simbolo}
-                                                    </span>
+                                                <TableCell className="py-3">
+                                                    <p className="text-sm font-medium tabular-nums">
+                                                        {formatPiezas(item.currentStock)}{" "}
+                                                        <span className="text-xs font-normal text-muted-foreground">
+                                                            {simbolo}
+                                                        </span>
+                                                    </p>
+                                                    {nivel !== null && (
+                                                        <div
+                                                            className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted"
+                                                            role="img"
+                                                            aria-label={`${nivel}% del stock mínimo`}
+                                                        >
+                                                            <div
+                                                                className="h-full rounded-full bg-amber-500"
+                                                                style={{ width: `${nivel}%` }}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </TableCell>
-                                                <TableCell className="px-5 py-4 text-right font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                                                <TableCell className="px-4 py-3 text-right text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                                                    {item.unidadesFaltantes > 0 ? "−" : ""}
                                                     {formatPiezas(item.unidadesFaltantes)}{" "}
                                                     <span className="text-xs font-normal text-muted-foreground">
                                                         {simbolo}
@@ -192,7 +216,7 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
                             </Table>
 
                             {restantes > 0 && (
-                                <p className="border-t px-5 py-3 text-center text-xs text-muted-foreground">
+                                <p className="border-t bg-muted/40 px-4 py-2.5 text-center text-xs text-muted-foreground">
                                     y {restantes} producto{restantes === 1 ? "" : "s"} más con
                                     alerta
                                 </p>

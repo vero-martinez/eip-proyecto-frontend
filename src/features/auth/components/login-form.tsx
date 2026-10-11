@@ -67,7 +67,7 @@ export function LoginForm() {
               <InputGroupInput
                 id="email"
                 type="email"
-                placeholder="admin@eip.com"
+                placeholder="admin@pasion.com"
                 autoComplete="email"
                 required
                 aria-invalid={errors.email ? true : undefined}

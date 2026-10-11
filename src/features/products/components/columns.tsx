@@ -1,0 +1,142 @@
+"use client"
+
+/**
+ * Configuración de columnas para la tabla de productos. Cada columna
+ * define su título, ancho y cómo se renderiza el valor de un Product.
+ */
+
+import type { ReactNode } from "react"
+import { Layers, Pencil, Trash2 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/common/status-badge"
+import { formatCurrency } from "@/lib/utils"
+import { formatStock, hasLowStock, isOutOfStock } from "@/lib/units"
+import { getParentCategoryName, getSubcategoryName } from "@/lib/categories"
+import type { Product, Category } from "@/types/products"
+
+export interface ProductColumn {
+    key: string
+    header: string
+    width?: string
+    render: (product: Product) => ReactNode
+}
+
+export function getProductColumns(
+    categories: Category[],
+    onEdit: (product: Product) => void,
+    onDelete: (product: Product) => void,
+    onViewLotes: (product: Product) => void
+): ProductColumn[] {
+    return [
+        {
+            key: "name",
+            header: "Producto",
+            width: "w-[20%]",
+            render: (product) => (
+                <div className="min-w-0">
+                    <p className="truncate font-medium">{product.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                        {product.sku}
+                    </p>
+                </div>
+            ),
+        },
+        {
+            key: "category",
+            header: "Categoría",
+            width: "w-[17%]",
+            render: (product) => (
+                <span className="block truncate font-medium">
+                    {getParentCategoryName(product.categoryId, categories)}
+                </span>
+            ),
+        },
+        {
+            key: "subcategory",
+            header: "Subcategoría",
+            width: "w-[16%]",
+            render: (product) => (
+                <span className="block truncate text-muted-foreground">
+                    {getSubcategoryName(product.categoryId, categories)}
+                </span>
+            ),
+        },
+        {
+            key: "salePrice",
+            header: "Precio",
+            width: "w-[13%]",
+            render: (product) => (
+                <div className="font-medium tabular-nums">
+                    {formatCurrency(product.salePrice)}
+                </div>
+            ),
+        },
+        {
+            key: "currentStock",
+            header: "Stock",
+            width: "w-[13%]",
+            render: (product) => {
+                const label = formatStock(product)
+                const outOfStock = isOutOfStock(product)
+                const lowStock = !outOfStock && hasLowStock(product)
+
+                if (outOfStock || lowStock) {
+                    return (
+                        <Badge
+                            variant="destructive"
+                            className="bg-destructive/15 px-2.5 text-destructive hover:bg-destructive/15"
+                        >
+                            {outOfStock ? "Sin stock" : label}
+                        </Badge>
+                    )
+                }
+
+                return <span className="font-medium tabular-nums">{label}</span>
+            },
+        },
+        {
+            key: "status",
+            header: "Estado",
+            width: "w-[10%]",
+            render: (product) => <StatusBadge active={product.isActive} />,
+        },
+        {
+            key: "actions",
+            header: "Acciones",
+            width: "w-[14%]",
+            render: (product) => (
+                <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 bg-info/15 text-info hover:bg-info/25"
+                        onClick={() => onViewLotes(product)}
+                    >
+                        <Layers className="size-4" />
+                        <span className="sr-only">Lotes</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 bg-warning/15 text-warning hover:bg-warning/25"
+                        onClick={() => onEdit(product)}
+                    >
+                        <Pencil className="size-4" />
+                        <span className="sr-only">Editar</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive dark:bg-destructive/15 dark:hover:bg-destructive/25"
+                        onClick={() => onDelete(product)}
+                    >
+                        <Trash2 className="size-4" />
+                        <span className="sr-only">Eliminar</span>
+                    </Button>
+                </div>
+            ),
+        },
+    ]
+}

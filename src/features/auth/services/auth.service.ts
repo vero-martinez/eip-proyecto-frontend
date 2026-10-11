@@ -1,51 +1,41 @@
 /**
- * Servicio de autenticación mockeado.
- * Simula el login usando usuarios de prueba hasta tener el backend real.
+ * Servicio de autenticación contra el backend real (FastAPI).
+ *
+ * El login delega la verificación de credenciales en la API y devuelve
+ * el token JWT junto con el usuario autenticado. La persistencia de la
+ * sesión la maneja session.ts / AuthProvider.
  */
 
-import { Usuario } from "@/types/auth";
+import api from "@/lib/axios";
+import type { Usuario } from "@/types/auth";
 
-// Usuarios de prueba que simulan los datos del backend.
-const USUARIOS_MOCK: (Usuario & { email: string; password: string })[] = [
-    {
-        id: "1",
-        nombre: "Admin Mock",
-        rol: "admin",
-        email: "admin@eip.com",
-        password: "admin123",
-    },
-    {
-        id: "2",
-        nombre: "Vendedor Mock",
-        rol: "vendedor",
-        email: "vendedor@eip.com",
-        password: "vendedor123",
-    },
-    {
-        id: "3",
-        nombre: "Taller Mock",
-        rol: "taller",
-        email: "taller@eip.com",
-        password: "taller123",
-    },
-];
+interface LoginResponse {
+    accessToken: string;
+    tokenType: string;
+    usuario: Usuario;
+}
 
 export const authService = {
-    // Simula un login validando las credenciales.
-    login: async (email: string, password: string): Promise<Usuario> => {
-        // Simula el tiempo de respuesta de una API.
-        await new Promise((resolve) => setTimeout(resolve, 500));
+    /**
+     * Autentica contra POST /api/v1/auth/login.
+     * @throws Error con el mensaje del backend (401 credenciales, 403 inactivo).
+     */
+    login: async (email: string, password: string): Promise<LoginResponse> => {
+        const { data } = await api.post<LoginResponse>("/auth/login", {
+            email,
+            password,
+        });
 
-        const encontrado = USUARIOS_MOCK.find(
-            (u) => u.email === email && u.password === password
-        );
+        return data;
+    },
 
-        if (!encontrado) {
-            throw new Error("Email o contraseña incorrectos");
-        }
-
-        // Devuelve los datos del usuario sin la contraseña.
-        const { email: _email, password: _password, ...usuario } = encontrado;
-        return usuario;
+    /**
+     * Verifica el token actual contra GET /api/v1/auth/me.
+     * Se usa al cargar la app para confirmar que la sesión sigue vigente.
+     * @returns El usuario autenticado según el servidor.
+     */
+    me: async (): Promise<Usuario> => {
+        const { data } = await api.get<Usuario>("/auth/me");
+        return data;
     },
 };

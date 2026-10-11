@@ -13,13 +13,15 @@ import {
     Store,
     Users,
     FileBarChart,
-    ScanBarcode,
     PackagePlus,
     PackageMinus,
     QrCode,
     Bell,
+    Truck,
     type LucideIcon,
 } from "lucide-react"
+
+import type { Rol } from "@/types/auth"
 
 export interface NavItem {
     label: string
@@ -38,23 +40,23 @@ export const NAV_ADMIN: NavSection[] = [
         title: "Principal",
         items: [
             { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, description: "Analítica de Ventas del negocio" },
-            { label: "Punto de venta", href: "/ventas", icon: ShoppingCart, description: "Ventas minoristas: ferias, tienda y canales digitales" },
+            { label: "Catálogo de venta", href: "/ventas", icon: ShoppingCart, description: "Ventas minoristas: ferias, tienda y canales digitales" },
         ],
     },
     {
         title: "Inventario",
         items: [
             { label: "Productos", href: "/productos", icon: Boxes, description: "Crear, editar y eliminar productos del catálogo" },
-            { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
-            { label: "Movimientos", href: "/movimientos", icon: ClipboardList, description: "Historial demovimientos de inventario" },
+            { label: "Compras", href: "/compras", icon: Truck, description: "Comprar stock a proveedores nacionales" },
+            { label: "Movimientos", href: "/movimientos", icon: ClipboardList, description: "Historial de movimientos de inventario" },
 
         ],
     },
     {
         title: "Negocio",
         items: [
-            { label: "Ferias", href: "/ferias", icon: Store, description: "Administrar ferias y puntos de venta" },
             { label: "Comercio Exterior", href: "/comercio-exterior", icon: Store, description: "Gestionar operaciones de comercio exterior" },
+            { label: "Ventas", href: "/ventas-todas", icon: ClipboardList, description: "Ver todas las ventas del negocio, con filtro por responsable" },
         ],
     },
     {
@@ -70,10 +72,8 @@ export const NAV_VENDEDOR: NavSection[] = [
     {
         title: "",
         items: [
-            { label: "Escanear", href: "/escanear", icon: ScanBarcode, description: "Escanear códigos QR para registrar ventas" },
-            { label: "Registrar Ventas", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas realizadas en el punto de venta" },
+            { label: "Catálogo de venta", href: "/ventas", icon: ShoppingCart, description: "Registrar ventas: ferias, tienda y canales digitales" },
             { label: "Mis ventas", href: "/mis-ventas", icon: ClipboardList, description: "Visualizar el historial de mis ventas" },
-            { label: "Catálogo", href: "/catalogo", icon: Package, description: "Ver el catálogo de productos" },
         ],
     },
 ]
@@ -90,3 +90,14 @@ export const NAV_TALLER: NavSection[] = [
         ],
     },
 ]
+
+/**
+ * Secciones de navegación por rol. Permite que un layout compartido
+ * (ej. el de Catálogo) renderice el sidebar correcto según el usuario
+ * sin duplicar la selección en cada layout.
+ */
+export const NAV_BY_ROL: Record<Rol, NavSection[]> = {
+    admin: NAV_ADMIN,
+    vendedor: NAV_VENDEDOR,
+    taller: NAV_TALLER,
+}

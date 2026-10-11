@@ -3,26 +3,45 @@
 /**
  * Barra superior de cada layout protegido.
  *
- * Muestra el trigger del sidebar, el título/descripción del módulo
- * activo (según la ruta actual) y el usuario logueado con avatar.
+ * Componente presentacional: recibe el usuario y las secciones de
+ * navegación por props. Deriva el título/descripción del módulo activo
+ * a partir de la ruta actual y muestra el usuario con avatar.
  * El logout vive en el footer del sidebar, no acá.
  */
 
+import { useSyncExternalStore } from "react"
 import { usePathname } from "next/navigation"
 
-import { useAuth } from "@/providers/auth-provider"
-import { NAV_ADMIN, NAV_VENDEDOR, NAV_TALLER } from "@/lib/constants"
-import { getInitials } from "@/lib/utils"
+import { cn, getInitials } from "@/lib/utils"
+import type { NavSection } from "@/lib/constants"
+import type { Usuario } from "@/types/auth"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ThemeToggle } from "./theme-toggle"
 
-export function Navbar() {
-  const { usuario } = useAuth()
+function subscribeToScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true })
+  return () => window.removeEventListener("scroll", onChange)
+}
+
+const getScrollSnapshot = () => window.scrollY > 0
+const getServerScrollSnapshot = () => false
+
+interface NavbarProps {
+  usuario: Usuario | null
+  sections: NavSection[]
+}
+
+export function Navbar({ usuario, sections }: NavbarProps) {
   const pathname = usePathname()
+  const scrolled = useSyncExternalStore(
+    subscribeToScroll,
+    getScrollSnapshot,
+    getServerScrollSnapshot
+  )
 
-  const todasLasSecciones = [...NAV_ADMIN, ...NAV_VENDEDOR, ...NAV_TALLER]
-  const currentItem = todasLasSecciones
+  const currentItem = sections
     .flatMap((section) => section.items)
     .find(
       (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
@@ -31,9 +50,14 @@ export function Navbar() {
   const initials = getInitials(usuario?.nombre)
 
   return (
-    <header className="flex h-20 items-center justify-between border-b border-border bg-background px-4">
+    <header
+      className={cn(
+        "sticky top-0 z-30 flex h-20 items-center justify-between border-b border-border bg-background px-4 transition-shadow duration-200",
+        scrolled && "shadow-sm"
+      )}
+    >
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="size-8 text-sidebar" />
+        <SidebarTrigger className="size-8 text-foreground" />
         <Separator orientation="vertical" className="h-8" />
 
         {currentItem && (
@@ -51,6 +75,8 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center gap-4 rounded-xl border border-border bg-muted/40 py-2 px-4">
+        <ThemeToggle />
+        <Separator orientation="vertical" className="h-8" />
         <Avatar className="size-9 border border-border">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
             {initials}

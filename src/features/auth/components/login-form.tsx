@@ -3,21 +3,14 @@
 /**
  * Formulario de login, envuelto en un Card de shadcn/ui.
  *
- * Usa React Hook Form + Zod para validar, y useLogin (useMutation)
- * para ejecutar el login mockeado. Al tener éxito, guarda la sesión
- * globalmente con useAuth() y redirige.
+ * Componente presentacional: toda la lógica (React Hook Form + Zod, la
+ * mutation de login, la sesión global y la redirección) vive en
+ * useLoginForm.
  */
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 import { ArrowRightIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, MailIcon, ShieldCheckIcon } from "lucide-react"
 
-import { useAuth } from "@/providers/auth-provider"
-import { useLogin } from "@/features/auth/hooks/use-login"
-import { loginSchema, LoginFormData } from "@/features/auth/schemas"
+import { useLoginForm } from "@/features/auth/hooks/use-login-form"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -35,36 +28,16 @@ import {
 } from "@/components/ui/card"
 
 export function LoginForm() {
-  const router = useRouter()
-  const { login: guardarSesion } = useAuth()
-  const loginMutation = useLogin()
-  const [showPassword, setShowPassword] = useState(false)
+  const { methods, onSubmit, isSubmitting, showPassword, togglePassword } =
+    useLoginForm()
 
   const {
     register,
-    handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  })
-
-  const onSubmit = (data: LoginFormData) => {
-    loginMutation.mutate(
-      { email: data.email, password: data.password },
-      {
-        onSuccess: (usuario) => {
-          guardarSesion(usuario)
-          router.push("/")
-        },
-        onError: (error) => {
-          toast.error(error.message)
-        },
-      }
-    )
-  }
+  } = methods
 
   return (
-    <Card className="w-full max-w-md border-border/60 shadow-xl shadow-black/5">
+      <Card className="w-full max-w-md border-border/60 shadow-xl shadow-foreground/5">
       <CardHeader className="gap-1 px-8 pt-8">
         {/* Logo / monograma de la empresa */}
         <div className="flex size-14 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
@@ -82,19 +55,19 @@ export function LoginForm() {
       <CardContent className="px-8 pt-7">
         <form
           noValidate
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-5"
+          onSubmit={onSubmit}
+          className="flex flex-col gap-2"
         >
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="email">Email de la empresa</Label>
-            <InputGroup className="h-10">
+            <InputGroup className="h-10 mt-3">
               <InputGroupAddon align="inline-start">
                 <MailIcon className="size-4" />
               </InputGroupAddon>
               <InputGroupInput
                 id="email"
                 type="email"
-                placeholder="admin@eip.com"
+                placeholder="admin@pasion.com"
                 autoComplete="email"
                 required
                 aria-invalid={errors.email ? true : undefined}
@@ -102,16 +75,14 @@ export function LoginForm() {
                 {...register("email")}
               />
             </InputGroup>
-            {errors.email && (
-              <p id="email-error" role="alert" className="text-sm text-destructive">
-                {errors.email.message}
-              </p>
-            )}
+            <p id="email-error" role="alert" className="min-h-5 text-sm text-destructive">
+              {errors.email?.message ?? ""}
+            </p>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="password">Contraseña</Label>
-            <InputGroup className="h-10">
+            <InputGroup className="h-10 mt-3">
               <InputGroupAddon align="inline-start">
                 <LockIcon className="size-4" />
               </InputGroupAddon>
@@ -130,7 +101,7 @@ export function LoginForm() {
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={togglePassword}
                   aria-label={
                     showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
                   }
@@ -144,20 +115,18 @@ export function LoginForm() {
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
-            {errors.password && (
-              <p id="password-error" role="alert" className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
+            <p id="password-error" role="alert" className="min-h-5 text-sm text-destructive">
+              {errors.password?.message ?? ""}
+            </p>
           </div>
 
           <Button
             type="submit"
             size="lg"
             className="mt-1 h-10 w-full font-semibold"
-            disabled={loginMutation.isPending}
+            disabled={isSubmitting}
           >
-            {loginMutation.isPending ? (
+            {isSubmitting ? (
               <>
                 <Loader2Icon className="size-4 animate-spin" />
                 Ingresando...

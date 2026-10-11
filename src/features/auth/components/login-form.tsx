@@ -56,11 +56,11 @@ export function LoginForm() {
         <form
           noValidate
           onSubmit={onSubmit}
-          className="flex flex-col gap-5"
+          className="flex flex-col gap-2"
         >
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="email">Email de la empresa</Label>
-            <InputGroup className="h-10">
+            <InputGroup className="h-10 mt-3">
               <InputGroupAddon align="inline-start">
                 <MailIcon className="size-4" />
               </InputGroupAddon>
@@ -75,16 +75,14 @@ export function LoginForm() {
                 {...register("email")}
               />
             </InputGroup>
-            {errors.email && (
-              <p id="email-error" role="alert" className="text-sm text-destructive">
-                {errors.email.message}
-              </p>
-            )}
+            <p id="email-error" role="alert" className="min-h-5 text-sm text-destructive">
+              {errors.email?.message ?? ""}
+            </p>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="password">Contraseña</Label>
-            <InputGroup className="h-10">
+            <InputGroup className="h-10 mt-3">
               <InputGroupAddon align="inline-start">
                 <LockIcon className="size-4" />
               </InputGroupAddon>
@@ -117,11 +115,9 @@ export function LoginForm() {
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
-            {errors.password && (
-              <p id="password-error" role="alert" className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
+            <p id="password-error" role="alert" className="min-h-5 text-sm text-destructive">
+              {errors.password?.message ?? ""}
+            </p>
           </div>
 
           <Button

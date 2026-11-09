@@ -12,6 +12,14 @@ export type PeriodoDashboard = "dia" | "semana" | "mes"
 
 /** Clasificación de una alerta de stock. */
 export type EstadoAlerta = "agotado" | "bajo" | "inactivo"
+/** Estado de reposición de un producto. */
+export type EstadoReposicion = "pedir_ya" | "pedir_pronto" | "suficiente" | "sin_demanda"
+
+/** Qué tipo de anomalía detectó el backend. */
+export type TipoAnomalia = "semana_atipica" | "movimiento_atipico" | "stock_negativo"
+
+/** Gravedad de la anomalía. */
+export type SeveridadAnomalia = "alta" | "media"
 
 /** Indicadores agregados de ventas del periodo consultado. */
 export interface ResumenVentas {
@@ -75,4 +83,86 @@ export interface DashboardResumen {
     serieSemanal: SerieSemanal[]
     topProductos: ProductoTop[]
     alertasStock: AlertasStock
+}
+
+/** Una semana pronosticada (la fecha es el lunes que inicia la semana). */
+export interface PronosticoSemana {
+    semana: string
+    unidades: number
+}
+
+/** Pronóstico de demanda de un producto. */
+export interface PronosticoProducto {
+    productId: number
+    nombre: string
+    sku: string
+    unitType: UnitType
+    /** Método elegido en la validación (ver `getEtiquetaMetodo`). */
+    metodo: string
+    /** Error medido en semanas pasadas; null si no hubo datos para medirlo. */
+    wape: number | null
+    /** false cuando el error es alto o no se pudo medir. */
+    confiable: boolean
+    semanasHistorial: number
+    semanas: PronosticoSemana[]
+}
+
+/** Respuesta de `GET /analitica/demanda/pronostico`. */
+export interface PronosticoDemanda {
+    horizonteSemanas: number
+    productos: PronosticoProducto[]
+}
+
+/** Recomendación de reposición de un producto. */
+export interface ReposicionProducto {
+    productId: number
+    nombre: string
+    sku: string
+    unitType: UnitType
+    stockActual: number
+    stockMinimo: number
+    /** Unidades esperadas en todo el pronóstico. */
+    demandaHorizonte: number
+    /** Semanas que dura el stock; null si dura más que el pronóstico. */
+    semanasCobertura: number | null
+    semanaAgotamiento: string | null
+    cantidadSugerida: number
+    /** Semana límite para pedir; si ya pasó, es la semana actual. */
+    fechaLimitePedido: string | null
+    plazoSemanas: number
+    estado: EstadoReposicion
+    confiable: boolean
+}
+
+/** Respuesta de `GET /analitica/reposicion`. */
+export interface ReposicionStock {
+    horizonteSemanas: number
+    productos: ReposicionProducto[]
+}
+
+/** Una anomalía en ventas, mermas o stock. */
+export interface Anomalia {
+    tipo: TipoAnomalia
+    severidad: SeveridadAnomalia
+    productId: number
+    nombre: string
+    sku: string
+    unitType: UnitType
+    /** Lunes de la semana o día del movimiento; null en stock negativo. */
+    fecha: string | null
+    valor: number | null
+    esperado: number | null
+    /** Desviaciones respecto a lo habitual; null si no aplica. */
+    puntaje: number | null
+    /** Explicación lista para mostrar. */
+    mensaje: string
+}
+
+/** Respuesta de `GET /analitica/anomalias`. */
+export interface AnomaliasDetectadas {
+    semanasRevisadas: number
+    total: number
+    altas: number
+    medias: number
+    anomalias: Anomalia[]
 }

@@ -8,6 +8,7 @@
 
 import { useMemo } from "react"
 import {
+    ArrowLeftRight,
     ArrowDownLeft,
     ArrowUpRight,
     ChevronRight,
@@ -85,11 +86,18 @@ const MOVEMENT_TONE: Record<
         avatar: "bg-cat-6/15 text-cat-6",
         cantidad: "text-destructive",
     },
+        transferencia: {
+        border: "border-border",
+        accent: "border-l-muted-foreground",
+        avatar: "bg-muted text-muted-foreground",
+        cantidad: "text-muted-foreground",
+    },
 }
 
 function getMovementIcon(type: MovementType) {
     if (type === "entrada" || type === "importacion") return ArrowDownLeft
     if (type === "venta" || type === "exportacion") return ArrowUpRight
+    if (type === "transferencia") return ArrowLeftRight
     return Trash2
 }
 
@@ -194,7 +202,7 @@ export function MovimientosList({
             {pageItems.length ? (
                 <ul aria-label="Listado de movimientos" className="space-y-3">
                     {pageItems.map((movement) => {
-                        const tone = MOVEMENT_TONE[movement.movementType]
+                        const tone = MOVEMENT_TONE[movement.movementType] ?? MOVEMENT_TONE.merma
                         const Icon = getMovementIcon(movement.movementType)
 
                         return (

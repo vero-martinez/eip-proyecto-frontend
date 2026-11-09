@@ -13,6 +13,7 @@ export const MOVIMIENTO_TIPO_ITEMS: {
     { value: "merma", label: "Merma" },
     { value: "importacion", label: "Importación" },
     { value: "exportacion", label: "Exportación" },
+    { value: "transferencia", label: "Transferencia" },
 ]
 
 export type SortOption = "recent" | "oldest"

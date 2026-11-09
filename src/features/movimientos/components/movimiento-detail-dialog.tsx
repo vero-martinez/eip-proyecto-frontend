@@ -128,9 +128,11 @@ export function MovimientoDetailDialog({
                             <p
                                 className={cn(
                                     "text-base font-bold tabular-nums",
-                                    isSalida
-                                        ? "text-destructive"
-                                        : "text-success"
+                                    movement.movementType === "transferencia"
+                                        ? "text-muted-foreground"
+                                        : isSalida
+                                          ? "text-destructive"
+                                          : "text-success"
                                 )}
                             >
                                 {formatMovementQuantity(movement)}

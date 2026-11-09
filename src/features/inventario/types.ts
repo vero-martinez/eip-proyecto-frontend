@@ -45,6 +45,7 @@ export type MovementType =
     | "merma"
     | "importacion"
     | "exportacion"
+    | "transferencia"
 
 /** Registro de movimientos de stock (entradas, ventas, mermas y comercio exterior). */
 export interface MovementRecord {

@@ -35,6 +35,7 @@ import {
     formatPorcentaje,
     getPromedioSemanal,
     getSemanaPico,
+    getSemanasCompletas,
     getVariacionSemanal,
 } from "../utils"
 
@@ -88,10 +89,11 @@ function ChartTooltip({ active, label, payload, promedio }: ChartTooltipProps) {
 
 export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
     const [activo, setActivo] = useState<number | null>(null)
-
-    const promedioSemanal = getPromedioSemanal(serie)
-    const semanaPico = getSemanaPico(serie)
-    const variacion = getVariacionSemanal(serie)
+    // La semana en curso se dibuja, pero no cuenta en promedio, pico ni variación.
+    const completas = getSemanasCompletas(serie)
+    const promedioSemanal = getPromedioSemanal(completas)
+    const semanaPico = getSemanaPico(completas)
+    const variacion = getVariacionSemanal(completas)
     const datos = serie.map((semana) => ({
         etiqueta: semana.etiqueta,
         totalVentas: semana.totalVentas,

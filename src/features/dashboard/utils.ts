@@ -1,3 +1,4 @@
+
 /**
  * Utilidades del módulo Dashboard: formateo de datos del endpoint y cálculo
  * de indicadores derivados.
@@ -49,6 +50,31 @@ export function formatPiezas(valor: number): string {
     return new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 }).format(valor)
 }
 
+const ETIQUETAS_METODO: Record<string, string> = {
+    promedio_movil: "Promedio móvil",
+    croston_sba: "Demanda intermitente",
+    suavizado_exponencial: "Suavizado exponencial",
+    holt_amortiguado: "Tendencia amortiguada",
+    estacional_ingenuo: "Misma semana del año anterior",
+    holt_winters: "Estacional (Holt-Winters)",
+    ciclo_regular: "Pedidos con ritmo regular",
+}
+
+/** Nombre legible del método de pronóstico; si no se conoce, el valor tal cual. */
+export function getEtiquetaMetodo(metodo: string): string {
+    return ETIQUETAS_METODO[metodo] ?? metodo
+}
+
+/** Fecha corta ("12 oct") de una fecha sin hora como "2026-10-12". */
+export function formatSemanaCorta(fecha: string): string {
+    // Una fecha sin hora se interpreta en UTC; se formatea en UTC para no retroceder un día en Lima.
+    return new Intl.DateTimeFormat("es-PE", {
+        day: "2-digit",
+        month: "short",
+        timeZone: "UTC",
+    }).format(new Date(fecha))
+}
+
 // ==========================================
 // INDICADORES DERIVADOS
 // ==========================================
@@ -91,6 +117,13 @@ export function getVariacionSemanal(serie: SerieSemanal[]): number | null {
     const actual = serie[serie.length - 1]!
     if (!anterior.totalVentas) return null
     return ((actual.totalVentas - anterior.totalVentas) / anterior.totalVentas) * 100
+}
+
+export function getSemanasCompletas(
+    serie: SerieSemanal[],
+    ahora: number = Date.now()
+): SerieSemanal[] {
+    return serie.filter((semana) => new Date(semana.hasta).getTime() <= ahora)
 }
 
 // ==========================================

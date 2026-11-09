@@ -21,6 +21,9 @@ import { useDashboard } from "@/features/dashboard/hooks/use-dashboard"
 import type { PeriodoDashboard } from "@/features/dashboard/types"
 import { formatRangoPeriodo } from "@/features/dashboard/utils"
 import { cn } from "@/lib/utils"
+import { DashboardPronostico } from "@/features/dashboard/components/dashboard-pronostico"
+import { DashboardReposicion } from "@/features/dashboard/components/dashboard-reposicion"
+import { DashboardAnomalias } from "@/features/dashboard/components/dashboard-anomalias"
 
 export default function DashboardPage() {
     const [periodo, setPeriodo] = React.useState<PeriodoDashboard>("mes")
@@ -108,7 +111,9 @@ export default function DashboardPage() {
                 </div>
                 <DashboardTopProductos productos={data.topProductos} />
             </div>
-
+            <DashboardPronostico />
+            <DashboardReposicion />
+            <DashboardAnomalias />
             <DashboardAlertas alertas={data.alertasStock} />
         </main>
     )

@@ -29,7 +29,11 @@ export function getMovementTypeLabel(type: MovementType): string {
 
 /** Formatea la cantidad con su signo y símbolo de unidad. */
 export function formatMovementQuantity(movement: InventoryMovement): string {
+    if (movement.movementType === "transferencia") {
+        return `↔ ${Math.abs(movement.quantity)} ${getUnitSymbol(movement.unitType)}`
+    }
     const esEntrada =
+    
         movement.movementType === "entrada" ||
         movement.movementType === "importacion"
     const sign = esEntrada ? "+" : "−"
@@ -53,6 +57,7 @@ export function getMovementDetail(
             undefined
         )
     }
+    if (movement.movementType === "transferencia") return "Entre almacenes"
     return movement.proveedor ?? "Taller"
 }
 
@@ -84,8 +89,11 @@ export function getMovementTint(type: MovementType): string {
             return "bg-info/10 text-info border-info/50!"
         case "exportacion":
             return "bg-cat-6/10 text-cat-6 border-cat-6/50!"
+        case "transferencia":
+            return "bg-muted text-muted-foreground border-border!"
         default:
             return "bg-destructive/10 text-destructive border-destructive/50!"
+        
     }
 }
 
@@ -123,7 +131,7 @@ export function summarizeMovimientos(
         else if (movement.movementType === "venta") ventas += 1
         else if (movement.movementType === "merma") mermas += 1
         else if (movement.movementType === "importacion") importaciones += 1
-        else exportaciones += 1
+        else if (movement.movementType === "exportacion") exportaciones += 1
     }
 
     return {

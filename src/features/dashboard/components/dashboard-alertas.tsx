@@ -1,23 +1,15 @@
-/**
- * Alertas de stock del Dashboard.
- *
- * El backend cuenta y clasifica los productos con problemas de inventario
- * (agotado, stock bajo o inactivo); aquí se muestran los contadores y el
- * detalle de los casos más severos.
- */
+"use client"
 
-import { AlertTriangle, PackageCheck } from "lucide-react"
+import { AlertTriangle, PackageCheck, Package, Boxes } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { getUnitSymbol } from "@/lib/units"
 
@@ -33,12 +25,29 @@ interface DashboardAlertasProps {
     alertas: AlertasStock
 }
 
-/** Porcentaje (0-100) del mínimo requerido que hay en existencia. */
+/** Porcentaje del stock mínimo que existe actualmente. */
 function getNivelStock(currentStock: number, unidadesFaltantes: number) {
     const minimo = currentStock + unidadesFaltantes
+
     if (minimo <= 0 || unidadesFaltantes <= 0) return null
-    return Math.max(0, Math.min(100, Math.round((currentStock / minimo) * 100)))
+
+    return Math.max(
+        0,
+        Math.min(100, Math.round((currentStock / minimo) * 100))
+    )
 }
+
+const COLORES_ESTADO = {
+    agotado: "bg-destructive",
+    bajo: "bg-warning",
+    inactivo: "bg-muted-foreground",
+} as const
+
+const ICONOS_ESTADO = {
+    agotado: AlertTriangle,
+    bajo: Package,
+    inactivo: Boxes,
+} as const
 
 export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
     const priorizadas = getAlertasPriorizadas(alertas.items)
@@ -50,179 +59,244 @@ export function DashboardAlertas({ alertas }: DashboardAlertasProps) {
         ...contador,
         cantidad: alertas[contador.key],
         presentacion: getAlertaEstadoItem(contador.estado),
-    })).filter((c) => c.presentacion && c.cantidad > 0)
+    })).filter((contador) => contador.presentacion)
 
     return (
-        <Card
-            className={cn(
-                "overflow-hidden border-l-4 shadow-none",
-                sinAlertas ? "border-l-emerald-500" : "border-l-amber-500"
-            )}
-        >
-            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 p-5 sm:p-6">
-                <div className="flex items-center gap-3.5">
+        <Card className="h-full min-w-0 overflow-hidden border-primary/20 bg-primary/15 shadow-sm">
+            {/* Encabezado compacto */}
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-3 pb-2">
+                <div className="flex min-w-0 items-center gap-2">
                     <div
                         className={cn(
-                            "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                            "flex size-8 shrink-0 items-center justify-center rounded-lg",
                             sinAlertas
-                                ? "bg-success/10 text-success"
-                                : "bg-warning/10 text-warning"
+                                ? "bg-success text-success-foreground"
+                                : "bg-primary text-primary-foreground"
                         )}
                         aria-hidden="true"
                     >
                         {sinAlertas ? (
-                            <PackageCheck className="size-5" />
+                            <PackageCheck className="size-4" />
                         ) : (
-                            <AlertTriangle className="size-5" />
+                            <AlertTriangle className="size-4" />
                         )}
                     </div>
-                    <div className="space-y-0.5">
-                        <CardTitle className="text-base font-semibold">Alertas de stock</CardTitle>
-                        <CardDescription>
+
+                    <div className="min-w-0 space-y-0.5">
+                        <CardTitle className="text-sm">
+                            Alertas de stock
+                        </CardTitle>
+
+                        <CardDescription className="text-[11px] leading-tight">
                             {sinAlertas
-                                ? "Sin alertas activas"
+                                ? "Inventario en orden"
                                 : `${alertas.total} ${
                                       alertas.total === 1
-                                          ? "producto requiere"
-                                          : "productos requieren"
-                                  } atención`}
+                                          ? "producto requiere atención"
+                                          : "productos requieren atención"
+                                  }`}
                         </CardDescription>
                     </div>
                 </div>
 
-                {!sinAlertas && (
-                    <span
-                        className="text-4xl font-semibold leading-none tabular-nums tracking-tight"
-                        aria-hidden="true"
-                    >
-                        {alertas.total}
-                    </span>
-                )}
+                <span className="shrink-0 text-xl font-semibold tabular-nums tracking-tight">
+                    {alertas.total}
+                </span>
             </CardHeader>
 
-            <CardContent className="flex flex-col gap-5 px-5 pb-5 pt-0 sm:px-6 sm:pb-6">
+            <CardContent className="flex flex-col gap-2.5 px-3 pb-3 pt-0">
+                {/* Contadores */}
+                <dl className="grid grid-cols-3 gap-1.5">
+                    {contadores.map((contador) => (
+                        <div
+                            key={contador.key}
+                            className="flex min-w-0 flex-col gap-1 rounded-lg bg-background/80 p-2 shadow-sm ring-1 ring-foreground/10"
+                        >
+                            <dt className="min-w-0">
+                                <Badge
+                                    variant={contador.presentacion?.variant}
+                                    className={cn(
+                                        "max-w-full truncate px-1 py-0 text-[9px]",
+                                        contador.presentacion?.className
+                                    )}
+                                >
+                                    {contador.label}
+                                </Badge>
+                            </dt>
+
+                            <dd className="text-lg font-semibold tabular-nums leading-none">
+                                {contador.cantidad}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+
                 {sinAlertas ? (
-                    <div className="rounded-lg border border-dashed py-10 text-center">
-                        <p className="text-sm font-medium">Todo en orden</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Todo el inventario está por encima de su mínimo.
-                        </p>
+                    <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-background/70 px-3 py-6 text-center ring-1 ring-primary/10">
+                        <PackageCheck
+                            className="size-7 text-success"
+                            aria-hidden="true"
+                        />
+
+                        <div className="space-y-0.5">
+                            <p className="text-xs font-medium">
+                                Todo en orden
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                                El inventario está por encima de su mínimo.
+                            </p>
+                        </div>
                     </div>
                 ) : (
-                    <>
-                        {/* Contadores: una sola banda dividida en segmentos */}
-                        {contadores.length > 0 && (
-                            <ul className="grid grid-cols-1 divide-y overflow-hidden rounded-lg border sm:grid-cols-[repeat(auto-fit,minmax(0,1fr))] sm:divide-x sm:divide-y-0">
-                                {contadores.map((contador) => (
-                                    <li
-                                        key={contador.key}
-                                        className="flex items-center justify-between gap-3 px-4 py-3.5 sm:flex-col sm:items-start sm:gap-2.5"
-                                    >
-                                        <Badge
-                                            variant={contador.presentacion?.variant}
-                                            className={cn(
-                                                "w-fit",
-                                                contador.presentacion?.className
-                                            )}
-                                        >
-                                            {contador.label}
-                                        </Badge>
-                                        <span className="text-3xl font-semibold leading-none tabular-nums tracking-tight">
-                                            {contador.cantidad}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
+                    <section className="space-y-2">
+                        {/* Encabezado del detalle */}
+                        <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-xs font-semibold">
+                                Productos con alertas
+                            </h3>
 
-                        {/* Detalle */}
-                        <div className="overflow-hidden rounded-lg border">
-                            <Table>
-                                <TableHeader className="bg-muted/40">
-                                    <TableRow className="hover:bg-transparent">
-                                        <TableHead className="h-10 px-4 text-xs font-medium text-muted-foreground">
-                                            Producto
-                                        </TableHead>
-                                        <TableHead className="h-10 text-xs font-medium text-muted-foreground">
-                                            Estado
-                                        </TableHead>
-                                        <TableHead className="h-10 min-w-36 text-xs font-medium text-muted-foreground">
-                                            Stock
-                                        </TableHead>
-                                        <TableHead className="h-10 px-4 text-right text-xs font-medium text-muted-foreground">
-                                            Faltantes
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {visibles.map((item) => {
-                                        const presentacion = getAlertaEstadoItem(item.estado)
-                                        const simbolo = getUnitSymbol(item.unitType)
-                                        const nivel = getNivelStock(
-                                            item.currentStock,
-                                            item.unidadesFaltantes
-                                        )
-                                        return (
-                                            <TableRow key={item.productId}>
-                                                <TableCell className="max-w-56 px-4 py-3">
-                                                    <p className="truncate text-sm font-medium leading-tight">
+                            <Badge variant="outline" className="shrink-0 text-[9px]">
+                                {visibles.length} de {priorizadas.length}
+                            </Badge>
+                        </div>
+
+                        {/* Alertas compactas */}
+                        <div className="flex flex-col gap-1.5">
+                            {visibles.map((item) => {
+                                const presentacion = getAlertaEstadoItem(item.estado)
+                                const Icono = ICONOS_ESTADO[item.estado]
+                                const simbolo = getUnitSymbol(item.unitType)
+
+                                const nivel = getNivelStock(
+                                    item.currentStock,
+                                    item.unidadesFaltantes
+                                )
+
+                                const stockMinimo =
+                                    item.currentStock + item.unidadesFaltantes
+
+                                return (
+                                    <article
+                                        key={item.productId}
+                                        className="flex min-w-0 flex-col gap-2 rounded-lg bg-background/80 p-2.5 shadow-sm ring-1 ring-foreground/10 transition-shadow hover:shadow-md"
+                                    >
+                                        {/* Producto y estado */}
+                                        <div className="flex min-w-0 items-center justify-between gap-2">
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                <div
+                                                    className={cn(
+                                                        "flex size-7 shrink-0 items-center justify-center rounded-md",
+                                                        item.estado === "agotado"
+                                                            ? "bg-destructive/10 text-destructive"
+                                                            : item.estado === "bajo"
+                                                              ? "bg-warning/10 text-warning"
+                                                              : "bg-muted text-muted-foreground"
+                                                    )}
+                                                >
+                                                    <Icono className="size-3.5" />
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-xs font-semibold leading-tight">
                                                         {item.nombre}
                                                     </p>
-                                                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                                    <p className="truncate font-mono text-[9px] text-muted-foreground">
                                                         {item.sku}
                                                     </p>
-                                                </TableCell>
-                                                <TableCell className="py-3">
-                                                    {presentacion && (
-                                                        <Badge
-                                                            variant={presentacion.variant}
-                                                            className={presentacion.className}
-                                                        >
-                                                            {presentacion.label}
-                                                        </Badge>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="py-3">
-                                                    <p className="text-sm font-medium tabular-nums">
-                                                        {formatPiezas(item.currentStock)}{" "}
-                                                        <span className="text-xs font-normal text-muted-foreground">
-                                                            {simbolo}
-                                                        </span>
-                                                    </p>
-                                                    {nivel !== null && (
-                                                        <div
-                                                            className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted"
-                                                            role="img"
-                                                            aria-label={`${nivel}% del stock mínimo`}
-                                                        >
-                                                            <div
-                                                                className="h-full rounded-full bg-warning"
-                                                                style={{ width: `${nivel}%` }}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="px-4 py-3 text-right text-sm font-semibold tabular-nums text-destructive">
-                                                    {item.unidadesFaltantes > 0 ? "−" : ""}
-                                                    {formatPiezas(item.unidadesFaltantes)}{" "}
-                                                    <span className="text-xs font-normal text-muted-foreground">
-                                                        {simbolo}
-                                                    </span>
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })}
-                                </TableBody>
-                            </Table>
+                                                </div>
+                                            </div>
 
-                            {restantes > 0 && (
-                                <p className="border-t bg-muted/40 px-4 py-2.5 text-center text-xs text-muted-foreground">
-                                    y {restantes} producto{restantes === 1 ? "" : "s"} más con
-                                    alerta
-                                </p>
-                            )}
+                                            {presentacion && (
+                                                <Badge
+                                                    variant={presentacion.variant}
+                                                    className={cn(
+                                                        "shrink-0 px-1.5 py-0 text-[9px]",
+                                                        presentacion.className
+                                                    )}
+                                                >
+                                                    {presentacion.label}
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        {/* Stock y mínimo */}
+                                        <div className="space-y-1">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    Stock actual
+                                                </span>
+
+                                                <span className="text-xs font-semibold tabular-nums">
+                                                    {formatPiezas(item.currentStock)} {simbolo}
+                                                </span>
+                                            </div>
+
+                                            {nivel !== null ? (
+                                                <div
+                                                    className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                                                    role="img"
+                                                    aria-label={`${nivel}% del stock mínimo`}
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            "h-full rounded-full transition-all",
+                                                            COLORES_ESTADO[item.estado]
+                                                        )}
+                                                        style={{ width: `${nivel}%` }}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="h-1.5 w-full rounded-full bg-muted" />
+                                            )}
+
+                                            <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                                                <span>Stock mínimo: {formatPiezas(stockMinimo)} {simbolo}</span>
+
+                                                <span>
+                                                    {nivel !== null ? `${nivel}%` : "Sin nivel"}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Faltantes */}
+                                        <div
+                                            className={cn(
+                                                "flex items-center justify-between gap-2 rounded-md px-2 py-1.5",
+                                                item.estado === "agotado"
+                                                    ? "bg-destructive/10"
+                                                    : item.estado === "bajo"
+                                                      ? "bg-warning/10"
+                                                      : "bg-muted/70"
+                                            )}
+                                        >
+                                            <span className="text-[10px] font-medium text-muted-foreground">
+                                                Unidades faltantes
+                                            </span>
+
+                                            <span
+                                                className={cn(
+                                                    "text-xs font-bold tabular-nums",
+                                                    item.estado === "agotado"
+                                                        ? "text-destructive"
+                                                        : item.estado === "bajo"
+                                                          ? "text-warning"
+                                                          : "text-foreground"
+                                                )}
+                                            >
+                                                {formatPiezas(item.unidadesFaltantes)} {simbolo}
+                                            </span>
+                                        </div>
+                                    </article>
+                                )
+                            })}
                         </div>
-                    </>
+
+                        {restantes > 0 && (
+                            <p className="pt-0.5 text-center text-[10px] text-muted-foreground">
+                                y {restantes} producto{restantes === 1 ? "" : "s"} más con alerta
+                            </p>
+                        )}
+                    </section>
                 )}
             </CardContent>
         </Card>

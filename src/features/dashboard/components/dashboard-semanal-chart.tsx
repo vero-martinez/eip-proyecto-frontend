@@ -1,12 +1,5 @@
 "use client"
 
-/**
- * Evolución semanal de ventas del Dashboard.
- *
- * La serie (8 semanas) y el pie —promedio, semana pico y variación— salen del
- * endpoint. No hay proyección: solo semanas que ocurrieron.
- */
-
 import { useState } from "react"
 import {
     Bar,
@@ -19,7 +12,13 @@ import {
     XAxis,
     YAxis,
 } from "recharts"
-import { BarChart3, CalendarRange, TrendingDown, TrendingUp, Wallet } from "lucide-react"
+import {
+    BarChart3,
+    CalendarRange,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
+} from "lucide-react"
 
 import {
     Card,
@@ -43,7 +42,6 @@ interface DashboardSemanalChartProps {
     serie: SerieSemanal[]
 }
 
-/** Eje Y en moneda compacta para que no se corte el ancho. */
 const formatEje = (valor: number) =>
     new Intl.NumberFormat("es-PE", {
         notation: "compact",
@@ -57,20 +55,30 @@ interface ChartTooltipProps {
     promedio: number
 }
 
-/** Tooltip propio: indica además si la semana está sobre o bajo el promedio. */
-function ChartTooltip({ active, label, payload, promedio }: ChartTooltipProps) {
+function ChartTooltip({
+    active,
+    label,
+    payload,
+    promedio,
+}: ChartTooltipProps) {
     if (!active || !payload?.length) return null
 
     const valor = Number(payload[0].value)
     const sobrePromedio = valor >= promedio
 
     return (
-        <div className="min-w-36 rounded-xl border bg-popover px-4 py-3 shadow-xl">
-            <p className="text-xs font-medium text-muted-foreground">Semana {label}</p>
-            <p className="mt-1 text-base font-semibold tabular-nums">{formatCurrency(valor)}</p>
+        <div className="min-w-32 rounded-lg border bg-popover px-2.5 py-1.5 shadow-lg">
+            <p className="text-[11px] font-medium text-muted-foreground">
+                Semana {label}
+            </p>
+
+            <p className="mt-0.5 text-sm font-semibold tabular-nums">
+                {formatCurrency(valor)}
+            </p>
+
             <p
                 className={cn(
-                    "mt-1.5 flex items-center gap-1 text-xs font-medium",
+                    "mt-0.5 flex items-center gap-1 text-[10px] font-medium",
                     sobrePromedio
                         ? "text-success"
                         : "text-muted-foreground"
@@ -87,17 +95,22 @@ function ChartTooltip({ active, label, payload, promedio }: ChartTooltipProps) {
     )
 }
 
-export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
+export function DashboardSemanalChart({
+    serie,
+}: DashboardSemanalChartProps) {
     const [activo, setActivo] = useState<number | null>(null)
-    // La semana en curso se dibuja, pero no cuenta en promedio, pico ni variación.
+
+    // La semana en curso se dibuja, pero no cuenta en las métricas.
     const completas = getSemanasCompletas(serie)
     const promedioSemanal = getPromedioSemanal(completas)
     const semanaPico = getSemanaPico(completas)
     const variacion = getVariacionSemanal(completas)
+
     const datos = serie.map((semana) => ({
         etiqueta: semana.etiqueta,
         totalVentas: semana.totalVentas,
     }))
+
     const indicePico = semanaPico
         ? datos.findIndex((d) => d.etiqueta === semanaPico.etiqueta)
         : -1
@@ -105,48 +118,58 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
     const variacionPositiva = variacion !== null && variacion >= 0
 
     return (
-        <Card className="h-full overflow-hidden border-primary/20 bg-primary/15 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 p-6 pb-4">
-                <div className="flex items-center gap-4">
-                    <div
-                        className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                        aria-hidden="true"
-                    >
-                        <BarChart3 className="size-6" />
-                    </div>
-                    <div className="space-y-1">
-                        <CardTitle className="text-lg">Evolución semanal</CardTitle>
-                        <CardDescription className="text-foreground/60">
-                            Ventas por semana de las últimas {serie.length} semanas
-                        </CardDescription>
-                    </div>
+        <Card className="flex h-full min-h-[520px] min-w-0 flex-col overflow-hidden border-primary/20 bg-primary/15 shadow-sm">
+            <CardHeader className="flex shrink-0 flex-row items-center gap-2 space-y-0 p-3 pb-2">
+                <div
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+                    aria-hidden="true"
+                >
+                    <BarChart3 className="size-4" />
+                </div>
+
+                <div className="min-w-0 space-y-0.5">
+                    <CardTitle className="text-sm">
+                        Evolución semanal
+                    </CardTitle>
+
+                    <CardDescription className="text-[11px]">
+                        Histórico de ventas de las últimas semanas
+                    </CardDescription>
                 </div>
             </CardHeader>
 
-            <CardContent className="flex flex-col gap-4 px-4 pb-5 pt-0 sm:px-6">
+            <CardContent className="flex min-h-0 flex-1 flex-col gap-3 px-3 pb-3 pt-0">
                 {serie.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl bg-background/70 px-6 py-16 text-center ring-1 ring-primary/10">
-                        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
-                            <BarChart3 className="size-7 text-primary" aria-hidden="true" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <p className="text-sm font-medium">Sin ventas registradas</p>
-                            <p className="text-sm text-muted-foreground">
-                                Cuando haya ventas en el periodo, verás aquí su evolución.
+                    <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg bg-background/70 px-3 py-8 text-center ring-1 ring-primary/10">
+                        <BarChart3
+                            className="size-7 text-primary"
+                            aria-hidden="true"
+                        />
+
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium">
+                                Sin ventas registradas
+                            </p>
+
+                            <p className="text-[11px] text-muted-foreground">
+                                Cuando haya ventas, verás aquí su evolución.
                             </p>
                         </div>
                     </div>
                 ) : (
                     <>
-                        {/* Gráfico */}
                         <div
-                            className="h-72 w-full rounded-2xl bg-background/80 px-3 pb-3 pt-2 shadow-sm ring-1 ring-foreground/10"
-                            aria-hidden="true"
+                            className="min-h-[300px] flex-1 rounded-lg bg-background/80 px-2 pb-2 pt-3 shadow-sm ring-1 ring-foreground/10"
                         >
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
                                     data={datos}
-                                    margin={{ top: 28, right: 8, left: 0, bottom: 0 }}
+                                    margin={{
+                                        top: 25,
+                                        right: 12,
+                                        left: 4,
+                                        bottom: 5,
+                                    }}
                                     barCategoryGap="18%"
                                     onMouseMove={(state) => {
                                         const i = Number(state?.activeTooltipIndex)
@@ -155,24 +178,49 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                                     onMouseLeave={() => setActivo(null)}
                                 >
                                     <defs>
-                                        <linearGradient id="semanal-pico" x1="0" y1="0" x2="0" y2="1">
+                                        <linearGradient
+                                            id="semanal-pico"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
                                             <stop
                                                 offset="0%"
-                                                style={{ stopColor: "var(--primary)", stopOpacity: 1 }}
+                                                style={{
+                                                    stopColor: "var(--primary)",
+                                                    stopOpacity: 1,
+                                                }}
                                             />
                                             <stop
                                                 offset="100%"
-                                                style={{ stopColor: "var(--primary)", stopOpacity: 0.7 }}
+                                                style={{
+                                                    stopColor: "var(--primary)",
+                                                    stopOpacity: 0.7,
+                                                }}
                                             />
                                         </linearGradient>
-                                        <linearGradient id="semanal-normal" x1="0" y1="0" x2="0" y2="1">
+
+                                        <linearGradient
+                                            id="semanal-normal"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
                                             <stop
                                                 offset="0%"
-                                                style={{ stopColor: "var(--primary)", stopOpacity: 0.6 }}
+                                                style={{
+                                                    stopColor: "var(--primary)",
+                                                    stopOpacity: 0.6,
+                                                }}
                                             />
                                             <stop
                                                 offset="100%"
-                                                style={{ stopColor: "var(--primary)", stopOpacity: 0.3 }}
+                                                style={{
+                                                    stopColor: "var(--primary)",
+                                                    stopOpacity: 0.3,
+                                                }}
                                             />
                                         </linearGradient>
                                     </defs>
@@ -183,24 +231,37 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                                         strokeDasharray="3 6"
                                         strokeOpacity={0.8}
                                     />
+
                                     <XAxis
                                         dataKey="etiqueta"
                                         tickLine={false}
                                         axisLine={false}
-                                        tickMargin={12}
-                                        tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                                        tickMargin={8}
+                                        tick={{
+                                            fill: "var(--muted-foreground)",
+                                            fontSize: 11,
+                                        }}
                                     />
+
                                     <YAxis
                                         tickLine={false}
                                         axisLine={false}
-                                        width={44}
+                                        width={40}
                                         allowDecimals={false}
                                         tickFormatter={formatEje}
-                                        tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                                        tick={{
+                                            fill: "var(--muted-foreground)",
+                                            fontSize: 10,
+                                        }}
                                     />
+
                                     <Tooltip
                                         cursor={false}
-                                        content={<ChartTooltip promedio={promedioSemanal} />}
+                                        content={
+                                            <ChartTooltip
+                                                promedio={promedioSemanal}
+                                            />
+                                        }
                                     />
 
                                     <ReferenceLine
@@ -213,7 +274,7 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                                             value: `Prom. ${formatEje(promedioSemanal)}`,
                                             position: "insideTopRight",
                                             fill: "var(--primary)",
-                                            fontSize: 11,
+                                            fontSize: 10,
                                             fontWeight: 600,
                                             dy: -6,
                                         }}
@@ -221,17 +282,28 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
 
                                     <Bar
                                         dataKey="totalVentas"
-                                        radius={[10, 10, 10, 10]}
-                                        maxBarSize={44}
+                                        radius={[7, 7, 7, 7]}
+                                        maxBarSize={45}
                                         minPointSize={4}
-                                        background={{ fill: "var(--muted)", fillOpacity: 0.55, radius: 10 }}
-                                        label={({ x, y, width, value, index }) =>
-                                            index === indicePico && Number(value) > 0 ? (
+                                        background={{
+                                            fill: "var(--muted)",
+                                            fillOpacity: 0.55,
+                                            radius: 7,
+                                        }}
+                                        label={({
+                                            x,
+                                            y,
+                                            width,
+                                            value,
+                                            index,
+                                        }) =>
+                                            index === indicePico &&
+                                            Number(value) > 0 ? (
                                                 <text
                                                     x={Number(x) + Number(width) / 2}
-                                                    y={Number(y) - 10}
+                                                    y={Number(y) - 8}
                                                     textAnchor="middle"
-                                                    fontSize={12}
+                                                    fontSize={11}
                                                     fontWeight={700}
                                                     fill="var(--primary)"
                                                 >
@@ -251,8 +323,14 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                                                         ? "url(#semanal-pico)"
                                                         : "url(#semanal-normal)"
                                                 }
-                                                fillOpacity={activo === null || activo === i ? 1 : 0.45}
-                                                style={{ transition: "fill-opacity 150ms" }}
+                                                fillOpacity={
+                                                    activo === null || activo === i
+                                                        ? 1
+                                                        : 0.45
+                                                }
+                                                style={{
+                                                    transition: "fill-opacity 150ms",
+                                                }}
                                             />
                                         ))}
                                     </Bar>
@@ -260,74 +338,77 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
                             </ResponsiveContainer>
                         </div>
 
-                        {/* Métricas */}
-                        <dl className="grid gap-3 sm:grid-cols-3">
-                            <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
+                        <dl className="grid shrink-0 grid-cols-1 gap-1.5 sm:grid-cols-3">
+                            <div className="flex min-w-0 items-center gap-2 rounded-lg bg-background/80 p-2.5 ring-1 ring-foreground/10">
                                 <div
-                                    className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"
+                                    className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary"
                                     aria-hidden="true"
                                 >
-                                    <Wallet className="size-5" />
+                                    <Wallet className="size-4" />
                                 </div>
-                                <div className="min-w-0 space-y-0.5">
-                                    <dt className="text-xs font-medium text-muted-foreground">
+
+                                <div className="min-w-0">
+                                    <dt className="truncate text-[10px] text-muted-foreground">
                                         Promedio semanal
                                     </dt>
-                                    <dd className="truncate text-lg font-semibold tabular-nums">
+                                    <dd className="truncate text-xs font-semibold tabular-nums">
                                         {formatCurrency(promedioSemanal)}
                                     </dd>
                                 </div>
                             </div>
 
                             {semanaPico && (
-                                <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
+                                <div className="flex min-w-0 items-center gap-2 rounded-lg bg-background/80 p-2.5 ring-1 ring-foreground/10">
                                     <div
-                                        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning/15 text-warning"
+                                        className="flex size-8 shrink-0 items-center justify-center rounded-md bg-warning/15 text-warning"
                                         aria-hidden="true"
                                     >
-                                        <CalendarRange className="size-5" />
+                                        <CalendarRange className="size-4" />
                                     </div>
-                                    <div className="min-w-0 space-y-0.5">
-                                        <dt className="text-xs font-medium text-muted-foreground">
+
+                                    <div className="min-w-0">
+                                        <dt className="truncate text-[10px] text-muted-foreground">
                                             Semana pico · {semanaPico.etiqueta}
                                         </dt>
-                                        <dd className="truncate text-lg font-semibold tabular-nums">
+                                        <dd className="truncate text-xs font-semibold tabular-nums">
                                             {formatCurrency(semanaPico.totalVentas)}
                                         </dd>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-3 rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
+                            <div className="flex min-w-0 items-center gap-2 rounded-lg bg-background/80 p-2.5 ring-1 ring-foreground/10">
                                 <div
                                     className={cn(
-                                        "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                                        "flex size-8 shrink-0 items-center justify-center rounded-md",
                                         variacion === null
                                             ? "bg-muted text-muted-foreground"
                                             : variacionPositiva
-                                              ? "bg-success/15 text-success"
-                                              : "bg-destructive/15 text-destructive"
+                                                ? "bg-success/15 text-success"
+                                                : "bg-destructive/15 text-destructive"
                                     )}
                                     aria-hidden="true"
                                 >
                                     {variacion !== null && variacion < 0 ? (
-                                        <TrendingDown className="size-5" />
+                                        <TrendingDown className="size-4" />
                                     ) : (
-                                        <TrendingUp className="size-5" />
+                                        <TrendingUp className="size-4" />
                                     )}
                                 </div>
-                                <div className="min-w-0 space-y-0.5">
-                                    <dt className="text-xs font-medium text-muted-foreground">
+
+                                <div className="min-w-0">
+                                    <dt className="truncate text-[10px] text-muted-foreground">
                                         Última vs. anterior
                                     </dt>
+
                                     <dd
                                         className={cn(
-                                            "text-lg font-semibold tabular-nums",
+                                            "text-xs font-semibold tabular-nums",
                                             variacion === null
                                                 ? "text-muted-foreground"
                                                 : variacionPositiva
-                                                  ? "text-success"
-                                                  : "text-destructive"
+                                                    ? "text-success"
+                                                    : "text-destructive"
                                         )}
                                     >
                                         {variacion === null

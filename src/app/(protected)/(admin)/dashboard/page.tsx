@@ -68,58 +68,83 @@ export default function DashboardPage() {
 
     if (!data) return null
 
-    return (
-        <main className="flex flex-col gap-6 sm:gap-8">
-            <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="sr-only">Resumen del periodo</h1>
-                    <p className="text-sm text-muted-foreground">
-                        {formatRangoPeriodo(data.desde, data.hasta)} ·{" "}
-                        {data.resumenVentas.cantidadVentas}{" "}
-                        {data.resumenVentas.cantidadVentas === 1
-                            ? "operación registrada"
-                            : "operaciones registradas"}
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <DashboardPeriodoToggle
-                        periodo={periodo}
-                        onPeriodoChange={setPeriodo}
-                        disabled={isFetching}
-                    />
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="Actualizar dashboard"
-                        onClick={() => refetch()}
-                        disabled={isFetching}
-                    >
-                        <RefreshCw
-                            className={cn("size-4", isFetching && "animate-spin")}
-                            aria-hidden="true"
-                        />
-                    </Button>
-                </div>
-            </header>
-
-            <DashboardStats resumen={data.resumenVentas} />
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2">
-                    <DashboardSemanalChart serie={data.serieSemanal} />
-                </div>
-                <DashboardTopProductos productos={data.topProductos} />
+    
+return (
+    <main className="flex flex-col gap-5">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 className="text-lg font-semibold tracking-tight">
+                    Resumen del periodo
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                    {formatRangoPeriodo(data.desde, data.hasta)} ·{" "}
+                    {data.resumenVentas.cantidadVentas}{" "}
+                    {data.resumenVentas.cantidadVentas === 1
+                        ? "operación registrada"
+                        : "operaciones registradas"}
+                </p>
             </div>
-            <DashboardPronostico />
-            <DashboardReposicion />
+
+            <div className="flex items-center gap-2">
+                <DashboardPeriodoToggle
+                    periodo={periodo}
+                    onPeriodoChange={setPeriodo}
+                    disabled={isFetching}
+                />
+                <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Actualizar dashboard"
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                >
+                    <RefreshCw
+                        className={cn("size-4", isFetching && "animate-spin")}
+                        aria-hidden="true"
+                    />
+                </Button>
+            </div>
+        </header>
+
+        <DashboardStats resumen={data.resumenVentas} />
+
+        {/* Ventas, productos y alertas */}
+<section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    {/* Gráfico de ventas */}
+    <div className="min-w-0 xl:col-span-2">
+                    <DashboardSemanalChart serie={data.serieSemanal} />
+      </div>
+
+    {/* Productos y alertas */}
+    <div className="flex min-w-0 flex-col gap-4">
+        <DashboardTopProductos productos={data.topProductos} />
+
+        <DashboardAlertas alertas={data.alertasStock} />
+    </div>
+</section>
+
+        {/* Pronóstico y reposición */}
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div className="min-w-0">
+                <DashboardPronostico />
+            </div>
+
+            <div className="min-w-0">
+                <DashboardReposicion />
+            </div>
+        </section>
+
+        {/* Análisis de anomalías */}
+        <section className="w-full min-w-0">
             <DashboardAnomalias />
-            <DashboardAlertas alertas={data.alertasStock} />
-        </main>
-    )
+        </section>
+    </main>
+)
+
 }
 
 /** Esqueleto con la misma silueta del dashboard para evitar el salto al cargar. */
+
 function DashboardEsqueleton() {
     return (
         <div

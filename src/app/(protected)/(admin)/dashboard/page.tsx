@@ -376,10 +376,7 @@ export default function DashboardPage() {
                         <DashboardML />
                     </div>
                     <div className="min-w-0 xl:col-span-5">
-                        <DashboardReposicion
-                            alertas={data.alertasStock}
-                            topProductos={data.topProductos}
-                        />
+                        <DashboardReposicion alertas={data.alertasStock} />
                     </div>
                 </div>
             </section>

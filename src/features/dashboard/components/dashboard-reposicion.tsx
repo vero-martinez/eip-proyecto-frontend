@@ -15,6 +15,7 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
+    Cell,
     LabelList,
     ResponsiveContainer,
     Tooltip,
@@ -32,7 +33,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { getUnitSymbol } from "@/lib/units"
 import type { UnitType } from "@/types/products"
 
@@ -41,7 +42,6 @@ import { useReposicion } from "../hooks/use-reposicion"
 import type {
     AlertaStockItem,
     AlertasStock,
-    ProductoTop,
     ReposicionProducto,
 } from "../types"
 import {
@@ -52,7 +52,6 @@ import {
 
 interface DashboardReposicionProps {
     alertas: AlertasStock
-    topProductos: ProductoTop[]
 }
 
 type EstadoFila = "pedir_ya" | "pedir_pronto" | "suficiente"
@@ -76,22 +75,25 @@ interface FilaReposicion {
 
 const ESTADO: Record<
     EstadoFila,
-    { etiqueta: string; clase: string; punto: string }
+    { etiqueta: string; clase: string; punto: string; barra: string }
 > = {
     pedir_ya: {
         etiqueta: "Urgente",
         clase: "border-destructive/40 bg-destructive/10 text-destructive",
         punto: "bg-destructive",
+        barra: "var(--destructive)",
     },
     pedir_pronto: {
         etiqueta: "Pronto",
         clase: "border-warning/40 bg-warning/10 text-warning",
         punto: "bg-warning",
+        barra: "var(--warning)",
     },
     suficiente: {
         etiqueta: "Stock OK",
         clase: "border-success/40 bg-success/10 text-success",
         punto: "bg-success",
+        barra: "var(--success)",
     },
 }
 
@@ -210,38 +212,47 @@ function StockTooltip({
     payload,
     label,
     sufijo,
-    esSoles,
 }: {
     active?: boolean
     payload?: {
         payload?: {
             nombreCompleto?: string
+            estado?: EstadoFila
             unidades?: number
             minimo?: number
-            soles?: number
-            minimoSoles?: number
         }
     }[]
     label?: string
     sufijo: string
-    esSoles: boolean
 }) {
     if (!active || !payload?.length) return null
 
     const fila = payload[0]?.payload
-    const valor = esSoles ? Number(fila?.soles ?? 0) : Number(fila?.unidades ?? 0)
-    const minimo = esSoles
-        ? Number(fila?.minimoSoles ?? 0)
-        : Number(fila?.minimo ?? 0)
+    const valor = Number(fila?.unidades ?? 0)
+    const minimo = Number(fila?.minimo ?? 0)
+    const estado = fila?.estado ? ESTADO[fila.estado] : null
 
     return (
-        <div className="min-w-48 rounded-lg border bg-popover px-3 py-2 shadow-lg">
-            <p className="text-xs font-semibold">{fila?.nombreCompleto ?? label}</p>
+        <div className="min-w-56 rounded-lg border bg-popover px-3 py-2 shadow-lg">
+            <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold">{fila?.nombreCompleto ?? label}</p>
+                {estado && (
+                    <span
+                        className={cn(
+                            "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+                            estado.clase
+                        )}
+                    >
+                        <span className={cn("size-1.5 rounded-full", estado.punto)} />
+                        {estado.etiqueta}
+                    </span>
+                )}
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
-                Stock actual: {esSoles ? formatCurrency(valor) : `${formatPiezas(valor)} ${sufijo}`}
+                Stock actual: {formatPiezas(valor)} {sufijo}
             </p>
             <p className="text-xs text-muted-foreground">
-                Stock mínimo: {esSoles ? formatCurrency(minimo) : `${formatPiezas(minimo)} ${sufijo}`}
+                Stock mínimo: {formatPiezas(minimo)} {sufijo}
             </p>
         </div>
     )
@@ -249,10 +260,8 @@ function StockTooltip({
 
 export function DashboardReposicion({
     alertas,
-    topProductos,
 }: DashboardReposicionProps) {
     const { data, isLoading, isError, refetch } = useReposicion()
-    const [modo, setModo] = useState<"unidades" | "soles">("unidades")
     const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null)
 
     const horizonte = data?.horizonteSemanas ?? 4
@@ -303,40 +312,21 @@ export function DashboardReposicion({
         [filas]
     )
 
-    const precios = useMemo(() => {
-        const mapa = new Map<number, number>()
-        topProductos.forEach((producto) => {
-            if (producto.piezasVendidas > 0) {
-                mapa.set(producto.productId, producto.totalVentas / producto.piezasVendidas)
-            }
-        })
-        return mapa
-    }, [topProductos])
-
     const datosGrafico = useMemo(
         () =>
-            filas.slice(0, MAX_REPOSICION_VISIBLES).map((item) => {
-                const precio = precios.get(item.productId) ?? 0
-                const soles = precio ? item.stockActual * precio : 0
-                const minimoSoles = precio ? item.stockMinimo * precio : 0
-                return {
-                    nombre: item.nombre.length > 26 ? `${item.nombre.slice(0, 25)}…` : item.nombre,
-                    nombreCompleto: item.nombre,
-                    unidades: item.stockActual,
-                    minimo: item.stockMinimo,
-                    soles,
-                    minimoSoles,
-                    unidadesBarra: Math.max(item.stockActual, 1),
-                    minimoBarra: Math.max(item.stockMinimo, 1),
-                    solesBarra: Math.max(soles, 1),
-                    minimoSolesBarra: Math.max(minimoSoles, 1),
-                    sinPrecio: precio === 0,
-                }
-            }),
-        [filas, precios]
+            filas.slice(0, MAX_REPOSICION_VISIBLES).map((item) => ({
+                nombre: item.nombre.length > 26 ? `${item.nombre.slice(0, 25)}…` : item.nombre,
+                nombreCompleto: item.nombre,
+                productId: item.productId,
+                estado: item.estado,
+                unidades: item.stockActual,
+                minimo: item.stockMinimo,
+                unidadesBarra: Math.max(item.stockActual, 1),
+                minimoBarra: Math.max(item.stockMinimo, 1),
+            })),
+        [filas]
     )
 
-    const haySoles = datosGrafico.some((item) => !item.sinPrecio)
     const unidad = seleccionado ? getUnitSymbol(seleccionado.unitType) : ""
 
     return (
@@ -438,133 +428,107 @@ export function DashboardReposicion({
                 ) : (
                     <>
                         <section className="space-y-4">
-                            <div className="flex flex-wrap items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <h3 className="flex items-center gap-2 text-base font-semibold">
-                                        <BarChart3 className="size-4 text-primary" aria-hidden="true" />
-                                        Stock por producto
-                                    </h3>
-                                    <p className="text-xs text-muted-foreground">
-                                        Los más urgentes primero · escala ajustada para comparar mejor
-                                    </p>
-                                </div>
-
-                                <div
-                                    role="group"
-                                    aria-label="Unidad del gráfico"
-                                    className="inline-flex rounded-xl bg-primary/10 p-1 ring-1 ring-primary/15"
-                                >
-                                    {(["unidades", "soles"] as const).map((opcion) => (
-                                        <button
-                                            key={opcion}
-                                            type="button"
-                                            aria-pressed={modo === opcion}
-                                            onClick={() => setModo(opcion)}
-                                            className={`rounded-lg px-3 py-2 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                                                modo === opcion
-                                                    ? "bg-primary text-primary-foreground"
-                                                    : "text-muted-foreground hover:text-foreground"
-                                            }`}
-                                        >
-                                            {opcion === "unidades" ? "Unidades" : "Soles (S/)"}
-                                        </button>
-                                    ))}
-                                </div>
+                            <div className="space-y-1">
+                                <h3 className="flex items-center gap-2 text-base font-semibold">
+                                    <BarChart3 className="size-4 text-primary" aria-hidden="true" />
+                                    Top {MAX_REPOSICION_VISIBLES} más urgentes
+                                </h3>
+                                <p className="text-xs text-muted-foreground">
+                                    Solo los {MAX_REPOSICION_VISIBLES} con mayor prioridad · las cards resumen todos
+                                </p>
                             </div>
 
-                            {modo === "soles" && !haySoles ? (
-                                <div className="rounded-xl bg-background/80 px-4 py-8 text-center text-xs text-muted-foreground ring-1 ring-foreground/10">
-                                    Sin precios disponibles para estimar soles.
-                                </div>
-                            ) : (
-                                <div
-                                    role="img"
-                                    aria-label={`Stock actual y mínimo de ${visibles.length} productos en ${modo === "soles" ? "soles" : "unidades"}`}
-                                    tabIndex={0}
-                                    className="h-72 w-full rounded-xl bg-background/80 px-2 pb-2 pt-4 shadow-sm ring-1 ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                                >
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            data={datosGrafico}
-                                            layout="vertical"
-                                            margin={{ top: 4, right: 56, left: 4, bottom: 4 }}
-                                            barCategoryGap="25%"
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                                {ORDEN_ESTADO.map((estado) => (
+                                    <span key={estado} className="inline-flex items-center gap-1.5">
+                                        <span className={cn("size-2.5 rounded-full", ESTADO[estado].punto)} />
+                                        {ESTADO[estado].etiqueta}
+                                    </span>
+                                ))}
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="size-2.5 rounded-full bg-muted-foreground/60" />
+                                    Stock mínimo
+                                </span>
+                                <span className="text-[11px] text-muted-foreground/80">
+                                    Color = prioridad · largo = stock
+                                </span>
+                            </div>
+
+                            <div
+                                role="img"
+                                aria-label={`Stock actual y mínimo de ${visibles.length} productos`}
+                                tabIndex={0}
+                                className="h-72 w-full rounded-xl bg-background/80 px-2 pb-2 pt-4 shadow-sm ring-1 ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                            >
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={datosGrafico}
+                                        layout="vertical"
+                                        margin={{ top: 4, right: 56, left: 4, bottom: 4 }}
+                                        barCategoryGap="25%"
+                                    >
+                                        <CartesianGrid
+                                            horizontal={false}
+                                            stroke="var(--border)"
+                                            strokeDasharray="3 6"
+                                        />
+                                        <XAxis
+                                            type="number"
+                                            scale="log"
+                                            domain={[1, "dataMax"]}
+                                            ticks={[1, 10, 100]}
+                                            tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                                            tickFormatter={(valor: number) => formatPiezas(valor)}
+                                            tickLine={false}
+                                            axisLine={false}
+                                        />
+                                        <YAxis
+                                            type="category"
+                                            dataKey="nombre"
+                                            width={150}
+                                            tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                                            tickLine={false}
+                                            axisLine={false}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: "var(--muted)", opacity: 0.3 }}
+                                            offset={24}
+                                            content={<StockTooltip sufijo={unidad} />}
+                                        />
+                                        <Bar
+                                            dataKey="unidadesBarra"
+                                            name="Stock actual"
+                                            radius={[0, 7, 7, 0]}
+                                            maxBarSize={16}
                                         >
-                                            <CartesianGrid
-                                                horizontal={false}
-                                                stroke="var(--border)"
-                                                strokeDasharray="3 6"
-                                            />
-                                            <XAxis
-                                                type="number"
-                                                scale="log"
-                                                domain={[1, "dataMax"]}
-                                                ticks={[1, 10, 100]}
-                                                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                                                tickFormatter={(valor: number) =>
-                                                    modo === "soles"
-                                                        ? `S/ ${formatPiezas(valor)}`
-                                                        : formatPiezas(valor)
-                                                }
-                                                tickLine={false}
-                                                axisLine={false}
-                                            />
-                                            <YAxis
-                                                type="category"
-                                                dataKey="nombre"
-                                                width={150}
-                                                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                                                tickLine={false}
-                                                axisLine={false}
-                                            />
-                                            <Tooltip
-                                                cursor={{ fill: "var(--muted)", opacity: 0.3 }}
-                                                offset={24}
-                                                content={
-                                                    <StockTooltip
-                                                        sufijo={unidad}
-                                                        esSoles={modo === "soles"}
-                                                    />
-                                                }
-                                            />
-                                            <Bar
-                                                dataKey={
-                                                    modo === "soles" ? "solesBarra" : "unidadesBarra"
-                                                }
-                                                name="Stock actual"
-                                                fill="var(--primary)"
-                                                radius={[0, 7, 7, 0]}
-                                                maxBarSize={16}
-                                            >
-                                                <LabelList
-                                                    dataKey={modo === "soles" ? "soles" : "unidades"}
-                                                    position="right"
-                                                    fontSize={12}
-                                                    fill="var(--foreground)"
-                                                    formatter={(valor: unknown) => {
-                                                        const numero = Number(valor ?? 0)
-                                                        return modo === "soles"
-                                                            ? formatCurrency(numero)
-                                                            : formatPiezas(numero)
-                                                    }}
+                                            {datosGrafico.map((fila) => (
+                                                <Cell
+                                                    key={fila.productId}
+                                                    fill={ESTADO[fila.estado].barra}
+                                                    fillOpacity={0.85}
                                                 />
-                                            </Bar>
-                                            <Bar
-                                                dataKey={
-                                                    modo === "soles"
-                                                        ? "minimoSolesBarra"
-                                                        : "minimoBarra"
+                                            ))}
+                                            <LabelList
+                                                dataKey="unidades"
+                                                position="right"
+                                                fontSize={12}
+                                                fill="var(--foreground)"
+                                                formatter={(valor: unknown) =>
+                                                    formatPiezas(Number(valor ?? 0))
                                                 }
-                                                name="Stock mínimo"
-                                                fill="var(--muted-foreground)"
-                                                fillOpacity={0.55}
-                                                radius={[0, 7, 7, 0]}
-                                                maxBarSize={16}
                                             />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
+                                        </Bar>
+                                        <Bar
+                                            dataKey="minimoBarra"
+                                            name="Stock mínimo"
+                                            fill="var(--muted-foreground)"
+                                            fillOpacity={0.55}
+                                            radius={[0, 7, 7, 0]}
+                                            maxBarSize={16}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </section>
 
                         {seleccionado && (

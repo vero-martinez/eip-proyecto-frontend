@@ -38,6 +38,7 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 
 import { useLotesPorProducto } from "@/features/inventario/hooks/use-lotes"
 import { ProductLotesView } from "@/features/inventario/components/product-lotes-view"
+import { useProduct } from "../hooks/use-products"
 import { formatStock, hasLowStock, isOutOfStock, UNIT_OPTIONS } from "@/lib/units"
 import {
     getCategoryTone,
@@ -87,6 +88,8 @@ export function ProductDetailDialog({
     showCost = false,
     showLotes = false,
 }: ProductDetailDialogProps) {
+    const productoQuery = useProduct(product?.id ?? null, open)
+
     // Siempre se invoca (no condicional) para respetar las reglas de los
     // hooks; se habilita solo cuando hay producto y se piden los lotes.
     const lotesQuery = useLotesPorProducto(
@@ -95,19 +98,20 @@ export function ProductDetailDialog({
 
     if (!product) return null
 
-    const rootId = getRootCategoryId(categories, product.categoryId)
+    const producto = productoQuery.data ?? product
+    const rootId = getRootCategoryId(categories, producto.categoryId)
     const tone = getCategoryTone(rootId)
     const { surface, icon, badge } = CATEGORY_TONE_CLASSES[tone]
-    const categoryName = getParentCategoryName(product.categoryId, categories)
-    const subcategoryName = getSubcategoryName(product.categoryId, categories)
-    const lowStock = hasLowStock(product)
-    const outOfStock = isOutOfStock(product)
+    const categoryName = getParentCategoryName(producto.categoryId, categories)
+    const subcategoryName = getSubcategoryName(producto.categoryId, categories)
+    const lowStock = hasLowStock(producto)
+    const outOfStock = isOutOfStock(producto)
     const unitLabel =
-        UNIT_OPTIONS.find((option) => option.value === product.unitType)?.label ??
-        product.unitType
+        UNIT_OPTIONS.find((option) => option.value === producto.unitType)?.label ??
+        producto.unitType
     const unitSymbol =
-        UNIT_OPTIONS.find((option) => option.value === product.unitType)?.symbol ??
-        product.unitType
+        UNIT_OPTIONS.find((option) => option.value === producto.unitType)?.symbol ??
+        producto.unitType
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,7 +130,7 @@ export function ProductDetailDialog({
                         className="absolute top-3 left-3 border-transparent bg-foreground/70 font-mono text-background"
                     >
                         <Barcode aria-hidden="true" />
-                        {product.sku}
+                        {producto.sku}
                     </Badge>
                 </div>
 
@@ -134,7 +138,7 @@ export function ProductDetailDialog({
                     <DialogHeader>
                         <div className="flex flex-wrap items-center gap-2">
                             <DialogTitle className="text-lg font-semibold">
-                                {product.name}
+                                {producto.name}
                             </DialogTitle>
                             {outOfStock ? (
                                 <Badge variant="destructive">Sin stock</Badge>
@@ -143,22 +147,28 @@ export function ProductDetailDialog({
                             ) : null}
                         </div>
                         <DialogDescription className="sr-only">
-                            Detalle del producto {product.name}
+                            Detalle del producto {producto.name}
                         </DialogDescription>
                     </DialogHeader>
+
+                    {productoQuery.isError && (
+                        <p className="text-xs text-warning">
+                            No se pudo actualizar el producto; se muestra el dato ya cargado.
+                        </p>
+                    )}
 
                     <div className="flex flex-wrap items-center gap-1.5">
                         <Badge variant="outline" className={badge}>
                             <Tag aria-hidden="true" />
                             {categoryName}
                         </Badge>
-                        <StatusBadge active={product.isActive} />
+                        <StatusBadge active={producto.isActive} />
                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Calendar
                                 className="size-3.5 shrink-0"
                                 aria-hidden="true"
                             />
-                            {formatDate(product.createdAt)}
+                            {formatDate(producto.createdAt)}
                         </span>
                     </div>
 
@@ -172,12 +182,12 @@ export function ProductDetailDialog({
                         </p>
                         <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                             <span className="text-2xl font-bold tracking-tight tabular-nums text-primary">
-                                {formatCurrency(product.salePrice)}
+                                {formatCurrency(producto.salePrice)}
                             </span>
                             {showCost && (
                                 <span className="text-sm text-muted-foreground">
                                     Costo:{" "}
-                                    {formatCurrency(product.costPrice)}
+                                    {formatCurrency(producto.costPrice)}
                                 </span>
                             )}
                         </div>
@@ -191,10 +201,10 @@ export function ProductDetailDialog({
                             {unitLabel}
                         </DetailField>
                         <DetailField icon={Package} label="Stock actual">
-                            {formatStock(product)}
+                            {formatStock(producto)}
                         </DetailField>
                         <DetailField icon={AlertTriangle} label="Stock mínimo">
-                            {product.minStockAlert} {unitSymbol}
+                            {producto.minStockAlert} {unitSymbol}
                         </DetailField>
                     </dl>
 

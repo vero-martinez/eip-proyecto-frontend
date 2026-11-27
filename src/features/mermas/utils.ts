@@ -3,7 +3,6 @@
  */
 
 import type { Product, UnitType } from "@/types/products"
-import { formatDate } from "@/lib/utils"
 import { getUnitSymbol } from "@/lib/units"
 
 import type { Merma } from "./types"
@@ -95,11 +94,4 @@ export function summarizeMermas(
         ajustesMonth: monthMermas.length,
         lastMerma,
     }
-}
-
-/**
- * Formatea la fecha del último ajuste para mostrar en pantalla.
- */
-export function formatLastMermaDate(date: string): string {
-    return `el ${formatDate(date)}`
 }

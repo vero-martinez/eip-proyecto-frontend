@@ -28,12 +28,6 @@ export function inicioDeMes(fecha: Date): Date {
     return new Date(fecha.getFullYear(), fecha.getMonth(), 1)
 }
 
-export function inicioDeSemana(fecha: Date): Date {
-    const copia = new Date(fecha)
-    const desplazamiento = (copia.getDay() + 6) % 7
-    return restarDias(copia, desplazamiento)
-}
-
 export function aISO(fecha: Date): string {
     return fecha.getFullYear() + "-" + pad(fecha.getMonth()+1) + "-" + pad(fecha.getDate())
 }

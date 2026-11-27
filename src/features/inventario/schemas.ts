@@ -13,10 +13,6 @@ export const entradaProduccionSchema = z.object({
     .positive("La cantidad debe ser mayor a 0"),
 })
 
-export type EntradaProduccionFormData = z.infer<
-  typeof entradaProduccionSchema
->
-
 /** Validación para registro de compras (Admin). */
 export const compraSchema = z.object({
   productId: z

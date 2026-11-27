@@ -12,8 +12,6 @@ export interface Category {
 
 export type UnitType = "UNIDAD" | "KILOGRAMO"
 
-export type ProductStatus = "activo" | "inactivo"
-
 export interface Product {
     id: number
     categoryId: number

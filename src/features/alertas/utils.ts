@@ -16,16 +16,6 @@ export type AlertFilter = "all" | "bajo" | "agotado" | "inactivo"
 // FILTROS & SELECCIÓN DE PRODUCTOS
 // ==========================================
 
-/** Productos inactivos (no se comercializan). */
-export function getInactivos(products: Product[]): Product[] {
-    return products.filter((p) => !p.isActive)
-}
-
-/** Productos sin unidades disponibles. */
-export function getAgotados(products: Product[]): Product[] {
-    return products.filter((p) => p.currentStock === 0)
-}
-
 /** Productos con alguna alerta activa (stock bajo o inactivos). */
 export function getAlertasActivas(products: Product[]): Product[] {
     return products.filter((p) => hasLowStock(p) || !p.isActive)

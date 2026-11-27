@@ -8,20 +8,7 @@
 
 import api from "@/lib/axios"
 
-import type { Lote, LotesFilters } from "../types"
-
-/** Lista los lotes, con filtros opcionales, del más reciente al más antiguo. */
-export async function getLotesService(
-    filtros?: LotesFilters
-): Promise<Lote[]> {
-    const { data } = await api.get<Lote[]>("/lotes", {
-        params: {
-            product_id: filtros?.productId,
-            origen: filtros?.origen,
-        },
-    })
-    return data
-}
+import type { Lote } from "../types"
 
 /** Lista los lotes de un producto en orden de consumo FIFO (más antiguos primero). */
 export async function getLotesPorProductoService(

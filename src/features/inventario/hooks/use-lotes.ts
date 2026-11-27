@@ -5,19 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 
-import {
-    getLotesPorProductoService,
-    getLotesService,
-} from "../services/lotes.service"
-import type { LotesFilters } from "../types"
-
-/** Obtiene la lista completa de lotes con opción de filtrado. */
-export function useLotes(filtros?: LotesFilters) {
-    return useQuery({
-        queryKey: ["lotes", filtros ?? {}],
-        queryFn: () => getLotesService(filtros),
-    })
-}
+import { getLotesPorProductoService } from "../services/lotes.service"
 
 /** Obtiene los lotes de un producto específico ordenados para consumo FIFO. */
 export function useLotesPorProducto(productId: number | null | undefined) {

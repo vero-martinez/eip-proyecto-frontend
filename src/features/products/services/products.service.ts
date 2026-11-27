@@ -26,8 +26,8 @@ export async function getProductsService(): Promise<Product[]> {
     return data
 }
 
-/** Obtiene un producto por ID. */
-export async function getProductByIdService(id: number): Promise<Product> {
+/** Obtiene un producto por id directamente desde la API. */
+export async function getProductService(id: number): Promise<Product> {
     const { data } = await api.get<Product>(`/productos/${id}`)
     return data
 }

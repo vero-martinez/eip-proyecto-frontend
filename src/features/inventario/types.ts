@@ -10,11 +10,6 @@ export type OrigenLote = "apertura" | "entrada" | "compra" | "importacion"
 /** Snapshot del proveedor guardado en el lote. */
 export type LoteProveedor = Pick<Proveedor, "id" | "name">
 
-export interface LotesFilters {
-    productId?: number
-    origen?: OrigenLote
-}
-
 /** Representación de un lote guardado en el sistema. */
 export interface Lote {
     id: number

@@ -66,8 +66,13 @@ api.interceptors.response.use(
 
             // Redirige al login evitando loops si ya estás ahí.
             if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-                window.location.href = "/login";
+                window.location.replace("/login");
             }
+        }
+
+        // 403 en analítica = rol sin permiso; se explicita en el mensaje visible.
+        if (status === 403) {
+            error.message = "No tienes permiso para acceder a este módulo.";
         }
 
         return Promise.reject(error);

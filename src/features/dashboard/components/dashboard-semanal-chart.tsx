@@ -31,6 +31,7 @@ import { cn, formatCurrency } from "@/lib/utils"
 
 import type { SerieSemanal } from "../types"
 import {
+    formatInicioSemanaDDMM,
     formatPorcentaje,
     getPromedioSemanal,
     getSemanaPico,
@@ -48,7 +49,7 @@ const formatearSoles = (valor: number) =>
 interface TooltipProps {
     active?: boolean
     label?: string
-    payload?: { value?: number | string; payload?: { enCurso?: boolean } }[]
+    payload?: { value?: number | string; payload?: { enCurso?: boolean; fechaInicio?: string } }[]
     promedio: number
 }
 
@@ -57,11 +58,12 @@ function TooltipVentas({ active, label, payload, promedio }: TooltipProps) {
 
     const valor = Number(payload[0]?.value ?? 0)
     const enCurso = payload[0]?.payload?.enCurso === true
+    const fechaInicio = payload[0]?.payload?.fechaInicio ?? label ?? "—"
 
     return (
         <div className="min-w-40 rounded-xl border bg-popover px-3 py-2 shadow-xl">
             <p className="text-xs font-medium text-muted-foreground">
-                {enCurso ? "Semana en curso" : `Semana ${label}`}
+                {enCurso ? `Semana en curso · ${fechaInicio}` : `Semana del ${fechaInicio}`}
             </p>
             <p className="mt-1 text-sm font-semibold tabular-nums">{formatCurrency(valor)}</p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -88,6 +90,7 @@ export function DashboardSemanalChart({ serie }: DashboardSemanalChartProps) {
     const etiquetasCompletas = new Set(completas.map((semana) => semana.etiqueta))
     const datos = serie.map((semana) => ({
         etiqueta: semana.etiqueta,
+        fechaInicio: formatInicioSemanaDDMM(semana.desde),
         totalVentas: semana.totalVentas,
         enCurso: !etiquetasCompletas.has(semana.etiqueta),
     }))

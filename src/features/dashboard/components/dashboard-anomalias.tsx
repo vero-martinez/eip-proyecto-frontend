@@ -40,6 +40,7 @@ import { useAnomalias } from "../hooks/use-anomalias"
 import type { Anomalia, SerieSemanal } from "../types"
 import {
     formatFechaLarga,
+    formatInicioSemanaDDMM,
     formatPiezas,
     getAnomaliasUnicas,
     getClaveAnomalia,
@@ -126,16 +127,18 @@ function accion(item: Anomalia): { texto: string; href: string } {
 interface TooltipGraficoProps {
     active?: boolean
     label?: string
-    payload?: { payload?: { totalVentas?: number; mensajes?: string[] } }[]
+    payload?: { payload?: { totalVentas?: number; mensajes?: string[]; fechaInicio?: string } }[]
 }
 
 function TooltipGrafico({ active, label, payload }: TooltipGraficoProps) {
     const fila = payload?.[0]?.payload
     if (!active || !fila) return null
 
+    const fechaInicio = fila.fechaInicio ?? label ?? "—"
+
     return (
         <div className="min-w-56 rounded-xl border bg-popover px-4 py-3 shadow-xl">
-            <p className="text-xs font-medium text-muted-foreground">Semana {label}</p>
+            <p className="text-xs font-medium text-muted-foreground">Semana del {fechaInicio}</p>
             <p className="mt-1 text-sm font-semibold tabular-nums">
                 {formatCurrency(Number(fila.totalVentas ?? 0))}
             </p>
@@ -222,6 +225,7 @@ export function DashboardAnomalias({
 
             return {
                 etiqueta: semana.etiqueta,
+                fechaInicio: formatInicioSemanaDDMM(semana.desde),
                 totalVentas: semana.totalVentas,
                 severidad,
                 mensajes: casos.map((item) => mensajeNatural(item)),

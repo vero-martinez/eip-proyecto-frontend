@@ -90,6 +90,15 @@ export function formatSemanaCorta(fecha: string): string {
     }).format(valor)
 }
 
+export function formatInicioSemanaDDMM(fecha: string): string {
+    const valor = fechaValida(fecha)
+    if (!valor) return "—"
+
+    const dia = String(valor.getUTCDate()).padStart(2, "0")
+    const mes = String(valor.getUTCMonth() + 1).padStart(2, "0")
+    return `${dia}/${mes}`
+}
+
 export type SeveridadVisible = "alta" | "media" | "informativa"
 
 export function inicioSemanaAnomalia(fecha: string | null): string {

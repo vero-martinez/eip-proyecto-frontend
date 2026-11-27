@@ -224,18 +224,6 @@ export function DashboardPronostico() {
         [productosUnidad]
     )
 
-    const conteos = useMemo(() => {
-        const resultado = {
-            confiable: 0,
-            aproximada: 0,
-            pocoConfiable: 0,
-        }
-        productos.forEach((item) => {
-            resultado[getEstadoPrediccion(item.wape).nivel] += 1
-        })
-        return resultado
-    }, [productos])
-
     const semanaPico = useMemo(() => {
         const acumulado = new Map<string, number>()
         productosUnidad.forEach((item) => {
@@ -312,29 +300,6 @@ export function DashboardPronostico() {
                                 Próximas 4 semanas · solo los productos analizados aquí
                             </p>
                         </div>
-                        <dl className="grid gap-4 sm:grid-cols-3">
-                            <div className="rounded-xl bg-success/10 p-4 ring-1 ring-success/20">
-                                <dt className="text-xs text-muted-foreground">Confiable</dt>
-                                <dd className="mt-1 text-3xl font-semibold tabular-nums text-success">
-                                    {conteos.confiable}
-                                </dd>
-                                <p className="mt-1 text-xs text-muted-foreground">productos</p>
-                            </div>
-                            <div className="rounded-xl bg-warning/10 p-4 ring-1 ring-warning/20">
-                                <dt className="text-xs text-muted-foreground">Aproximada</dt>
-                                <dd className="mt-1 text-3xl font-semibold tabular-nums text-warning">
-                                    {conteos.aproximada}
-                                </dd>
-                                <p className="mt-1 text-xs text-muted-foreground">productos</p>
-                            </div>
-                            <div className="rounded-xl bg-destructive/10 p-4 ring-1 ring-destructive/20">
-                                <dt className="text-xs text-muted-foreground">Poco confiable</dt>
-                                <dd className="mt-1 text-3xl font-semibold tabular-nums text-destructive">
-                                    {conteos.pocoConfiable}
-                                </dd>
-                                <p className="mt-1 text-xs text-muted-foreground">productos</p>
-                            </div>
-                        </dl>
                     </div>
                 )}
             </CardHeader>

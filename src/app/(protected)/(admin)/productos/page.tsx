@@ -8,7 +8,8 @@
  * dos diálogos (crear/editar, eliminar).
  */
 
-import { useState } from "react"
+import { Suspense, useCallback, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { AlertTriangle } from "lucide-react"
 
@@ -22,7 +23,18 @@ import { ProductForm } from "@/features/products/components/product-form"
 import { ProductDetailDialog } from "@/features/products/components/product-detail-dialog"
 import type { Product } from "@/types/products"
 
-export default function ProductsPage() {
+function ProductsPageContent() {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const rawHighlightId = searchParams.get("producto")
+    const highlightProductId =
+        rawHighlightId && /^\d+$/.test(rawHighlightId)
+            ? Number(rawHighlightId)
+            : null
+    const clearHighlight = useCallback(() => {
+        router.replace("/productos", { scroll: false })
+    }, [router])
+
     const {
         data: products,
         isLoading: isLoadingProducts,
@@ -135,6 +147,8 @@ export default function ProductsPage() {
                     onDelete={handleDelete}
                     onViewLotes={handleViewLotes}
                     onCreate={handleCreate}
+                    highlightProductId={highlightProductId}
+                    onHighlightDone={clearHighlight}
                 />
             </div>
 
@@ -174,5 +188,13 @@ export default function ProductsPage() {
                 showLotes
             />
         </div>
+    )
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={null}>
+            <ProductsPageContent />
+        </Suspense>
     )
 }

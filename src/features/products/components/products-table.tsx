@@ -9,6 +9,7 @@
  * callbacks de editar/eliminar que le pasa el componente padre.
  */
 
+import { useEffect, useRef } from "react"
 import { Plus, Inbox, Search, X } from "lucide-react"
 
 import {
@@ -32,6 +33,7 @@ import { PaginationBar } from "@/components/common/pagination-bar"
 import { ProductFilters } from "./product-filters"
 import { getProductColumns } from "./columns"
 import { useProductFilters } from "../hooks/use-product-filters"
+import { cn } from "@/lib/utils"
 import { formatProductCount } from "@/lib/units"
 import type { Product, Category } from "@/types/products"
 
@@ -42,6 +44,8 @@ interface ProductsTableProps {
     onDelete: (product: Product) => void
     onViewLotes: (product: Product) => void
     onCreate: () => void
+    highlightProductId?: number | null
+    onHighlightDone?: () => void
 }
 
 export function ProductsTable({
@@ -51,6 +55,8 @@ export function ProductsTable({
     onDelete,
     onViewLotes,
     onCreate,
+    highlightProductId,
+    onHighlightDone,
 }: ProductsTableProps) {
     const columns = getProductColumns(
         categories,
@@ -78,8 +84,32 @@ export function ProductsTable({
         rangeEnd,
         hasActiveFilters,
         clearFilters,
+        goToProduct,
         goToPage,
     } = useProductFilters(products, categories)
+
+    const highlightedRef = useRef<number | null>(null)
+    const highlightVisible =
+        highlightProductId != null &&
+        pageItems.some((product) => product.id === highlightProductId)
+
+    useEffect(() => {
+        if (highlightProductId == null || products.length === 0) return
+        if (highlightedRef.current === highlightProductId) return
+
+        highlightedRef.current = highlightProductId
+        if (!goToProduct(highlightProductId)) onHighlightDone?.()
+    }, [highlightProductId, products, goToProduct, onHighlightDone])
+
+    useEffect(() => {
+        if (!highlightVisible || highlightProductId == null) return
+
+        const row = document.getElementById(`producto-${highlightProductId}`)
+        row?.scrollIntoView({ behavior: "smooth", block: "center" })
+
+        const timer = window.setTimeout(() => onHighlightDone?.(), 3000)
+        return () => window.clearTimeout(timer)
+    }, [highlightVisible, highlightProductId, onHighlightDone])
 
     return (
         <div className="space-y-5 sm:space-y-4">
@@ -161,7 +191,12 @@ export function ProductsTable({
                             pageItems.map((product) => (
                                 <TableRow
                                     key={product.id}
-                                    className="hover:bg-accent/50"
+                                    id={`producto-${product.id}`}
+                                    className={cn(
+                                        "hover:bg-accent/50 scroll-mt-24",
+                                        highlightProductId === product.id &&
+                                            "bg-warning/15 ring-1 ring-inset ring-warning/40"
+                                    )}
                                 >
                                     {columns.map((column) => (
                                         <TableCell

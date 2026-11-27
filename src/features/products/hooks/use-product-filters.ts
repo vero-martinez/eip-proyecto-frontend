@@ -3,7 +3,7 @@
  * de la tabla de productos.
  */
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { isProductInCategoryTree } from "@/lib/categories"
 import { hasLowStock } from "@/lib/units"
@@ -103,6 +103,18 @@ export function useProductFilters(products: Product[], categories: Category[]) {
         sortBy,
     ])
 
+    const goToProduct = useCallback(
+        (productId: number) => {
+            const index = filteredProducts.findIndex(
+                (product) => product.id === productId
+            )
+            if (index < 0) return false
+            setPage(Math.floor(index / PAGE_SIZE))
+            return true
+        },
+        [filteredProducts]
+    )
+
     const totalCount = filteredProducts.length
     const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
     const safePage = Math.min(page, pageCount - 1)
@@ -147,6 +159,7 @@ export function useProductFilters(products: Product[], categories: Category[]) {
         rangeEnd,
         hasActiveFilters,
         clearFilters,
+        goToProduct,
         goToPage: (target: number) =>
             setPage(Math.min(Math.max(target, 0), pageCount - 1)),
     }

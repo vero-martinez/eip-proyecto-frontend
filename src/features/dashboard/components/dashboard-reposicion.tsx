@@ -630,7 +630,7 @@ export function DashboardReposicion({
 
                         <div className="flex justify-center pt-4">
                             <Link
-                                href="/compras"
+                                href="/productos"
                                 className={buttonVariants({ variant: "outline", size: "sm" })}
                             >
                                 Ver todos

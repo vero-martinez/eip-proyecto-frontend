@@ -24,6 +24,10 @@ interface RecentEntradasProps {
     entries: StockEntry[]
     proveedores: Proveedor[]
     limit?: number
+    titulo?: string
+    descripcion?: string
+    emptyTitle?: string
+    emptyHint?: string
 }
 
 export function RecentEntradas({
@@ -31,18 +35,22 @@ export function RecentEntradas({
     entries,
     proveedores,
     limit = 5,
+    titulo = "Últimas entradas",
+    descripcion = `Los últimos ${limit} registros de entrada al inventario.`,
+    emptyTitle = "Sin entradas recientes",
+    emptyHint = "Registrá un movimiento para verlo reflejado aquí.",
 }: RecentEntradasProps) {
     const recent = getRecentEntradas(entries, products, limit)
 
     return (
         <ActivityList
             icon={History}
-            title="Últimas entradas"
-            description={`Los últimos ${limit} registros de entrada al inventario.`}
+            title={titulo}
+            description={descripcion}
             tone="positive"
             items={recent}
-            emptyTitle="Sin entradas recientes"
-            emptyHint="Registrá un movimiento para verlo reflejado aquí."
+            emptyTitle={emptyTitle}
+            emptyHint={emptyHint}
             renderItem={({ id, product, quantity, proveedorId, responsable, createdAt }) => {
                 const proveedorName = getProveedorName(proveedorId, proveedores)
                 const isLow = hasLowStock(product)

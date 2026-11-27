@@ -9,6 +9,7 @@ export const MOVIMIENTO_TIPO_ITEMS: {
     label: string
 }[] = [
     { value: "entrada", label: "Entrada" },
+    { value: "compra", label: "Compra" },
     { value: "venta", label: "Venta" },
     { value: "merma", label: "Merma" },
     { value: "importacion", label: "Importación" },

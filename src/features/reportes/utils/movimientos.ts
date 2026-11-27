@@ -11,5 +11,5 @@ export function piezasMovimiento(quantity: number): number {
 
 /** Signo del movimiento en el ledger: +1 para entradas, -1 para salidas. */
 export function signoMovimiento(type: MovementType): number {
-    return type === "entrada" || type === "importacion" ? 1 : -1
+    return type === "entrada" || type === "compra" || type === "importacion" ? 1 : -1
 }

@@ -62,6 +62,12 @@ const MOVEMENT_TONE: Record<
         avatar: "bg-success/15 text-success",
         cantidad: "text-success",
     },
+    compra: {
+        border: "border-success/40",
+        accent: "border-l-success",
+        avatar: "bg-success/15 text-success",
+        cantidad: "text-success",
+    },
     venta: {
         border: "border-primary/40",
         accent: "border-l-primary",
@@ -95,7 +101,7 @@ const MOVEMENT_TONE: Record<
 }
 
 function getMovementIcon(type: MovementType) {
-    if (type === "entrada" || type === "importacion") return ArrowDownLeft
+    if (type === "entrada" || type === "compra" || type === "importacion") return ArrowDownLeft
     if (type === "venta" || type === "exportacion") return ArrowUpRight
     if (type === "transferencia") return ArrowLeftRight
     return Trash2

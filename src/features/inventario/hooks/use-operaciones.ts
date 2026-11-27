@@ -12,6 +12,7 @@ import {
 const DOMINIOS_AFECTADOS = [
     "products",
     "stock-entries",
+    "compras",
     "movimientos",
     "lotes",
     "alertas",

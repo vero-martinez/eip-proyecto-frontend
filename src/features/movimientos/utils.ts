@@ -33,8 +33,8 @@ export function formatMovementQuantity(movement: InventoryMovement): string {
         return `↔ ${Math.abs(movement.quantity)} ${getUnitSymbol(movement.unitType)}`
     }
     const esEntrada =
-    
         movement.movementType === "entrada" ||
+        movement.movementType === "compra" ||
         movement.movementType === "importacion"
     const sign = esEntrada ? "+" : "−"
     return `${sign}${Math.abs(movement.quantity)} ${getUnitSymbol(movement.unitType)}`
@@ -58,6 +58,9 @@ export function getMovementDetail(
         )
     }
     if (movement.movementType === "transferencia") return "Entre almacenes"
+    if (movement.movementType === "compra") {
+        return movement.proveedor ?? "Proveedor no especificado"
+    }
     return movement.proveedor ?? "Taller"
 }
 
@@ -82,6 +85,7 @@ export function getMovementMotivo(
 export function getMovementTint(type: MovementType): string {
     switch (type) {
         case "entrada":
+        case "compra":
             return "bg-success/10 text-success border-success/50!"
         case "venta":
             return "bg-primary/10 text-primary border-primary/50!"
@@ -127,7 +131,9 @@ export function summarizeMovimientos(
     let exportaciones = 0
 
     for (const movement of movements) {
-        if (movement.movementType === "entrada") entradas += 1
+        if (movement.movementType === "entrada" || movement.movementType === "compra") {
+            entradas += 1
+        }
         else if (movement.movementType === "venta") ventas += 1
         else if (movement.movementType === "merma") mermas += 1
         else if (movement.movementType === "importacion") importaciones += 1

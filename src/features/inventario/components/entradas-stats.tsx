@@ -23,6 +23,8 @@ import {
 interface EntradasStatsProps {
     products: Product[]
     entries: StockEntry[]
+    tituloEntradas30?: string
+    tituloUltima?: string
 }
 
 interface StatConfig {
@@ -35,7 +37,12 @@ interface StatConfig {
     title?: string
 }
 
-export function EntradasStats({ products, entries }: EntradasStatsProps) {
+export function EntradasStats({
+    products,
+    entries,
+    tituloEntradas30 = "Entradas últimos 30 días",
+    tituloUltima = "Última entrada",
+}: EntradasStatsProps) {
     // Memoizamos el cálculo de las métricas para optimizar rendimiento
     const { totalInventory, entriesLast30, unitsLast30, lowStock, lastEntry } =
         useMemo(() => summarizeEntradas(entries, products), [entries, products])
@@ -49,7 +56,7 @@ export function EntradasStats({ products, entries }: EntradasStatsProps) {
             tone: "violet",
         },
         {
-            label: "Entradas últimos 30 días",
+            label: tituloEntradas30,
             value: entriesLast30,
             sublabel: `+${unitsLast30} unidades sumadas`,
             icon: ArrowDownToLine,
@@ -63,7 +70,7 @@ export function EntradasStats({ products, entries }: EntradasStatsProps) {
             tone: "rose",
         },
         {
-            label: "Última entrada",
+            label: tituloUltima,
             value: lastEntry?.product.name ?? "—",
             title: lastEntry?.product.name, // Tooltip nativo si el texto se trunca
             sublabel: lastEntry

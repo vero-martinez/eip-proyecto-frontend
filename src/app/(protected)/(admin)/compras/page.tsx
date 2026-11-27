@@ -13,7 +13,7 @@ import { AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/providers/auth-provider"
 import { useProducts } from "@/features/products/hooks/use-products"
-import { useStockEntries } from "@/features/inventario/hooks/use-entradas"
+import { useCompras } from "@/features/inventario/hooks/use-compras"
 import { useProveedores } from "@/features/proveedores/hooks/use-proveedores"
 import { OperacionForm } from "@/features/inventario/components/operacion-form"
 import { EntradasStats } from "@/features/inventario/components/entradas-stats"
@@ -29,11 +29,11 @@ export default function ComprasPage() {
     } = useProducts()
 
     const {
-        data: entries,
-        isLoading: isLoadingEntries,
-        isError: isErrorEntries,
-        refetch: refetchEntries,
-    } = useStockEntries()
+        data: compras,
+        isLoading: isLoadingCompras,
+        isError: isErrorCompras,
+        refetch: refetchCompras,
+    } = useCompras()
 
     const {
         data: proveedores,
@@ -45,23 +45,15 @@ export default function ComprasPage() {
     const productList = products ?? []
     const proveedorList = proveedores ?? []
 
-    /**
-     * `GET /entradas` no distingue compras de entradas de producción: ambas
-     * comparten la misma tabla y `StockEntry` no trae un campo de tipo. La
-     * única señal disponible es `proveedorId`, que solo traen las compras.
-     * Sin este filtro, las entradas del taller aparecerían como compras.
-     */
-    const compraList = (entries ?? []).filter(
-        (entry) => entry.proveedorId != null
-    )
+    const compraList = compras ?? []
 
     const handleRetry = () => {
         refetchProducts()
-        refetchEntries()
+        refetchCompras()
         refetchProveedores()
     }
 
-    if (isErrorProducts || isErrorEntries || isErrorProveedores) {
+    if (isErrorProducts || isErrorCompras || isErrorProveedores) {
         return (
             <div
                 role="alert"
@@ -91,7 +83,7 @@ export default function ComprasPage() {
         )
     }
 
-    if (isLoadingProducts || isLoadingEntries || isLoadingProveedores) {
+    if (isLoadingProducts || isLoadingCompras || isLoadingProveedores) {
         return (
             <div
                 role="status"
@@ -109,7 +101,12 @@ export default function ComprasPage() {
         <main className="flex flex-col gap-6 sm:gap-8">
             <h1 className="sr-only">Compras de Inventario</h1>
 
-            <EntradasStats products={productList} entries={compraList} />
+            <EntradasStats
+                products={productList}
+                entries={compraList}
+                tituloEntradas30="Compras últimos 30 días"
+                tituloUltima="Última compra"
+            />
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
                 <OperacionForm
@@ -122,6 +119,10 @@ export default function ComprasPage() {
                     products={productList}
                     entries={compraList}
                     proveedores={proveedorList}
+                    titulo="Últimas compras"
+                    descripcion="Los últimos registros de compra al inventario."
+                    emptyTitle="Sin compras recientes"
+                    emptyHint="Registrá una compra para verla reflejada aquí."
                 />
             </div>
         </main>

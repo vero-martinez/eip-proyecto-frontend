@@ -32,7 +32,7 @@ export function construirKardex(datos: DatosReportes, rango: RangoFechas): Repor
             .filter((mov) => tipos.includes(mov.movementType))
             .reduce((sum, mov) => sum + piezasMovimiento(mov.quantity), 0)
 
-    const entradas = piezasDe(["entrada", "importacion"])
+    const entradas = piezasDe(["entrada", "compra", "importacion"])
     const salidas = piezasDe(["venta", "exportacion"])
     const mermas = piezasDe(["merma"])
 

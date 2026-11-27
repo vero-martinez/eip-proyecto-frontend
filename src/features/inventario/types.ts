@@ -36,6 +36,7 @@ export interface StockEntry {
 
 export type MovementType =
     | "entrada"
+    | "compra"
     | "venta"
     | "merma"
     | "importacion"

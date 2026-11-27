@@ -67,6 +67,7 @@ export function MovimientoDetailDialog({
 }: MovimientoDetailDialogProps) {
     const isSalida =
         movement?.movementType !== "entrada" &&
+        movement?.movementType !== "compra" &&
         movement?.movementType !== "importacion"
 
     const esComercio =

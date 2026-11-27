@@ -87,24 +87,24 @@ function ResumenHoy({
     }
 
     const estilos = {
-        rojo: "border-red-300 bg-red-100 text-red-800 shadow-sm shadow-red-500/10",
-        naranja: "border-amber-300 bg-amber-100 text-amber-900 shadow-sm shadow-amber-500/10",
-        verde: "border-emerald-300 bg-emerald-100 text-emerald-900 shadow-sm shadow-emerald-500/10",
+        rojo: "border-red-300 bg-red-100 text-red-800 shadow-sm shadow-red-500/10 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-200",
+        naranja: "border-amber-300 bg-amber-100 text-amber-900 shadow-sm shadow-amber-500/10 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200",
+        verde: "border-emerald-300 bg-emerald-100 text-emerald-900 shadow-sm shadow-emerald-500/10 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200",
     }
 
     return (
         <section
             aria-label="Resumen de hoy"
-            className="rounded-2xl border border-primary/25 bg-gradient-to-br from-[#F4F0FF] via-[#FAF8FF] to-white p-4 text-slate-900 shadow-sm shadow-primary/10 sm:p-6"
+            className="rounded-2xl border border-primary/20 bg-primary/10 p-4 text-foreground shadow-sm sm:p-6"
         >
             <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-xl font-semibold tracking-tight text-slate-900">Resumen de hoy</h2>
-                    <p className="text-xs text-slate-600">
+                    <h2 className="text-xl font-semibold tracking-tight">Resumen de hoy</h2>
+                    <p className="text-xs text-muted-foreground">
                         Lo que necesita tu negocio en este momento
                     </p>
                 </div>
-                <span className="text-xs text-slate-600">
+                <span className="text-xs text-muted-foreground">
                     {datosListos ? `${serie.length} semanas revisadas` : "Preparando resumen"}
                 </span>
             </div>
@@ -117,7 +117,7 @@ function ResumenHoy({
                 </div>
             ) : hayError ? (
                 <div className="flex flex-col items-start gap-4 rounded-xl border border-destructive/25 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm text-red-700">
+                    <p className="text-sm text-destructive">
                         No se pudo preparar el resumen de hoy.
                     </p>
                     <Button
@@ -133,11 +133,11 @@ function ResumenHoy({
                     </Button>
                 </div>
             ) : frases.length === 0 ? (
-                <div className="flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-100 p-4 text-emerald-900 shadow-sm shadow-emerald-500/10">
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-100 p-4 text-emerald-900 shadow-sm shadow-emerald-500/10 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200">
                     <CheckCircle2 className="size-6 shrink-0" aria-hidden="true" />
                     <div>
                         <p className="text-base font-semibold">Todo en orden: sin ventas raras</p>
-                        <p className="text-xs text-slate-600">
+                        <p className="text-xs text-muted-foreground">
                             No hay compras urgentes ni ventas inusuales por revisar.
                         </p>
                     </div>

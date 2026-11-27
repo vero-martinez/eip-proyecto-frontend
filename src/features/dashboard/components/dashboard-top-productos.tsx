@@ -1,14 +1,7 @@
-/**
- * Top de productos por facturación del Dashboard.
- *
- * El backend ya devuelve los cinco más vendidos del periodo, ordenados por
- * importe; aquí solo se presenta.
- */
-
 import { PackageSearch, Trophy } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn, formatCurrency } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 
 import type { ProductoTop } from "../types"
 import { formatPiezas } from "../utils"
@@ -17,7 +10,6 @@ interface DashboardTopProductosProps {
     productos: ProductoTop[]
 }
 
-/** Estilos de la posición según el puesto (podio para los 3 primeros). */
 const RANK_STYLES = [
     "bg-warning/15 text-warning ring-warning/30",
     "bg-muted-foreground/15 text-muted-foreground ring-muted-foreground/30",
@@ -25,59 +17,55 @@ const RANK_STYLES = [
 ]
 
 export function DashboardTopProductos({ productos }: DashboardTopProductosProps) {
-    const totalTop = productos.reduce((acc, p) => acc + p.totalVentas, 0)
+    const visibles = productos.slice(0, 5)
+    const totalTop = visibles.reduce((acc, producto) => acc + producto.totalVentas, 0)
 
     return (
-        <Card className="h-full overflow-hidden border-primary/20 bg-primary/15 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 p-6 pb-4">
-                <div className="flex items-center gap-4">
+        <Card className="flex h-full min-w-0 flex-col overflow-hidden border-primary/20 bg-primary/10 shadow-sm">
+            <CardHeader className="shrink-0 space-y-1 p-4 pb-2">
+                <div className="flex items-center gap-3">
                     <div
-                        className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                        className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"
                         aria-hidden="true"
                     >
-                        <Trophy className="size-6" />
+                        <Trophy className="size-4" />
                     </div>
-                    <div className="space-y-1">
-                        <CardTitle className="text-lg">Top de productos</CardTitle>
-                        <CardDescription className="text-foreground/60">
-                            Mayor facturación del periodo
+                    <div className="min-w-0 space-y-1">
+                        <CardTitle className="text-xl">Productos favoritos</CardTitle>
+                        <CardDescription className="text-xs">
+                            Los que más facturan
                         </CardDescription>
                     </div>
                 </div>
             </CardHeader>
 
-            <CardContent className="px-4 pb-5 pt-0 sm:px-6">
-                {productos.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl bg-background/70 px-6 py-14 text-center ring-1 ring-primary/10">
-                        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
-                            <PackageSearch className="size-7 text-primary" aria-hidden="true" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <p className="text-sm font-medium">Sin ventas todavía</p>
-                            <p className="text-sm text-muted-foreground">
-                                Cuando haya ventas en el periodo, verás aquí tus productos estrella.
-                            </p>
-                        </div>
+            <CardContent className="flex min-h-0 flex-1 px-4 pb-4 pt-0">
+                {visibles.length === 0 ? (
+                    <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl bg-background/70 px-4 py-10 text-center ring-1 ring-primary/10">
+                        <PackageSearch className="size-7 text-primary" aria-hidden="true" />
+                        <p className="text-sm font-medium">Sin ventas todavía</p>
+                        <p className="text-xs text-muted-foreground">
+                            Cuando haya ventas en el periodo, verás aquí tus productos estrella.
+                        </p>
                     </div>
                 ) : (
-                    <ol className="space-y-2.5">
-                        {productos.map((producto, index) => {
-                            const porcentajeTotal =
-                                totalTop > 0 ? (producto.totalVentas / totalTop) * 100 : 0
-                            const esPodio = index < 3
+                    <ol className="flex w-full flex-col divide-y divide-border/60">
+                        {visibles.map((producto, index) => {
+                            const porcentaje = totalTop > 0
+                                ? (producto.totalVentas / totalTop) * 100
+                                : 0
 
                             return (
                                 <li
                                     key={producto.productId}
-                                    className="flex items-center gap-4 rounded-2xl bg-background/80 px-4 py-3.5 shadow-sm ring-1 ring-foreground/10 transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md"
+                                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
                                 >
                                     <span
-                                        className={cn(
-                                            "flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums",
-                                            esPodio
-                                                ? cn("ring-1", RANK_STYLES[index])
+                                        className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
+                                            index < 3
+                                                ? `ring-1 ${RANK_STYLES[index]}`
                                                 : "bg-muted text-muted-foreground"
-                                        )}
+                                        }`}
                                     >
                                         {index + 1}
                                     </span>
@@ -86,24 +74,14 @@ export function DashboardTopProductos({ productos }: DashboardTopProductosProps)
                                         <p className="truncate text-sm font-medium leading-tight">
                                             {producto.nombre}
                                         </p>
-                                        <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                                            <span className="truncate font-mono">{producto.sku}</span>
-                                            <span aria-hidden="true">·</span>
-                                            <span className="shrink-0 tabular-nums">
-                                                {formatPiezas(producto.piezasVendidas)}{" "}
-                                                {producto.piezasVendidas === 1 ? "pieza" : "piezas"}
-                                            </span>
+                                        <p className="truncate text-xs text-muted-foreground">
+                                            {formatPiezas(producto.piezasVendidas)} piezas · {porcentaje.toFixed(0)}%
                                         </p>
                                     </div>
 
-                                    <div className="shrink-0 space-y-1 text-right">
-                                        <p className="text-sm font-semibold tabular-nums">
-                                            {formatCurrency(producto.totalVentas)}
-                                        </p>
-                                        <p className="text-xs font-medium tabular-nums text-primary">
-                                            {porcentajeTotal.toFixed(0)}%
-                                        </p>
-                                    </div>
+                                    <p className="shrink-0 text-sm font-semibold tabular-nums">
+                                        {formatCurrency(producto.totalVentas)}
+                                    </p>
                                 </li>
                             )
                         })}

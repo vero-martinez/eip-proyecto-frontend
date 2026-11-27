@@ -1,22 +1,21 @@
 "use client"
 
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import {
     AlertTriangle,
     BarChart3,
-    CalendarRange,
+    CheckCircle2,
     PackageCheck,
+    RefreshCw,
     ShoppingCart,
-    TrendingDown,
-    TrendingUp,
 } from "lucide-react"
-
 import {
     Bar,
     BarChart,
     CartesianGrid,
-    Cell,
+    LabelList,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -24,6 +23,7 @@ import {
 } from "recharts"
 
 import { Badge } from "@/components/ui/badge"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
     Card,
     CardContent,
@@ -32,768 +32,645 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 import { getUnitSymbol } from "@/lib/units"
 import type { UnitType } from "@/types/products"
 
+import { MAX_REPOSICION_VISIBLES } from "../constants"
 import { useReposicion } from "../hooks/use-reposicion"
-import type { EstadoReposicion, ReposicionProducto } from "../types"
-import { formatPiezas, formatSemanaCorta } from "../utils"
+import type {
+    AlertaStockItem,
+    AlertasStock,
+    ProductoTop,
+    ReposicionProducto,
+} from "../types"
+import {
+    formatFechaLarga,
+    formatPiezas,
+    formatSemanasLegibles,
+} from "../utils"
 
-// ==========================================
-// ESTADOS Y CONFIGURACIÓN
-// ==========================================
+interface DashboardReposicionProps {
+    alertas: AlertasStock
+    topProductos: ProductoTop[]
+}
 
-const ESTADOS: Record<
-    EstadoReposicion,
-    { label: string; className: string; color: string }
+type EstadoFila = "pedir_ya" | "pedir_pronto" | "suficiente"
+
+interface FilaReposicion {
+    productId: number
+    nombre: string
+    sku: string
+    unitType: UnitType
+    estado: EstadoFila
+    stockActual: number
+    stockMinimo: number
+    demandaHorizonte: number
+    semanasCobertura: number | null
+    semanaAgotamiento: string | null
+    cantidadSugerida: number
+    fechaLimitePedido: string | null
+    plazoSemanas: number
+    confiable: boolean
+}
+
+const ESTADO: Record<
+    EstadoFila,
+    { etiqueta: string; clase: string; punto: string }
 > = {
     pedir_ya: {
-        label: "Pedir ya",
-        className: "border-destructive/40 text-destructive",
-        color: "url(#reposicion-urgente)",
+        etiqueta: "Urgente",
+        clase: "border-destructive/40 bg-destructive/10 text-destructive",
+        punto: "bg-destructive",
     },
     pedir_pronto: {
-        label: "Pedir pronto",
-        className: "border-warning/40 text-warning",
-        color: "url(#reposicion-pronto)",
+        etiqueta: "Pronto",
+        clase: "border-warning/40 bg-warning/10 text-warning",
+        punto: "bg-warning",
     },
     suficiente: {
-        label: "Stock suficiente",
-        className: "border-success/40 text-success",
-        color: "url(#reposicion-suficiente)",
-    },
-    sin_demanda: {
-        label: "Sin demanda",
-        className: "border-muted text-muted-foreground",
-        color: "url(#reposicion-sin-demanda)",
+        etiqueta: "Stock OK",
+        clase: "border-success/40 bg-success/10 text-success",
+        punto: "bg-success",
     },
 }
 
-// ==========================================
-// UTILIDADES
-// ==========================================
+const ORDEN_ESTADO: EstadoFila[] = ["pedir_ya", "pedir_pronto", "suficiente"]
 
-function getCobertura(item: ReposicionProducto, horizonte: number): string {
-    if (item.semanasCobertura === null) {
-        return `Cubre las próximas ${horizonte} semanas`
-    }
-
-    if (item.semanasCobertura === 0) {
-        return "Sin stock disponible"
-    }
-
-    return `Stock para ~${item.semanasCobertura.toFixed(1)} semanas`
-}
-
-function getAccion(item: ReposicionProducto): string {
-    switch (item.estado) {
-        case "pedir_ya":
-            return "Pedir esta semana"
-        case "pedir_pronto":
-            return item.fechaLimitePedido
-                ? `Pedir antes del ${formatSemanaCorta(item.fechaLimitePedido)}`
-                : "Quedaría bajo el mínimo: reponer pronto"
-        case "suficiente":
-            return "No hace falta pedir"
-        default:
-            return "Sin ventas previstas"
+function desdeAlerta(item: AlertaStockItem): FilaReposicion {
+    const faltante = Math.max(0, item.unidadesFaltantes)
+    return {
+        productId: item.productId,
+        nombre: item.nombre,
+        sku: item.sku,
+        unitType: item.unitType,
+        estado: item.estado === "agotado" ? "pedir_ya" : "pedir_pronto",
+        stockActual: item.currentStock,
+        stockMinimo: item.currentStock + faltante,
+        demandaHorizonte: faltante,
+        semanasCobertura: null,
+        semanaAgotamiento: null,
+        cantidadSugerida: faltante,
+        fechaLimitePedido: null,
+        plazoSemanas: 0,
+        confiable: false,
     }
 }
 
-function formatEje(valor: number): string {
-    return new Intl.NumberFormat("es-PE", {
-        notation: "compact",
-        maximumFractionDigits: 1,
-    }).format(valor)
+function desdeReposicion(
+    item: ReposicionProducto,
+    alerta?: AlertaStockItem
+): FilaReposicion {
+    const faltanteAlerta = alerta ? Math.max(0, alerta.unidadesFaltantes) : 0
+    const estado: EstadoFila =
+        item.estado === "pedir_ya" || alerta?.estado === "agotado"
+            ? "pedir_ya"
+            : item.estado === "pedir_pronto" || faltanteAlerta > 0
+              ? "pedir_pronto"
+              : "suficiente"
+
+    return {
+        productId: item.productId,
+        nombre: item.nombre,
+        sku: item.sku,
+        unitType: item.unitType,
+        estado,
+        stockActual: item.stockActual,
+        stockMinimo: alerta
+            ? alerta.currentStock + faltanteAlerta
+            : item.stockMinimo,
+        demandaHorizonte: item.demandaHorizonte,
+        semanasCobertura: item.semanasCobertura,
+        semanaAgotamiento: item.semanaAgotamiento,
+        cantidadSugerida: Math.max(item.cantidadSugerida, faltanteAlerta),
+        fechaLimitePedido: item.fechaLimitePedido,
+        plazoSemanas: item.plazoSemanas,
+        confiable: item.confiable,
+    }
 }
 
-// ==========================================
-// TOOLTIP DEL GRÁFICO
-// ==========================================
+function MetricCard({
+    titulo,
+    valor,
+    descripcion,
+    descripcionVacia,
+    icono: Icono,
+    claseIcono,
+    borde,
+    numero,
+    mostrarCheckVacio = false,
+}: {
+    titulo: string
+    valor: number
+    descripcion: string
+    descripcionVacia: string
+    icono: typeof ShoppingCart
+    claseIcono?: string
+    borde: string
+    numero: string
+    mostrarCheckVacio?: boolean
+}) {
+    const sinDatos = valor === 0
+    const checkVacio = sinDatos && mostrarCheckVacio
+
+    return (
+        <div
+            className={cn(
+                "rounded-xl border-l-4 bg-background/80 p-3 shadow-sm ring-1 ring-foreground/10 sm:p-4",
+                borde
+            )}
+        >
+            <div className="flex items-start justify-between gap-2">
+                <p className="min-h-8 break-words text-xs font-medium leading-tight text-muted-foreground">
+                    {titulo}
+                </p>
+                <Icono className={cn("size-4 shrink-0", claseIcono ?? "text-primary")} aria-hidden="true" />
+            </div>
+            {checkVacio ? (
+                <div className="mt-2 flex items-center gap-2 text-success">
+                    <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-semibold">Sin urgencias hoy</span>
+                </div>
+            ) : (
+                <p className={cn("mt-2 text-3xl font-semibold tabular-nums tracking-tight", numero)}>
+                    {sinDatos ? "—" : formatPiezas(valor)}
+                </p>
+            )}
+            {!checkVacio && (
+                <p className="mt-1 min-h-8 break-words text-xs leading-tight text-muted-foreground">
+                    {sinDatos ? descripcionVacia : descripcion}
+                </p>
+            )}
+        </div>
+    )
+}
 
 function StockTooltip({
     active,
     payload,
     label,
-    unidad,
+    sufijo,
+    esSoles,
 }: {
     active?: boolean
-    payload?: Array<{
-        name?: string
-        value?: number
-        color?: string
-    }>
+    payload?: {
+        payload?: {
+            nombreCompleto?: string
+            unidades?: number
+            minimo?: number
+            soles?: number
+            minimoSoles?: number
+        }
+    }[]
     label?: string
-    unidad: string
+    sufijo: string
+    esSoles: boolean
 }) {
     if (!active || !payload?.length) return null
 
-    const stock = payload.find((item) => item.name === "Stock actual")
-    const minimo = payload.find((item) => item.name === "Stock mínimo")
+    const fila = payload[0]?.payload
+    const valor = esSoles ? Number(fila?.soles ?? 0) : Number(fila?.unidades ?? 0)
+    const minimo = esSoles
+        ? Number(fila?.minimoSoles ?? 0)
+        : Number(fila?.minimo ?? 0)
 
     return (
-        <div className="min-w-40 rounded-lg border bg-popover px-3 py-2 shadow-lg">
-            <p className="mb-2 max-w-52 truncate text-xs font-semibold">
-                {label}
+        <div className="min-w-48 rounded-lg border bg-popover px-3 py-2 shadow-lg">
+            <p className="text-xs font-semibold">{fila?.nombreCompleto ?? label}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+                Stock actual: {esSoles ? formatCurrency(valor) : `${formatPiezas(valor)} ${sufijo}`}
             </p>
-
-            <div className="space-y-1.5 text-xs">
-                {stock && (
-                    <p className="flex items-center justify-between gap-4">
-                        <span className="flex items-center gap-2 text-muted-foreground">
-                            <span className="size-2 rounded-full bg-primary" />
-                            Stock actual
-                        </span>
-                        <span className="font-semibold tabular-nums">
-                            {formatPiezas(Number(stock.value ?? 0))} {unidad}
-                        </span>
-                    </p>
-                )}
-
-                {minimo && (
-                    <p className="flex items-center justify-between gap-4">
-                        <span className="flex items-center gap-2 text-muted-foreground">
-                            <span className="size-2 rounded-full bg-muted-foreground" />
-                            Stock mínimo
-                        </span>
-                        <span className="font-semibold tabular-nums">
-                            {formatPiezas(Number(minimo.value ?? 0))} {unidad}
-                        </span>
-                    </p>
-                )}
-            </div>
-        </div>
-    )
-}
-
-// ==========================================
-// TARJETA DE INDICADOR
-// ==========================================
-
-function MetricCard({
-    title,
-    value,
-    description,
-    icon: Icon,
-    iconClassName,
-}: {
-    title: string
-    value: string | number
-    description: string
-    icon: typeof ShoppingCart
-    iconClassName?: string
-}) {
-    return (
-        <div className="rounded-xl bg-background/80 p-3 shadow-sm ring-1 ring-foreground/10">
-            <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                    {title}
-                </p>
-
-                <Icon
-                    className={cn("size-4 text-muted-foreground", iconClassName)}
-                    aria-hidden="true"
-                />
-            </div>
-
-            <p className="mt-1.5 text-xl font-semibold tabular-nums tracking-tight">
-                {value}
-            </p>
-
-            <p className="mt-0.5 text-xs text-muted-foreground">
-                {description}
+            <p className="text-xs text-muted-foreground">
+                Stock mínimo: {esSoles ? formatCurrency(minimo) : `${formatPiezas(minimo)} ${sufijo}`}
             </p>
         </div>
     )
 }
 
-// ==========================================
-// COMPONENTE PRINCIPAL
-// ==========================================
-
-export function DashboardReposicion() {
-    const { data, isLoading, isError } = useReposicion()
-
-    const productos = useMemo(
-        () => data?.productos ?? [],
-        [data?.productos]
-    )
+export function DashboardReposicion({
+    alertas,
+    topProductos,
+}: DashboardReposicionProps) {
+    const { data, isLoading, isError, refetch } = useReposicion()
+    const [modo, setModo] = useState<"unidades" | "soles">("unidades")
+    const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null)
 
     const horizonte = data?.horizonteSemanas ?? 4
 
-    const [unidadSeleccionada, setUnidadSeleccionada] = useState("")
-    const [productoSeleccionadoId, setProductoSeleccionadoId] =
-        useState<number | null>(null)
-
-    // ==========================================
-    // UNIDADES Y PRODUCTOS
-    // ==========================================
-
-    const unidades = useMemo(
-        () => [...new Set(productos.map((item) => item.unitType))],
-        [productos]
-    )
-
-    const unidadActiva = unidades.includes(unidadSeleccionada as UnitType)
-        ? (unidadSeleccionada as UnitType)
-        : unidades[0]
-
-    const productosUnidad = useMemo(
-        () =>
-            productos.filter((item) => item.unitType === unidadActiva),
-        [productos, unidadActiva]
-    )
-
-    const productoSeleccionado =
-        productosUnidad.find(
-            (item) => item.productId === productoSeleccionadoId
-        ) ?? productosUnidad[0]
-
-    const simbolo = unidadActiva
-        ? getUnitSymbol(unidadActiva)
-        : ""
-
-    // ==========================================
-    // RESUMEN DE REPOSICIÓN
-    // ==========================================
-
-    const resumen = useMemo(() => {
-        const pedirYa = productosUnidad.filter(
-            (item) => item.estado === "pedir_ya"
-        ).length
-
-        const pedirPronto = productosUnidad.filter(
-            (item) => item.estado === "pedir_pronto"
-        ).length
-
-        const suficientes = productosUnidad.filter(
-            (item) => item.estado === "suficiente"
-        ).length
-
-        const sinDemanda = productosUnidad.filter(
-            (item) => item.estado === "sin_demanda"
-        ).length
-
-        const cantidadSugerida = productosUnidad.reduce(
-            (total, item) => total + item.cantidadSugerida,
-            0
+    const filas = useMemo(() => {
+        const alertasPorId = new Map(
+            (alertas.items ?? [])
+                .filter((item) => item.estado !== "inactivo")
+                .map((item) => [item.productId, item])
         )
 
-        const stockTotal = productosUnidad.reduce(
-            (total, item) => total + item.stockActual,
-            0
-        )
+        const mapa = new Map<number, FilaReposicion>()
+        ;(data?.productos ?? []).forEach((item) =>
+                mapa.set(item.productId, desdeReposicion(item, alertasPorId.get(item.productId)))
+            )
 
-        return {
-            pedirYa,
-            pedirPronto,
-            suficientes,
-            sinDemanda,
-            cantidadSugerida,
-            stockTotal,
-        }
-    }, [productosUnidad])
+        alertasPorId.forEach((item, productId) => {
+            if (!mapa.has(productId)) mapa.set(productId, desdeAlerta(item))
+        })
 
-    // ==========================================
-    // DATOS DEL GRÁFICO
-    // ==========================================
+        return [...mapa.values()].sort((a, b) => {
+            const porEstado =
+                ORDEN_ESTADO.indexOf(a.estado) - ORDEN_ESTADO.indexOf(b.estado)
+            if (porEstado !== 0) return porEstado
+            const coberturaA = a.semanasCobertura ?? Number.POSITIVE_INFINITY
+            const coberturaB = b.semanasCobertura ?? Number.POSITIVE_INFINITY
+            if (coberturaA !== coberturaB) return coberturaA - coberturaB
+            if (b.cantidadSugerida !== a.cantidadSugerida) {
+                return b.cantidadSugerida - a.cantidadSugerida
+            }
+            return a.nombre.localeCompare(b.nombre)
+        })
+    }, [alertas.items, data?.productos])
+
+    const visibles = filas.slice(0, MAX_REPOSICION_VISIBLES)
+    const seleccionado =
+        visibles.find((item) => item.productId === seleccionadoId) ?? visibles[0]
+
+    const resumen = useMemo(
+        () => ({
+            urgente: filas.filter((item) => item.estado === "pedir_ya").length,
+            pronto: filas.filter((item) => item.estado === "pedir_pronto").length,
+            ok: filas.filter((item) => item.estado === "suficiente").length,
+            sugerido: filas
+                .filter((item) => item.estado !== "suficiente")
+                .reduce((total, item) => total + item.cantidadSugerida, 0),
+        }),
+        [filas]
+    )
+
+    const precios = useMemo(() => {
+        const mapa = new Map<number, number>()
+        topProductos.forEach((producto) => {
+            if (producto.piezasVendidas > 0) {
+                mapa.set(producto.productId, producto.totalVentas / producto.piezasVendidas)
+            }
+        })
+        return mapa
+    }, [topProductos])
 
     const datosGrafico = useMemo(
         () =>
-            productosUnidad.map((item) => ({
-                ...item,
-                nombre:
-                    item.nombre.length > 19
-                        ? `${item.nombre.slice(0, 19)}…`
-                        : item.nombre,
-            })),
-        [productosUnidad]
+            filas.slice(0, MAX_REPOSICION_VISIBLES).map((item) => {
+                const precio = precios.get(item.productId) ?? 0
+                const soles = precio ? item.stockActual * precio : 0
+                const minimoSoles = precio ? item.stockMinimo * precio : 0
+                return {
+                    nombre: item.nombre.length > 26 ? `${item.nombre.slice(0, 25)}…` : item.nombre,
+                    nombreCompleto: item.nombre,
+                    unidades: item.stockActual,
+                    minimo: item.stockMinimo,
+                    soles,
+                    minimoSoles,
+                    unidadesBarra: Math.max(item.stockActual, 1),
+                    minimoBarra: Math.max(item.stockMinimo, 1),
+                    solesBarra: Math.max(soles, 1),
+                    minimoSolesBarra: Math.max(minimoSoles, 1),
+                    sinPrecio: precio === 0,
+                }
+            }),
+        [filas, precios]
     )
 
-    const plazo = productoSeleccionado?.plazoSemanas
-
-    // ==========================================
-    // RENDERIZADO
-    // ==========================================
+    const haySoles = datosGrafico.some((item) => !item.sinPrecio)
+    const unidad = seleccionado ? getUnitSymbol(seleccionado.unitType) : ""
 
     return (
-        <Card className="h-full overflow-hidden border-primary/20 bg-primary/15 shadow-sm">
-
-            {/* ENCABEZADO */}
-
-            <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 p-4 pb-3">
-                <div className="flex min-w-0 items-center gap-3">
-                    <div
-                        className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"
-                        aria-hidden="true"
-                    >
-                        <ShoppingCart className="size-4" />
+        <Card className="h-full overflow-hidden rounded-2xl border border-warning/30 border-t-4 border-t-warning bg-gradient-to-br from-[#FFF8E7] via-background to-background shadow-md dark:from-warning/10">
+            <CardHeader className="space-y-4 p-4 pb-3">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
+                        <div
+                            className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-warning/15 text-warning ring-1 ring-warning/30"
+                            aria-hidden="true"
+                        >
+                            <ShoppingCart className="size-5" />
+                        </div>
+                        <div className="min-w-0 space-y-1">
+                            <CardTitle className="text-xl">¿Qué debo comprar?</CardTitle>
+                            <CardDescription className="text-xs text-muted-foreground">
+                                Productos que necesitas reponer y cuánto pedir
+                            </CardDescription>
+                        </div>
                     </div>
 
-                    <div className="min-w-0 space-y-0.5">
-                        <CardTitle className="text-base">
-                            Reposición de stock
-                        </CardTitle>
-
-                        <CardDescription className="text-xs text-foreground/60">
-                            Control de inventario y recomendaciones de compra
-                        </CardDescription>
-                    </div>
+                    {visibles.length > 0 && (
+                        <Badge variant="outline" className="shrink-0 text-xs">
+                            {filas.length} {filas.length === 1 ? "producto" : "productos"}
+                        </Badge>
+                    )}
                 </div>
 
-                {!isLoading && !isError && unidades.length > 1 && (
-                    <select
-                        value={unidadActiva ?? ""}
-                        onChange={(event) => {
-                            setUnidadSeleccionada(event.target.value)
-                            setProductoSeleccionadoId(null)
-                        }}
-                        className="h-8 max-w-32 rounded-lg border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
-                        aria-label="Filtrar por unidad"
-                    >
-                        {unidades.map((unidad) => (
-                            <option key={unidad} value={unidad}>
-                                {getUnitSymbol(unidad)}
-                            </option>
-                        ))}
-                    </select>
-                )}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <MetricCard
+                        titulo="Urgente"
+                        valor={resumen.urgente}
+                        descripcion="Por pedir ya"
+                        descripcionVacia="Sin urgencias"
+                        icono={AlertTriangle}
+                        claseIcono="text-destructive"
+                        borde="border-l-destructive"
+                        numero="text-destructive"
+                        mostrarCheckVacio
+                    />
+                    <MetricCard
+                        titulo="Pronto"
+                        valor={resumen.pronto}
+                        descripcion="Por pedir pronto"
+                        descripcionVacia="Sin pendientes"
+                        icono={BarChart3}
+                        claseIcono="text-warning"
+                        borde="border-l-warning"
+                        numero="text-warning"
+                    />
+                    <MetricCard
+                        titulo="Stock OK"
+                        valor={resumen.ok}
+                        descripcion="Nada que pedir"
+                        descripcionVacia="Nada cubierto"
+                        icono={PackageCheck}
+                        claseIcono="text-success"
+                        borde="border-l-success"
+                        numero="text-success"
+                    />
+                    <MetricCard
+                        titulo="Total sugerido a comprar"
+                        valor={resumen.sugerido}
+                        descripcion="Unidades a pedir"
+                        descripcionVacia="Sin unidades a pedir"
+                        icono={ShoppingCart}
+                        claseIcono="text-primary"
+                        borde="border-l-primary"
+                        numero="text-primary"
+                    />
+                </div>
             </CardHeader>
 
-            <CardContent className="space-y-3 px-4 pb-4 pt-0">
-
-                {/* CARGANDO */}
-
+            <CardContent className="space-y-4 px-4 pb-4 pt-0">
                 {isLoading ? (
-                    <div className="space-y-3" aria-busy="true">
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {Array.from({ length: 4 }).map((_, index) => (
-                                <Skeleton
-                                    key={index}
-                                    className="h-24 rounded-xl"
-                                />
-                            ))}
-                        </div>
-
-                        <Skeleton className="h-64 w-full rounded-xl" />
+                    <div className="space-y-4" aria-busy="true">
+                        <Skeleton className="h-64 rounded-xl" />
+                        <Skeleton className="h-40 rounded-xl" />
                     </div>
-
-                /* ERROR */
-
                 ) : isError ? (
-                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl bg-background/70 px-5 py-9 text-center ring-1 ring-primary/10">
-                        <AlertTriangle
-                            className="size-6 text-warning"
-                            aria-hidden="true"
-                        />
-
-                        <p className="text-sm font-medium">
-                            No se pudo calcular la reposición
-                        </p>
-
-                        <p className="text-xs text-muted-foreground">
-                            Intenta de nuevo en unos minutos.
-                        </p>
+                    <div className="flex flex-col items-center justify-center gap-4 rounded-xl bg-background/70 px-4 py-10 text-center ring-1 ring-primary/10">
+                        <AlertTriangle className="size-7 text-warning" aria-hidden="true" />
+                        <p className="text-sm font-medium">No se pudo calcular la reposición</p>
+                        <Button variant="outline" onClick={() => void refetch()}>
+                            <RefreshCw className="size-4" aria-hidden="true" />
+                            Reintentar
+                        </Button>
                     </div>
-
-                /* SIN DATOS */
-
-                ) : productos.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl bg-background/70 px-5 py-9 text-center ring-1 ring-primary/10">
-                        <div className="flex size-11 items-center justify-center rounded-full bg-primary/10">
-                            <PackageCheck
-                                className="size-5 text-primary"
-                                aria-hidden="true"
-                            />
-                        </div>
-
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium">
-                                Sin recomendaciones todavía
-                            </p>
-
+                ) : filas.length === 0 ? (
+                    <div className="flex items-center gap-4 rounded-xl border border-success/25 bg-success/5 p-4 text-success">
+                        <CheckCircle2 className="size-6 shrink-0" aria-hidden="true" />
+                        <div>
+                            <p className="text-base font-semibold">Sin urgencias hoy</p>
                             <p className="text-xs text-muted-foreground">
-                                Hacen falta al menos 8 semanas de ventas por producto.
+                                No hay productos que necesiten pedido por ahora.
                             </p>
                         </div>
                     </div>
-
                 ) : (
                     <>
-
-                        {/* =================================
-                            INDICADORES
-                        ================================= */}
-
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            <MetricCard
-                                title="Pedir ya"
-                                value={resumen.pedirYa}
-                                description="Productos urgentes"
-                                icon={AlertTriangle}
-                                iconClassName="text-destructive"
-                            />
-
-                            <MetricCard
-                                title="Pedir pronto"
-                                value={resumen.pedirPronto}
-                                description="Requieren atención"
-                                icon={TrendingDown}
-                                iconClassName="text-warning"
-                            />
-
-                            <MetricCard
-                                title="Stock suficiente"
-                                value={resumen.suficientes}
-                                description="Sin necesidad de compra"
-                                icon={PackageCheck}
-                                iconClassName="text-success"
-                            />
-
-                            <MetricCard
-                                title="Cantidad sugerida"
-                                value={formatPiezas(resumen.cantidadSugerida)}
-                                description={`Total recomendado · ${simbolo}`}
-                                icon={ShoppingCart}
-                                iconClassName="text-primary"
-                            />
-                        </div>
-
-                        {/* =================================
-                            GRÁFICO DE STOCK
-                        ================================= */}
-
-                        <section className="space-y-3">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="space-y-0.5">
-                                    <h3 className="flex items-center gap-2 text-sm font-semibold">
-                                        <BarChart3 className="size-4 text-primary" />
-                                        Stock actual vs. mínimo
+                        <section className="space-y-4">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <h3 className="flex items-center gap-2 text-base font-semibold">
+                                        <BarChart3 className="size-4 text-primary" aria-hidden="true" />
+                                        Stock por producto
                                     </h3>
-
                                     <p className="text-xs text-muted-foreground">
-                                        Comparación por producto · {simbolo}
+                                        Los más urgentes primero · escala ajustada para comparar mejor
                                     </p>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="size-2 rounded-full bg-primary" />
-                                        Stock actual
-                                    </span>
-
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="size-2 rounded-full bg-muted-foreground" />
-                                        Stock mínimo
-                                    </span>
+                                <div
+                                    role="group"
+                                    aria-label="Unidad del gráfico"
+                                    className="inline-flex rounded-xl bg-primary/10 p-1 ring-1 ring-primary/15"
+                                >
+                                    {(["unidades", "soles"] as const).map((opcion) => (
+                                        <button
+                                            key={opcion}
+                                            type="button"
+                                            aria-pressed={modo === opcion}
+                                            onClick={() => setModo(opcion)}
+                                            className={`rounded-lg px-3 py-2 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                                                modo === opcion
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "text-muted-foreground hover:text-foreground"
+                                            }`}
+                                        >
+                                            {opcion === "unidades" ? "Unidades" : "Soles (S/)"}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            {datosGrafico.length > 0 ? (
-                                <div className="h-64 w-full rounded-xl bg-background/80 px-2 pb-2 pt-3 shadow-sm ring-1 ring-foreground/10 sm:px-3">
+                            {modo === "soles" && !haySoles ? (
+                                <div className="rounded-xl bg-background/80 px-4 py-8 text-center text-xs text-muted-foreground ring-1 ring-foreground/10">
+                                    Sin precios disponibles para estimar soles.
+                                </div>
+                            ) : (
+                                <div
+                                    role="img"
+                                    aria-label={`Stock actual y mínimo de ${visibles.length} productos en ${modo === "soles" ? "soles" : "unidades"}`}
+                                    tabIndex={0}
+                                    className="h-72 w-full rounded-xl bg-background/80 px-2 pb-2 pt-4 shadow-sm ring-1 ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                >
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
                                             data={datosGrafico}
                                             layout="vertical"
-                                            margin={{
-                                                top: 4,
-                                                right: 12,
-                                                left: 4,
-                                                bottom: 4,
-                                            }}
+                                            margin={{ top: 4, right: 56, left: 4, bottom: 4 }}
                                             barCategoryGap="25%"
                                         >
-                                            <defs>
-                                                <linearGradient
-                                                    id="reposicion-urgente"
-                                                    x1="0"
-                                                    y1="0"
-                                                    x2="1"
-                                                    y2="0"
-                                                >
-                                                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.65} />
-                                                    <stop offset="100%" stopColor="var(--destructive)" />
-                                                </linearGradient>
-
-                                                <linearGradient
-                                                    id="reposicion-pronto"
-                                                    x1="0"
-                                                    y1="0"
-                                                    x2="1"
-                                                    y2="0"
-                                                >
-                                                    <stop offset="0%" stopColor="var(--warning)" stopOpacity={0.65} />
-                                                    <stop offset="100%" stopColor="var(--warning)" />
-                                                </linearGradient>
-
-                                                <linearGradient
-                                                    id="reposicion-suficiente"
-                                                    x1="0"
-                                                    y1="0"
-                                                    x2="1"
-                                                    y2="0"
-                                                >
-                                                    <stop offset="0%" stopColor="var(--success)" stopOpacity={0.65} />
-                                                    <stop offset="100%" stopColor="var(--success)" />
-                                                </linearGradient>
-
-                                                <linearGradient
-                                                    id="reposicion-sin-demanda"
-                                                    x1="0"
-                                                    y1="0"
-                                                    x2="1"
-                                                    y2="0"
-                                                >
-                                                    <stop offset="0%" stopColor="var(--muted-foreground)" stopOpacity={0.4} />
-                                                    <stop offset="100%" stopColor="var(--muted-foreground)" />
-                                                </linearGradient>
-                                            </defs>
-
                                             <CartesianGrid
                                                 horizontal={false}
                                                 stroke="var(--border)"
                                                 strokeDasharray="3 6"
-                                                strokeOpacity={0.8}
                                             />
-
                                             <XAxis
                                                 type="number"
-                                                tickFormatter={formatEje}
-                                                tick={{
-                                                    fill: "var(--muted-foreground)",
-                                                    fontSize: 10,
-                                                }}
+                                                scale="log"
+                                                domain={[1, "dataMax"]}
+                                                ticks={[1, 10, 100]}
+                                                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                                                tickFormatter={(valor: number) =>
+                                                    modo === "soles"
+                                                        ? `S/ ${formatPiezas(valor)}`
+                                                        : formatPiezas(valor)
+                                                }
                                                 tickLine={false}
                                                 axisLine={false}
                                             />
-
                                             <YAxis
                                                 type="category"
                                                 dataKey="nombre"
-                                                width={108}
-                                                tick={{
-                                                    fill: "var(--muted-foreground)",
-                                                    fontSize: 10,
-                                                }}
+                                                width={150}
+                                                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                                                 tickLine={false}
                                                 axisLine={false}
                                             />
-
                                             <Tooltip
-                                                cursor={{
-                                                    fill: "var(--muted)",
-                                                    opacity: 0.3,
-                                                }}
+                                                cursor={{ fill: "var(--muted)", opacity: 0.3 }}
+                                                offset={24}
                                                 content={
-                                                    <StockTooltip unidad={simbolo} />
+                                                    <StockTooltip
+                                                        sufijo={unidad}
+                                                        esSoles={modo === "soles"}
+                                                    />
                                                 }
                                             />
-
                                             <Bar
-                                                dataKey="stockActual"
+                                                dataKey={
+                                                    modo === "soles" ? "solesBarra" : "unidadesBarra"
+                                                }
                                                 name="Stock actual"
+                                                fill="var(--primary)"
                                                 radius={[0, 7, 7, 0]}
                                                 maxBarSize={16}
-                                                animationDuration={700}
                                             >
-                                                {datosGrafico.map((item) => (
-                                                    <Cell
-                                                        key={item.productId}
-                                                        fill={ESTADOS[item.estado].color}
-                                                    />
-                                                ))}
+                                                <LabelList
+                                                    dataKey={modo === "soles" ? "soles" : "unidades"}
+                                                    position="right"
+                                                    fontSize={12}
+                                                    fill="var(--foreground)"
+                                                    formatter={(valor: unknown) => {
+                                                        const numero = Number(valor ?? 0)
+                                                        return modo === "soles"
+                                                            ? formatCurrency(numero)
+                                                            : formatPiezas(numero)
+                                                    }}
+                                                />
                                             </Bar>
-
                                             <Bar
-                                                dataKey="stockMinimo"
+                                                dataKey={
+                                                    modo === "soles"
+                                                        ? "minimoSolesBarra"
+                                                        : "minimoBarra"
+                                                }
                                                 name="Stock mínimo"
                                                 fill="var(--muted-foreground)"
-                                                fillOpacity={0.35}
+                                                fillOpacity={0.55}
                                                 radius={[0, 7, 7, 0]}
                                                 maxBarSize={16}
-                                                animationDuration={700}
                                             />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
-                            ) : (
-                                <div className="rounded-xl bg-background/80 px-5 py-8 text-center text-xs text-muted-foreground ring-1 ring-foreground/10">
-                                    No hay productos para esta unidad.
-                                </div>
                             )}
                         </section>
 
-                        {/* =================================
-                            DETALLE DEL PRODUCTO
-                        ================================= */}
-
-                        {productoSeleccionado && (
-                            <section className="space-y-3 border-t border-border pt-3">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div className="space-y-0.5">
-                                        <h3 className="flex items-center gap-2 text-sm font-semibold">
-                                            <CalendarRange className="size-4 text-primary" />
-                                            Detalle de reposición
+                        {seleccionado && (
+                            <section className="space-y-4 border-t border-border pt-4">
+                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                    <div className="min-w-0 space-y-1">
+                                        <h3 className="text-base font-semibold">
+                                            {seleccionado.nombre}
                                         </h3>
-
                                         <p className="text-xs text-muted-foreground">
-                                            Revisa la recomendación de cada producto
+                                            {seleccionado.sku}
                                         </p>
                                     </div>
-
                                     <select
-                                        value={productoSeleccionado.productId}
+                                        value={seleccionado.productId}
                                         onChange={(event) =>
-                                            setProductoSeleccionadoId(
-                                                Number(event.target.value)
-                                            )
+                                            setSeleccionadoId(Number(event.target.value))
                                         }
-                                        className="h-8 max-w-52 rounded-lg border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
-                                        aria-label="Seleccionar producto"
+                                        aria-label="Elegir producto"
+                                        className="h-10 max-w-64 rounded-lg border border-input bg-background px-3 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     >
-                                        {productosUnidad.map((item) => (
-                                            <option
-                                                key={item.productId}
-                                                value={item.productId}
-                                            >
+                                        {visibles.map((item) => (
+                                            <option key={item.productId} value={item.productId}>
                                                 {item.nombre}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
 
-                                <div className="rounded-xl bg-background/80 p-3 shadow-sm ring-1 ring-foreground/10">
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-semibold">
-                                                {productoSeleccionado.nombre}
-                                            </p>
-
-                                            <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                                                {productoSeleccionado.sku}
-                                            </p>
-                                        </div>
-
+                                <div className="rounded-xl bg-gradient-to-br from-warning/10 to-background p-4 shadow-sm ring-1 ring-warning/20">
+                                    <div className="flex flex-wrap items-center justify-between gap-4">
                                         <Badge
                                             variant="outline"
-                                            className={cn(
-                                                "shrink-0",
-                                                ESTADOS[productoSeleccionado.estado].className
-                                            )}
+                                            className={ESTADO[seleccionado.estado].clase}
                                         >
-                                            {ESTADOS[productoSeleccionado.estado].label}
+                                            {ESTADO[seleccionado.estado].etiqueta}
                                         </Badge>
-                                    </div>
-
-                                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                                        <div className="rounded-lg bg-muted/40 p-3">
-                                            <p className="text-xs text-muted-foreground">
-                                                Stock actual
+                                        {seleccionado.cantidadSugerida > 0 && (
+                                            <p className="text-base font-semibold text-primary">
+                                                Pedir {formatPiezas(seleccionado.cantidadSugerida)} unidades
                                             </p>
-
-                                            <p className="mt-1 text-base font-semibold tabular-nums">
-                                                {formatPiezas(productoSeleccionado.stockActual)}
-                                                <span className="ml-1 text-xs font-normal text-muted-foreground">
-                                                    {simbolo}
-                                                </span>
-                                            </p>
-
-                                            <p className="text-xs text-muted-foreground">
-                                                Mínimo: {formatPiezas(productoSeleccionado.stockMinimo)}
-                                            </p>
-                                        </div>
-
-                                        <div className="rounded-lg bg-muted/40 p-3">
-                                            <p className="text-xs text-muted-foreground">
-                                                Cobertura estimada
-                                            </p>
-
-                                            <p className="mt-1 text-sm font-semibold">
-                                                {getCobertura(productoSeleccionado, horizonte)}
-                                            </p>
-
-                                            {productoSeleccionado.semanaAgotamiento && (
-                                                <p className="mt-1 text-xs text-muted-foreground">
-                                                    Agotamiento:{" "}
-                                                    {formatSemanaCorta(productoSeleccionado.semanaAgotamiento)}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="rounded-lg bg-muted/40 p-3">
-                                            <p className="text-xs text-muted-foreground">
-                                                Demanda del horizonte
-                                            </p>
-
-                                            <p className="mt-1 text-base font-semibold tabular-nums">
-                                                {formatPiezas(productoSeleccionado.demandaHorizonte)}
-                                                <span className="ml-1 text-xs font-normal text-muted-foreground">
-                                                    {simbolo}
-                                                </span>
-                                            </p>
-
-                                            <p className="text-xs text-muted-foreground">
-                                                Próximas {horizonte} semanas
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium">
-                                                {getAccion(productoSeleccionado)}
-                                            </p>
-
-                                            {plazo !== undefined && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    Plazo supuesto: {plazo}{" "}
-                                                    {plazo === 1 ? "semana" : "semanas"}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {productoSeleccionado.cantidadSugerida > 0 && (
-                                            <div className="text-right">
-                                                <p className="text-xs text-muted-foreground">
-                                                    Cantidad recomendada
-                                                </p>
-
-                                                <p className="text-base font-bold tabular-nums text-primary">
-                                                    {formatPiezas(productoSeleccionado.cantidadSugerida)}{" "}
-                                                    {simbolo}
-                                                </p>
-                                            </div>
                                         )}
                                     </div>
 
-                                    {!productoSeleccionado.confiable && (
-                                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
-                                            <AlertTriangle className="size-4 shrink-0" />
-                                            El pronóstico de este producto es poco fiable.
-                                        </div>
+                                    <ul className="mt-4 grid gap-2 text-sm text-foreground/80 sm:grid-cols-2">
+                                        {seleccionado.semanasCobertura !== null && (
+                                            <li>
+                                                Te alcanza para unas {formatSemanasLegibles(seleccionado.semanasCobertura)}.
+                                            </li>
+                                        )}
+                                        {seleccionado.semanaAgotamiento && (
+                                            <li>
+                                                Se acabaría el {formatFechaLarga(seleccionado.semanaAgotamiento)}.
+                                            </li>
+                                        )}
+                                        {seleccionado.demandaHorizonte > 0 && (
+                                            <li>
+                                                Se espera vender {formatPiezas(seleccionado.demandaHorizonte)} unidades en {horizonte} semanas.
+                                            </li>
+                                        )}
+                                        {seleccionado.fechaLimitePedido && (
+                                            <li>
+                                                Haz el pedido antes del {formatFechaLarga(seleccionado.fechaLimitePedido)}.
+                                            </li>
+                                        )}
+                                        {seleccionado.plazoSemanas > 0 && (
+                                            <li>
+                                                Considerando {seleccionado.plazoSemanas}{" "}
+                                                {seleccionado.plazoSemanas === 1 ? "semana" : "semanas"} de entrega.
+                                            </li>
+                                        )}
+                                    </ul>
+
+                                    {!seleccionado.confiable && (
+                                        <p className="mt-4 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
+                                            Predicción aproximada: revisa este pedido antes de confirmarlo.
+                                        </p>
                                     )}
+
+                                    <div className="mt-4 flex flex-wrap gap-4">
+                                        {seleccionado.cantidadSugerida > 0 && (
+                                            <Link
+                                                href="/compras"
+                                                className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                            >
+                                                Crear orden de compra
+                                            </Link>
+                                        )}
+                                        <Link
+                                            href={`/productos?producto=${seleccionado.productId}`}
+                                            className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        >
+                                            Ver producto
+                                        </Link>
+                                    </div>
                                 </div>
                             </section>
                         )}
 
-                        {/* =================================
-                            INFORMACIÓN ADICIONAL
-                        ================================= */}
-
-                        {resumen.sinDemanda > 0 && (
-                            <p className="text-center text-xs text-muted-foreground">
-                                {resumen.sinDemanda}{" "}
-                                {resumen.sinDemanda === 1
-                                    ? "producto sin demanda prevista"
-                                    : "productos sin demanda prevista"}{" "}
-                                en esta unidad.
-                            </p>
-                        )}
-
-                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                            <TrendingUp className="size-3.5" />
-                            Análisis basado en un horizonte de {horizonte} semanas
+                        <div className="flex justify-center pt-4">
+                            <Link
+                                href="/compras"
+                                className={buttonVariants({ variant: "outline", size: "sm" })}
+                            >
+                                Ver todos
+                            </Link>
                         </div>
                     </>
                 )}

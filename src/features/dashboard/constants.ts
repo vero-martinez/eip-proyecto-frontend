@@ -63,6 +63,9 @@ export const ALERTA_CONTADOR_ITEMS: {
 /** Máximo de alertas detalladas que se listan en la tabla. */
 export const MAX_ALERTAS_DETALLADAS = 8
 
+/** Máximo de productos visibles en el panel de reposición. */
+export const MAX_REPOSICION_VISIBLES = 5
+
 /** Devuelve la presentación de un estado de alerta. */
 export function getAlertaEstadoItem(estado: EstadoAlerta) {
     return ALERTA_ESTADO_ITEMS.find((item) => item.value === estado)

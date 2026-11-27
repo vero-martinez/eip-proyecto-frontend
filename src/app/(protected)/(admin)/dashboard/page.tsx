@@ -58,6 +58,7 @@ function ResumenHoy({
         tono: "rojo" | "naranja" | "verde"
         Icono: typeof ShoppingCart
         texto: string
+        onClick?: () => void
     }[] = []
 
     if (urgente) {
@@ -73,6 +74,7 @@ function ResumenHoy({
             tono: "naranja",
             Icono: AlertTriangle,
             texto: resumenAnomalias.texto,
+            onClick: onVerDetalle,
         })
     }
 
@@ -93,16 +95,7 @@ function ResumenHoy({
     return (
         <section
             aria-label="Resumen de hoy"
-            role="button"
-            tabIndex={0}
-            onClick={onVerDetalle}
-            onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault()
-                    onVerDetalle()
-                }
-            }}
-            className="cursor-pointer rounded-2xl border border-primary/25 bg-gradient-to-br from-[#F4F0FF] via-[#FAF8FF] to-white p-4 text-slate-900 shadow-sm shadow-primary/10 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:p-6"
+            className="rounded-2xl border border-primary/25 bg-gradient-to-br from-[#F4F0FF] via-[#FAF8FF] to-white p-4 text-slate-900 shadow-sm shadow-primary/10 sm:p-6"
         >
             <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="space-y-1">
@@ -151,33 +144,38 @@ function ResumenHoy({
                 </div>
             ) : (
                 <ul className="grid gap-4 sm:grid-cols-3">
-                    {frases.map(({ tono, Icono, texto }) => (
-                        <li
-                            key={texto}
-                            className={cn(
-                                "flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed",
-                                estilos[tono]
-                            )}
-                        >
-                            <Icono className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-                            <span>{texto}</span>
-                        </li>
-                    ))}
+                    {frases.map(({ tono, Icono, texto, onClick }) => {
+                        const contenido = (
+                            <>
+                                <Icono className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+                                <span>{texto}</span>
+                            </>
+                        )
+
+                        return (
+                            <li
+                                key={texto}
+                                className={cn(
+                                    "rounded-xl border p-4 text-sm leading-relaxed",
+                                    estilos[tono]
+                                )}
+                            >
+                                {onClick ? (
+                                    <button
+                                        type="button"
+                                        onClick={onClick}
+                                        className="flex w-full items-start gap-3 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                    >
+                                        {contenido}
+                                    </button>
+                                ) : (
+                                    <div className="flex items-start gap-3">{contenido}</div>
+                                )}
+                            </li>
+                        )
+                    })}
                 </ul>
             )}
-
-            <div className="mt-4 flex justify-end">
-                <button
-                    type="button"
-                    onClick={(event) => {
-                        event.stopPropagation()
-                        onVerDetalle()
-                    }}
-                    className="text-xs font-semibold text-slate-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                >
-                    Ver detalle →
-                </button>
-            </div>
         </section>
     )
 }
@@ -263,7 +261,10 @@ export default function DashboardPage() {
         : null
 
     function verDetalleAnomalias() {
-        document.getElementById("anomalias")?.scrollIntoView({
+        const destino =
+            document.getElementById("detalle-anomalias") ??
+            document.getElementById("anomalias")
+        destino?.scrollIntoView({
             behavior: "smooth",
             block: "start",
         })

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react"
 import {
     AlertTriangle,
     CalendarRange,
+    CheckCircle2,
     RefreshCw,
     ScanSearch,
     ShieldAlert,
@@ -61,19 +62,19 @@ const SEVERIDADES: Record<
     { etiqueta: string; clase: string; borde: string; color: string }
 > = {
     alta: {
-        etiqueta: "Alta",
+        etiqueta: "Revisar ya",
         clase: "border-destructive/40 bg-destructive/10 text-destructive",
         borde: "border-l-destructive",
         color: "var(--destructive)",
     },
     media: {
-        etiqueta: "Media",
+        etiqueta: "Revisar pronto",
         clase: "border-warning/40 bg-warning/10 text-warning",
         borde: "border-l-warning",
         color: "var(--warning)",
     },
     informativa: {
-        etiqueta: "Informativa",
+        etiqueta: "Solo aviso",
         clase: "border-info/40 bg-info/10 text-info",
         borde: "border-l-info",
         color: "var(--info)",
@@ -174,6 +175,65 @@ function PuntoAnomalia({
                 strokeWidth={2}
             />
         </g>
+    )
+}
+
+function MetricCard({
+    titulo,
+    valor,
+    descripcion,
+    descripcionVacia,
+    icono: Icono,
+    claseIcono,
+    borde,
+    numero,
+    mostrarCheckVacio = false,
+}: {
+    titulo: string
+    valor: number
+    descripcion: string
+    descripcionVacia: string
+    icono: typeof ScanSearch
+    claseIcono?: string
+    borde: string
+    numero: string
+    mostrarCheckVacio?: boolean
+}) {
+    const sinDatos = valor === 0
+    const checkVacio = sinDatos && mostrarCheckVacio
+
+    return (
+        <div
+            className={cn(
+                "rounded-xl border-l-4 bg-background/80 p-3 shadow-sm ring-1 ring-foreground/10 sm:p-4",
+                borde
+            )}
+        >
+            <div className="flex items-start justify-between gap-2">
+                <p className="min-h-8 break-words text-xs font-medium leading-tight text-muted-foreground">
+                    {titulo}
+                </p>
+                <Icono
+                    className={cn("size-4 shrink-0", claseIcono ?? "text-primary")}
+                    aria-hidden="true"
+                />
+            </div>
+            {checkVacio ? (
+                <div className="mt-2 flex items-center gap-2 text-success">
+                    <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-semibold">Sin críticos hoy</span>
+                </div>
+            ) : (
+                <p className={cn("mt-2 text-3xl font-semibold tabular-nums tracking-tight", numero)}>
+                    {sinDatos ? "—" : formatPiezas(valor)}
+                </p>
+            )}
+            {!checkVacio && (
+                <p className="mt-1 min-h-8 break-words text-xs leading-tight text-muted-foreground">
+                    {sinDatos ? descripcionVacia : descripcion}
+                </p>
+            )}
+        </div>
     )
 }
 
@@ -288,22 +348,49 @@ export function DashboardAnomalias({
                 </div>
 
                 {!isLoading && !isError && total > 0 && (
-                    <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        {[
-                            { titulo: "Casos revisados", valor: total, Icono: ScanSearch, color: "text-primary" },
-                            { titulo: "Alta", valor: altas, Icono: ShieldAlert, color: "text-destructive" },
-                            { titulo: "Media", valor: medias, Icono: Shield, color: "text-warning" },
-                            { titulo: "Informativa", valor: informativas, Icono: CalendarRange, color: "text-info" },
-                        ].map(({ titulo, valor, Icono, color }) => (
-                            <div key={titulo} className="rounded-xl bg-background/80 p-4 shadow-sm ring-1 ring-foreground/10">
-                                <div className="flex items-start justify-between gap-2">
-                                    <dt className="text-xs text-muted-foreground">{titulo}</dt>
-                                    <Icono className={cn("size-4", color)} aria-hidden="true" />
-                                </div>
-                                <dd className="mt-2 text-3xl font-semibold tabular-nums">{valor}</dd>
-                            </div>
-                        ))}
-                    </dl>
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <MetricCard
+                            titulo="Casos detectados"
+                            descripcion={`Hallazgos en las últimas ${semanas} semanas`}
+                            descripcionVacia="Sin hallazgos"
+                            valor={total}
+                            icono={ScanSearch}
+                            claseIcono="text-primary"
+                            borde="border-l-primary"
+                            numero="text-primary"
+                        />
+                        <MetricCard
+                            titulo="Revisar ya"
+                            descripcion="Crítico o fuera de rango"
+                            descripcionVacia="Sin críticos"
+                            valor={altas}
+                            icono={ShieldAlert}
+                            claseIcono="text-destructive"
+                            borde="border-l-destructive"
+                            numero="text-destructive"
+                            mostrarCheckVacio
+                        />
+                        <MetricCard
+                            titulo="Revisar pronto"
+                            descripcion="Cambio notable"
+                            descripcionVacia="Sin pendientes"
+                            valor={medias}
+                            icono={Shield}
+                            claseIcono="text-warning"
+                            borde="border-l-warning"
+                            numero="text-warning"
+                        />
+                        <MetricCard
+                            titulo="Solo aviso"
+                            descripcion="Sin ventas, puede ser normal"
+                            descripcionVacia="Sin avisos"
+                            valor={informativas}
+                            icono={CalendarRange}
+                            claseIcono="text-info"
+                            borde="border-l-info"
+                            numero="text-info"
+                        />
+                    </div>
                 )}
             </CardHeader>
 
@@ -453,7 +540,7 @@ export function DashboardAnomalias({
                             </div>
                         </section>
 
-                        <section className="space-y-4">
+                        <section id="detalle-anomalias" className="scroll-mt-6 space-y-4">
                             <div className="space-y-1">
                                 <h3 className="text-base font-semibold">Detalle de casos</h3>
                                 <p className="text-xs text-muted-foreground">

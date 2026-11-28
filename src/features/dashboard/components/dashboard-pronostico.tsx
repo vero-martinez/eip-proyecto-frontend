@@ -350,10 +350,10 @@ export function DashboardPronostico() {
                             <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div className="space-y-1">
                                     <h3 className="text-base font-semibold">
-                                        Ventas reales y estimadas
+                                        Ventas simuladas y estimadas
                                     </h3>
                                     <p className="text-xs text-muted-foreground">
-                                        Historial reciente y próximas semanas
+                                        Histórico simulado y próximas semanas
                                     </p>
                                 </div>
 
@@ -378,7 +378,7 @@ export function DashboardPronostico() {
                             ) : (
                                 <div
                                     role="img"
-                                    aria-label={`Ventas reales y estimadas de ${producto.nombre}`}
+                                    aria-label={`Ventas simuladas y estimadas de ${producto.nombre}`}
                                     tabIndex={0}
                                     className="h-80 w-full rounded-xl bg-background/80 px-2 pb-2 pt-4 shadow-sm ring-1 ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                                 >
@@ -510,7 +510,7 @@ export function DashboardPronostico() {
                                 <div className="flex items-center gap-3">
                                     <span
                                         className="flex size-9 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary"
-                                        title="Qué tanto se equivocó la predicción al compararla con ventas reales pasadas. Mientras más bajo, mejor."
+                                        title="Qué tanto se equivocó la predicción al compararla con ventas simuladas pasadas. Mientras más bajo, mejor."
                                         aria-label="Explicación del margen de error"
                                     >
                                         <Info className="size-4" aria-hidden="true" />

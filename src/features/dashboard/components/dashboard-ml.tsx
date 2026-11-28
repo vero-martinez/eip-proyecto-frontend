@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getUnitSymbol } from "@/lib/units"
 import { cn } from "@/lib/utils"
 
-import { usePrediccionML } from "../hooks/use-ml"
+import { usePrediccionML, type OrigenHistorialML } from "../hooks/use-ml"
 import { usePronostico } from "../hooks/use-pronostico"
 import { formatFechaHora, formatPiezas, formatSemanaCorta } from "../utils"
 
@@ -31,6 +31,12 @@ function formatearProbabilidad(valor: number | null): string {
     if (valor === null || !Number.isFinite(valor)) return "—"
     const porcentaje = valor <= 1 ? valor * 100 : valor
     return `${Math.round(porcentaje)}%`
+}
+
+function etiquetaOrigenHistorial(origen: OrigenHistorialML): string {
+    if (origen === "real") return "Historial real"
+    if (origen === "mixto") return "Historial mixto"
+    return "Historial simulado"
 }
 
 export function DashboardML() {
@@ -164,12 +170,20 @@ export function DashboardML() {
                                         </p>
                                     </div>
 
-                                    <Badge
-                                        variant="outline"
-                                        className="shrink-0 border-success/40 text-xs text-success"
-                                    >
-                                        Estimación automática
-                                    </Badge>
+                                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                                        <Badge
+                                            variant="outline"
+                                            className="border-success/40 text-xs text-success"
+                                        >
+                                            Estimación automática
+                                        </Badge>
+                                        <Badge
+                                            variant="outline"
+                                            className="border-muted-foreground/30 text-xs text-muted-foreground"
+                                        >
+                                            {etiquetaOrigenHistorial(recomendacion.origenHistorial)}
+                                        </Badge>
+                                    </div>
                                 </div>
 
                                 <dl className="grid gap-4 sm:grid-cols-3">

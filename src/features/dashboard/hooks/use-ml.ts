@@ -24,6 +24,8 @@ interface DemandaSemanalResponse {
 
 export type EstadoML = "inicial" | "cargando" | "modelo" | "error"
 
+export type OrigenHistorialML = "real" | "simulado" | "mixto"
+
 export interface RecomendacionML {
     unidades: number
     semanaObjetivo: string
@@ -31,6 +33,7 @@ export interface RecomendacionML {
     version: string
     fechaHora: string
     origen: "modelo"
+    origenHistorial: OrigenHistorialML
     semanasBase: number
 }
 
@@ -54,6 +57,16 @@ function siguienteLunes(fechaISO: string): string {
     return aISO(fecha)
 }
 
+function resolverOrigenHistorial(
+    historial: SemanaHistorialML[]
+): OrigenHistorialML {
+    const origenes = new Set(
+        historial.map((item) => item.origen ?? "simulado")
+    )
+    if (origenes.size > 1) return "mixto"
+    return origenes.has("real") ? "real" : "simulado"
+}
+
 function normalizarHistorial(
     semanas: DemandaSemanal[],
     productId: number
@@ -63,7 +76,7 @@ function normalizarHistorial(
         .map((item) => ({
             semana: String(item.semana).slice(0, 10),
             unidades: Number(item.unidades),
-            origen: "real" as const,
+            origen: item.origen ?? "simulado",
         }))
         .filter(
             (item) =>
@@ -97,13 +110,14 @@ export function usePrediccionML() {
 
             if (historial.length < 2 || !semanaObjetivo) {
                 setMensajeError(
-                    "No hay suficiente historial real para calcular una recomendación."
+                    "No hay suficiente historial para calcular una recomendación."
                 )
                 setRecomendacion(null)
                 setEstado("error")
                 return
             }
 
+            const origenHistorial = resolverOrigenHistorial(historial)
             const respuesta: PrediccionMLResponse = await predecirConModelo({
                 productId: producto.productId,
                 unitType: producto.unitType,
@@ -118,6 +132,7 @@ export function usePrediccionML() {
                 version: respuesta.version,
                 fechaHora: respuesta.fechaHora,
                 origen: "modelo",
+                origenHistorial,
                 semanasBase: historial.length,
             })
             setEstado("modelo")

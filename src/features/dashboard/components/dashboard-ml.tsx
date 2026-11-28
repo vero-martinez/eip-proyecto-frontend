@@ -196,12 +196,15 @@ export function DashboardML() {
                                     <div className="rounded-lg bg-muted/40 p-4">
                                         <dt
                                             className="text-xs text-muted-foreground"
-                                            title="Heurística del modelo; no es una probabilidad estadística."
+                                            title={`Banda calibrada con el test reservado. Cobertura observada: ${formatearProbabilidad(recomendacion.coberturaConfianza)}.`}
                                         >
-                                            Confianza aprox.
+                                            Intervalo {formatearProbabilidad(recomendacion.nivelConfianza)}
                                         </dt>
                                         <dd className="mt-1 text-2xl font-semibold tabular-nums">
-                                            {formatearProbabilidad(recomendacion.probabilidad)}
+                                            {recomendacion.intervaloInferior !== null &&
+                                            recomendacion.intervaloSuperior !== null
+                                                ? `${formatPiezas(recomendacion.intervaloInferior)} – ${formatPiezas(recomendacion.intervaloSuperior)} ${simbolo}`
+                                                : "—"}
                                         </dd>
                                     </div>
                                     <div className="rounded-lg bg-muted/40 p-4">

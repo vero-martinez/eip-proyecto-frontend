@@ -35,6 +35,11 @@ export interface RecomendacionML {
     origen: "modelo"
     origenHistorial: OrigenHistorialML
     semanasBase: number
+    intervaloInferior: number | null
+    intervaloSuperior: number | null
+    nivelConfianza: number | null
+    coberturaConfianza: number | null
+    metodoConfianza: string | null
 }
 
 function aISO(fecha: Date): string {
@@ -134,6 +139,11 @@ export function usePrediccionML() {
                 origen: "modelo",
                 origenHistorial,
                 semanasBase: historial.length,
+                intervaloInferior: respuesta.intervaloInferior ?? null,
+                intervaloSuperior: respuesta.intervaloSuperior ?? null,
+                nivelConfianza: respuesta.nivelConfianza ?? null,
+                coberturaConfianza: respuesta.coberturaConfianza ?? null,
+                metodoConfianza: respuesta.metodoConfianza ?? null,
             })
             setEstado("modelo")
         } catch {

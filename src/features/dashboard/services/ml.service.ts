@@ -23,6 +23,11 @@ export interface PrediccionMLResponse {
     version: string
     fechaHora: string
     origen: "modelo"
+    intervaloInferior?: number | null
+    intervaloSuperior?: number | null
+    nivelConfianza?: number | null
+    coberturaConfianza?: number | null
+    metodoConfianza?: string | null
 }
 
 export async function predecirConModelo(
